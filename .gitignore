@@ -72,3 +72,6 @@ htmlcov/
 
 # uv
 .python-version
+
+# Generated lakehouse data
+data/lakehouse/

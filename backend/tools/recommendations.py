@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Any
 
-from langchain_core.tools import tool
+from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
@@ -50,7 +50,7 @@ class ConnectionInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def create_recommendation_tools(client: MemoryClient) -> list:
+def create_recommendation_tools(client: MemoryClient) -> list[BaseTool]:
     """Create recommendation tools bound to the given MemoryClient."""
 
     @tool(args_schema=RecommendationsInput)
@@ -142,7 +142,7 @@ def create_recommendation_tools(client: MemoryClient) -> list:
                coalesce(related.brand, '') AS brand,
                coalesce(r.frequency, 0) AS purchase_frequency,
                coalesce(r.confidence, 0.0) AS confidence
-        ORDER BY r.frequency DESC
+        ORDER BY purchase_frequency DESC
         LIMIT $limit
         """
         result = await client.graph.execute_read(

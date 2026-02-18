@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Literal
 
-from langchain_core.tools import tool
+from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
@@ -40,13 +40,13 @@ class MemorySearchInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def create_memory_tools(client: MemoryClient) -> list:
+def create_memory_tools(client: MemoryClient) -> list[BaseTool]:
     """Create memory search tools bound to the given MemoryClient."""
 
     @tool(args_schema=MemorySearchInput)
     async def search_memory(
         query: str,
-        search_type: str = "all",
+        search_type: Literal["all", "messages", "entities", "preferences"] = "all",
         limit: int = 5,
     ) -> str:
         """Search the memory store for relevant past conversations, extracted entities, and learned preferences. Use this to recall what the customer has said before or what preferences they have expressed."""

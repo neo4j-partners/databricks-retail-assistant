@@ -10,10 +10,12 @@ import json
 import logging
 from typing import Any
 
-from langchain_core.tools import tool
+from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
+
+from backend.constants import TAX_RATE
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +79,7 @@ async def _get_cart_contents(client: MemoryClient, session_id: str) -> dict[str,
 
     items = [dict(r) for r in result]
     subtotal = sum(item["line_total"] for item in items)
-    tax = round(subtotal * 0.08, 2)
+    tax = round(subtotal * TAX_RATE, 2)
 
     return {
         "session_id": session_id,
@@ -115,7 +117,7 @@ async def _remove_item(client: MemoryClient, session_id: str, product_id: str) -
     }
 
 
-def create_cart_tools(client: MemoryClient) -> list:
+def create_cart_tools(client: MemoryClient) -> list[BaseTool]:
     """Create shopping cart tools bound to the given MemoryClient."""
 
     @tool(args_schema=CartInput)
@@ -261,10 +263,24 @@ def create_cart_tools(client: MemoryClient) -> list:
         else:
             discount = min(coupon["discount_value"], cart["subtotal"])
 
+        # Check for existing coupon
+        existing_cypher = """
+        MATCH (cart:Cart {session_id: $session_id})
+        WHERE cart.coupon_code IS NOT NULL
+        RETURN cart.coupon_code AS existing_code
+        """
+        existing = await client.graph.execute_read(existing_cypher, {"session_id": session_id})
+        if existing:
+            return json.dumps({
+                "success": False,
+                "message": f"Coupon '{existing[0]['existing_code']}' is already applied. Remove it first.",
+            })
+
         # Apply discount to cart
         apply_cypher = """
         MERGE (cart:Cart {session_id: $session_id})
         SET cart.coupon_code = $code, cart.discount = $discount
+        RETURN cart.coupon_code AS applied_code
         """
         await client.graph.execute_write(apply_cypher, {
             "session_id": session_id,

@@ -4,62 +4,25 @@ Proves that save_context, load_memory_variables, and Neo4jMemoryRetriever
 all work against a live Neo4j instance before building anything on top.
 
 Usage:
-    python verify_memory.py
+    python -m backend.scripts.verify_memory
 """
 
 from __future__ import annotations
 
 import asyncio
 import sys
-from typing import Any
 
-from pydantic import SecretStr
-from pydantic_settings import BaseSettings
+from backend.config import get_memory_settings
 
-from neo4j_agent_memory import MemoryClient, MemorySettings
+from neo4j_agent_memory import MemoryClient
 from neo4j_agent_memory.integrations.langchain import Neo4jAgentMemory, Neo4jMemoryRetriever
-
-
-class Settings(BaseSettings):
-    """Reads the same .env as main.py."""
-
-    neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_username: str = "neo4j"
-    neo4j_password: str = "password"
-    openai_api_key: str | None = None
-    azure_openai_api_key: str | None = None
-    azure_openai_embedding_deployment: str | None = None
-    azure_openai_embedding_dimensions: int = 1536
-
-    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 TEST_SESSION_ID = "verify-memory-test"
 
 
-def build_memory_settings(s: Settings) -> MemorySettings:
-    api_key = s.openai_api_key or s.azure_openai_api_key
-    embedding_config: dict[str, Any] = {
-        "provider": "openai",
-        "model": s.azure_openai_embedding_deployment or "text-embedding-3-small",
-        "dimensions": s.azure_openai_embedding_dimensions,
-    }
-    if api_key:
-        embedding_config["api_key"] = SecretStr(api_key)
-
-    return MemorySettings(
-        neo4j={
-            "uri": s.neo4j_uri,
-            "username": s.neo4j_username,
-            "password": SecretStr(s.neo4j_password),
-        },
-        embedding=embedding_config,
-    )
-
-
 async def run_verification() -> bool:
-    settings = Settings()
-    memory_settings = build_memory_settings(settings)
+    memory_settings = get_memory_settings()
     client = MemoryClient(memory_settings)
     passed = 0
     failed = 0

@@ -4,8 +4,8 @@ Calls every endpoint over HTTP and validates responses against Pydantic models.
 No pytest or test frameworks required.
 
 Usage:
-    python test_api.py
-    python test_api.py --base-url http://localhost:9000
+    python -m backend.scripts.test_api
+    python -m backend.scripts.test_api --base-url http://localhost:9000
 """
 
 from __future__ import annotations
@@ -15,99 +15,26 @@ import json
 import sys
 import urllib.error
 import urllib.request
-from typing import Any, Literal
+from collections.abc import Callable
+from typing import Any
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ValidationError
 
-# ---------------------------------------------------------------------------
-# Response Models (mirrors server models for validation)
-# ---------------------------------------------------------------------------
-
-
-class HealthResponse(BaseModel):
-    status: Literal["healthy", "degraded"]
-    database: Literal["connected", "disconnected"]
-
-
-class ChatResponse(BaseModel):
-    response: str
-    session_id: str
-
-
-class ProductItem(BaseModel):
-    id: str
-    name: str
-    description: str = ""
-    price: float = 0.0
-    category: str = ""
-    brand: str = ""
-    in_stock: bool = True
-    score: float = 1.0
-
-
-class ProductSearchResponse(BaseModel):
-    products: list[ProductItem]
-    total: int = Field(ge=0)
-
-
-class ProductDetailResponse(BaseModel):
-    id: str
-    name: str
-    description: str = ""
-    price: float = 0.0
-    category: str = ""
-    brand: str = ""
-    in_stock: bool = True
-    inventory: int = 0
-    image_url: str | None = None
-
-
-class RelatedProductItem(BaseModel, extra="allow"):
-    id: str
-    name: str
-    description: str = ""
-    price: float = 0.0
-    category: str = ""
-    brand: str = ""
-
-
-class RelatedProductsResponse(BaseModel):
-    related_products: list[RelatedProductItem]
-
-
-class MemoryContextResponse(BaseModel):
-    history: str = ""
-    context: str = ""
-    preferences: list[dict[str, str]] = Field(default_factory=list)
-    similar_tasks: str = ""
-
-
-class GraphNodeResponse(BaseModel, extra="allow"):
-    id: str
-    labels: list[str] = Field(default_factory=list)
-
-
-class GraphRelationshipResponse(BaseModel, extra="allow"):
-    id: str
-    type: str
-    from_node: str
-    to_node: str
-
-
-class MemoryGraphResponse(BaseModel):
-    nodes: list[GraphNodeResponse] = Field(default_factory=list)
-    relationships: list[GraphRelationshipResponse] = Field(default_factory=list)
-
-
-class PreferenceItem(BaseModel):
-    category: str
-    preference: str
-    context: str | None = None
-    confidence: float = 1.0
-
-
-class PreferencesResponse(BaseModel):
-    preferences: list[PreferenceItem] = Field(default_factory=list)
+from backend.models import (
+    ChatResponse,
+    GraphNodeResponse,
+    GraphRelationshipResponse,
+    HealthResponse,
+    MemoryContextResponse,
+    MemoryGraphResponse,
+    PreferenceItem,
+    PreferencesResponse,
+    ProductDetailResponse,
+    ProductItem,
+    ProductSearchResponse,
+    RelatedProductItem,
+    RelatedProductsResponse,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -418,7 +345,7 @@ def test_related_products_invalid_type(base_url: str) -> bool:
 # Test Runner
 # ---------------------------------------------------------------------------
 
-TESTS: list[tuple[str, Any]] = [
+TESTS: list[tuple[str, Callable[[str], bool]]] = [
     ("Health check", test_health),
     ("Sync chat", test_chat_sync),
     ("Streaming chat (SSE)", test_chat_stream),

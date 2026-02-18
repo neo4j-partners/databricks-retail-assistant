@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 
-from langchain_core.tools import tool
+from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
@@ -39,7 +39,7 @@ class AlternativesInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def create_inventory_tools(client: MemoryClient) -> list:
+def create_inventory_tools(client: MemoryClient) -> list[BaseTool]:
     """Create inventory tools bound to the given MemoryClient."""
 
     @tool(args_schema=InventoryCheckInput)

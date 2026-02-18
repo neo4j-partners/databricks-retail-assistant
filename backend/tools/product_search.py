@@ -10,10 +10,12 @@ import json
 import logging
 from typing import Any
 
-from langchain_core.tools import tool
+from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
+
+from backend.constants import ALLOWED_RELATIONSHIP_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +41,6 @@ class ProductDetailsInput(BaseModel):
     product_id: str = Field(description="The product ID to look up")
 
 
-ALLOWED_RELATIONSHIP_TYPES = frozenset({
-    "IN_CATEGORY", "MADE_BY", "HAS_ATTRIBUTE", "BOUGHT_TOGETHER", "SIMILAR_TO",
-})
-
-
 class RelatedProductsInput(BaseModel):
     """Input for finding related products."""
 
@@ -60,7 +57,7 @@ class RelatedProductsInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def create_product_search_tools(client: MemoryClient) -> list:
+def create_product_search_tools(client: MemoryClient) -> list[BaseTool]:
     """Create product search tools bound to the given MemoryClient."""
 
     @tool(args_schema=SearchProductsInput)

@@ -7,14 +7,15 @@ MemoryClient dependency injected via closure — no global state.
 from __future__ import annotations
 
 from langchain_core.tools import BaseTool
-
 from neo4j_agent_memory import MemoryClient
 
-from .cart import create_cart_tools
-from .inventory import create_inventory_tools
-from .memory_tools import create_memory_tools
-from .product_search import create_product_search_tools
-from .recommendations import create_recommendation_tools
+from backend.tools.cart import create_cart_tools
+from backend.tools.inventory import create_inventory_tools
+from backend.tools.memory_tools import create_memory_tools
+from backend.tools.product_search import create_product_search_tools
+from backend.tools.recommendations import create_recommendation_tools
+
+__all__ = ["create_tools"]
 
 
 def create_tools(client: MemoryClient) -> list[BaseTool]:
