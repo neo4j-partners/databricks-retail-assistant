@@ -48,7 +48,7 @@ def get_memory_settings() -> MemorySettings:
     api_key = s.openai_api_key or s.azure_openai_api_key
 
     embedding_config: dict[str, Any] = {
-        "provider": s.llm_provider,
+        "provider": "openai",
         "model": s.azure_openai_embedding_deployment or "text-embedding-3-small",
         "dimensions": s.azure_openai_embedding_dimensions,
     }

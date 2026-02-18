@@ -361,17 +361,56 @@ TESTS: list[tuple[str, Callable[[str], bool]]] = [
 ]
 
 
+def _test_key(name: str) -> str:
+    """Derive a short key from a test name for CLI matching."""
+    return name.lower().replace(" ", "_")
+
+
+TEST_KEYS = {_test_key(name): (name, fn) for name, fn in TESTS}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="API tests for the retail assistant backend")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help=f"Backend URL (default: {DEFAULT_BASE_URL})")
+    parser.add_argument(
+        "-t",
+        "--test",
+        action="append",
+        metavar="NAME",
+        help="Run only the specified test(s). Use the test key (e.g. 'related_products') "
+        "or a substring to match. Can be repeated: -t health -t product_search. "
+        f"Available keys: {', '.join(TEST_KEYS)}",
+    )
     args = parser.parse_args()
+
+    if args.test:
+        selected: list[tuple[str, Callable[[str], bool]]] = []
+        for pattern in args.test:
+            matches = [
+                (name, fn)
+                for key, (name, fn) in TEST_KEYS.items()
+                if pattern.lower() in key
+            ]
+            if not matches:
+                print(f"No test matching '{pattern}'. Available: {', '.join(TEST_KEYS)}")
+                sys.exit(2)
+            selected.extend(matches)
+        # Deduplicate while preserving order
+        seen: set[str] = set()
+        tests_to_run: list[tuple[str, Callable[[str], bool]]] = []
+        for name, fn in selected:
+            if name not in seen:
+                seen.add(name)
+                tests_to_run.append((name, fn))
+    else:
+        tests_to_run = TESTS
 
     print(f"Testing backend at {args.base_url}\n")
 
     passed = 0
     failed = 0
 
-    for name, fn in TESTS:
+    for name, fn in tests_to_run:
         print(f"[TEST] {name}")
         try:
             if fn(args.base_url):

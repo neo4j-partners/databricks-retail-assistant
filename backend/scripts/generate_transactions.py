@@ -598,12 +598,100 @@ def _validate_sample(
 # ---------------------------------------------------------------------------
 
 
+def verify_csvs(config: GeneratorConfig) -> bool:
+    """Verify existing CSV files in the output directory.
+
+    Checks file existence, row counts, Pydantic schema validation on a sample
+    of rows, and foreign key integrity between transactions and the product
+    catalog.  Returns ``True`` if all checks pass.
+    """
+    ok = True
+
+    if config.expanded:
+        products, _ = generate_expanded_catalog(seed=config.seed)
+    else:
+        products = list(PRODUCTS)
+
+    product_ids = {p.id for p in products}
+
+    csv_schemas: list[tuple[str, type[BaseModel] | None]] = [
+        ("transactions.csv", Transaction),
+        ("customers.csv", Customer),
+        ("reviews.csv", Review),
+        ("inventory_snapshots.csv", InventorySnapshot),
+        ("stores.csv", Store),
+    ]
+
+    print(f"Verifying CSVs in {config.output_dir}/\n")
+    print(f"  Product catalog: {len(products)} products ({'expanded' if config.expanded else 'original'})\n")
+
+    rng = random.Random(config.seed)
+
+    for filename, model in csv_schemas:
+        filepath = config.output_dir / filename
+        if not filepath.exists():
+            print(f"  MISSING  {filename}")
+            ok = False
+            continue
+
+        with open(filepath) as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+
+        size_mb = filepath.stat().st_size / (1024 * 1024)
+        print(f"  {filename}: {len(rows):,} rows ({size_mb:.1f} MB)")
+
+        # Schema validation on a sample
+        if model is not None and rows:
+            sample = rng.sample(rows, min(500, len(rows)))
+            try:
+                for row in sample:
+                    model.model_validate(row)
+                print(f"    schema: OK ({len(sample)} sample rows validated)")
+            except Exception as e:
+                print(f"    schema: FAIL — {e}")
+                ok = False
+
+    # Foreign key check: transaction product_ids vs catalog
+    txn_path = config.output_dir / "transactions.csv"
+    if txn_path.exists():
+        with open(txn_path) as f:
+            txn_product_ids = {row["product_id"] for row in csv.DictReader(f)}
+
+        orphans = txn_product_ids - product_ids
+        missing = product_ids - txn_product_ids
+
+        print(f"\n  FK integrity:")
+        print(f"    Unique product IDs in transactions: {len(txn_product_ids)}")
+        if orphans:
+            print(f"    FAIL: {len(orphans)} orphan product IDs not in catalog")
+            ok = False
+        else:
+            print(f"    OK: all transaction product_ids exist in catalog")
+
+        if missing:
+            print(f"    Note: {len(missing)} catalog products have no transactions")
+
+    if ok:
+        print("\n  All checks passed.")
+    else:
+        print("\n  Some checks FAILED.")
+
+    return ok
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate retail transaction dataset")
     parser.add_argument("--expanded", action="store_true", help="Use expanded 500+ product catalog")
+    parser.add_argument("--verify", action="store_true", help="Verify existing CSVs without regenerating")
     args = parser.parse_args()
 
     config = GeneratorConfig(expanded=args.expanded)
+
+    if args.verify:
+        ok = verify_csvs(config)
+        raise SystemExit(0 if ok else 1)
+
     rng = random.Random(config.seed)
 
     if config.expanded:

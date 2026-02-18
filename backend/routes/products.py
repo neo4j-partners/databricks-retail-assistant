@@ -149,7 +149,7 @@ async def get_related_products(
         WHERE (elementId(p) = $product_id OR p.id = $product_id)
         AND related <> p
         RETURN elementId(related) AS id, related.name AS name,
-               coalesce(related.description, '')[..100] AS description,
+               substring(coalesce(related.description, ''), 0, 100) AS description,
                coalesce(related.price, 0) AS price,
                coalesce(related.category, '') AS category,
                coalesce(related.brand, '') AS brand,
@@ -177,7 +177,7 @@ async def get_related_products(
         WITH related,
              collect(DISTINCT {type: relation_type, value: shared}) AS connections
         RETURN elementId(related) AS id, related.name AS name,
-               coalesce(related.description, '')[..100] AS description,
+               substring(coalesce(related.description, ''), 0, 100) AS description,
                coalesce(related.price, 0) AS price,
                coalesce(related.category, '') AS category,
                coalesce(related.brand, '') AS brand,
