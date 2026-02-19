@@ -1,9 +1,9 @@
-"""Test the deployed prototype agent endpoint.
+"""Verify the deployed prototype agent endpoint.
 
-Verifies the endpoint exists, sends sample queries, and checks responses.
+Checks the endpoint exists, sends sample queries, and prints responses.
 
 Usage:
-    uv run python -m backend.dbx_agent.test_endpoint
+    uv run python -m backend.dbx_agent.check_endpoint
 """
 
 import sys
@@ -11,8 +11,8 @@ import sys
 from backend.dbx_agent.config import CONFIG
 
 
-def test_endpoint() -> int:
-    """Run basic tests against the deployed endpoint."""
+def check_endpoint() -> int:
+    """Run basic checks against the deployed endpoint."""
     from databricks.sdk import WorkspaceClient
 
     w = WorkspaceClient()
@@ -56,7 +56,7 @@ def test_endpoint() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(test_endpoint())
+    sys.exit(check_endpoint())
 else:
     # Databricks Workspace: __name__ is not "__main__" when using the Run button
-    test_endpoint()
+    check_endpoint()

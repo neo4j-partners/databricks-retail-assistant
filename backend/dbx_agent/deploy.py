@@ -343,7 +343,7 @@ def run_deploy(config: DeployConfig) -> int:
         print(f"Query endpoint: {deployment.query_endpoint}")
         print()
         print("To test:")
-        print("  uv run python -m backend.dbx_agent.test_endpoint")
+        print("  uv run python -m backend.dbx_agent.check_endpoint")
         print()
         return 0
 
