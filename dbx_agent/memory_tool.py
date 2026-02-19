@@ -3,7 +3,7 @@
 Provides short-term store/recall and semantic search over memory:
 - remember_message: store a message in short-term memory
 - recall_memory: retrieve full conversation history
-- search_memory: semantic similarity search via Neo4jMemoryRetriever
+- search_memory: semantic similarity search via short_term.search_messages
 """
 
 import json
@@ -82,23 +82,15 @@ async def search_memory(
     Use this tool when the user asks about something specific from past conversations,
     or when you need to find relevant context without retrieving the full history.
     """
-    from neo4j_agent_memory.integrations.langchain import Neo4jMemoryRetriever
-
     client = runtime.context.client
-    retriever = Neo4jMemoryRetriever(
-        memory_client=client,
-        k=5,
-        threshold=0.5,
-    )
-
-    docs = await retriever.ainvoke(query)
+    messages = await client.short_term.search_messages(query, limit=5, threshold=0.5)
 
     results = []
-    for doc in docs[:5]:
+    for msg in messages:
         results.append({
-            "content": doc.page_content,
-            "type": doc.metadata.get("type", "unknown"),
-            "similarity": doc.metadata.get("similarity", 0.0),
+            "content": msg.content,
+            "role": msg.role.value if hasattr(msg.role, "value") else str(msg.role),
+            "similarity": msg.metadata.get("similarity", 0.0),
         })
 
     return json.dumps({

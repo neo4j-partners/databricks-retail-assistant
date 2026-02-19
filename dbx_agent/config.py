@@ -52,7 +52,7 @@ class DeployConfig:
     neo4j_password_secret: str = "neo4j-password"
 
     # LLM — Databricks-hosted, no API key needed
-    llm_endpoint: str = "databricks-meta-llama-3-3-70b-instruct"
+    llm_endpoint: str = "databricks-claude-sonnet-4-6"
 
     # Embedding — Databricks Foundation Model API (pre-deployed, no setup needed)
     embedding_model: str = "databricks-bge-large-en"
@@ -121,7 +121,7 @@ def _load_config_from_env() -> DeployConfig:
         artifact_path=os.getenv("RETAIL_AGENT_ARTIFACT_PATH", "dbx_agent_prototype"),
         secret_scope=os.getenv("RETAIL_AGENT_SECRET_SCOPE", "retail-agent-secrets"),
         llm_endpoint=os.getenv(
-            "RETAIL_AGENT_LLM_ENDPOINT", "databricks-meta-llama-3-3-70b-instruct"
+            "RETAIL_AGENT_LLM_ENDPOINT", "databricks-claude-sonnet-4-6"
         ),
         embedding_model=os.getenv(
             "RETAIL_AGENT_EMBEDDING_MODEL", "databricks-bge-large-en"

@@ -12,6 +12,7 @@ that ToolRuntime[RetailContext] parameters are injected automatically.
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
+from config import CONFIG
 from context import RetailContext
 from diagnostics_tool import DIAGNOSTICS_TOOLS
 from memory_tool import MEMORY_TOOLS
@@ -51,7 +52,7 @@ def create_prototype_agent(llm=None):
     if llm is None:
         from databricks_langchain import ChatDatabricks
 
-        llm = ChatDatabricks(endpoint="databricks-meta-llama-3-3-70b-instruct")
+        llm = ChatDatabricks(endpoint=CONFIG.llm_endpoint)
 
     return create_react_agent(
         model=llm,
