@@ -39,8 +39,8 @@ async def load_sample_data():
         print("Creating vector index...")
         await _create_vector_index(session)
 
-        print("Dropping stale message embedding indexes...")
-        await _drop_stale_memory_indexes(session)
+        print("Recreating agent-memory vector indexes...")
+        await _recreate_memory_indexes(session)
 
         print("Generating embeddings...")
         await _generate_embeddings(session)
@@ -214,33 +214,41 @@ async def _create_vector_index(session):
         print(f"  Vector index creation note: {e}")
 
 
-async def _drop_stale_memory_indexes(session):
-    """Drop agent-memory vector indexes so they can be recreated at the correct size.
+async def _recreate_memory_indexes(session):
+    """Drop and recreate agent-memory vector indexes at the correct dimension.
 
-    The agent-memory library creates vector indexes during MemoryClient.connect():
-        message_embedding_idx, entity_embedding_idx, preference_embedding_idx,
-        fact_embedding_idx, task_embedding_idx
-
-    If embedding dimensions changed (e.g., 1536 OpenAI → 1024 Databricks BGE),
-    these must be dropped first. Since _clear_database() already deleted all
-    nodes, we drop ALL agent-memory vector indexes so connect() recreates them
-    at the correct size.
+    The agent-memory library creates these during MemoryClient.connect(), but
+    that silently fails on some Neo4j configurations. Creating them here
+    guarantees they exist. If embedding dimensions changed (e.g., 1536 → 1024),
+    we drop first so they're recreated at the correct size.
     """
+    settings = get_settings()
+    dims = settings.embedding_dimensions
+
     memory_indexes = [
-        "message_embedding_idx",
-        "entity_embedding_idx",
-        "preference_embedding_idx",
-        "fact_embedding_idx",
-        "task_embedding_idx",
+        ("message_embedding_idx", "Message", "embedding"),
+        ("entity_embedding_idx", "Entity", "embedding"),
+        ("preference_embedding_idx", "Preference", "embedding"),
+        ("fact_embedding_idx", "Fact", "embedding"),
+        ("task_embedding_idx", "ReasoningTrace", "task_embedding"),
     ]
     try:
-        dropped = 0
-        for idx_name in memory_indexes:
+        for idx_name, label, prop in memory_indexes:
             await session.run(f"DROP INDEX {idx_name} IF EXISTS")
-            dropped += 1
-        print(f"  Dropped {dropped} agent-memory vector indexes")
+            await session.run(
+                f"""
+                CREATE VECTOR INDEX {idx_name} IF NOT EXISTS
+                FOR (n:{label})
+                ON (n.{prop})
+                OPTIONS {{indexConfig: {{
+                    `vector.dimensions`: {dims},
+                    `vector.similarity_function`: 'cosine'
+                }}}}
+                """
+            )
+        print(f"  Recreated {len(memory_indexes)} agent-memory vector indexes ({dims}d)")
     except Exception as e:
-        print(f"  Memory index cleanup note: {e}")
+        print(f"  Memory index setup note: {e}")
 
 
 async def _generate_embeddings(session):

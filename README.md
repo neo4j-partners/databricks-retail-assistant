@@ -2,6 +2,27 @@
 
 A retail shopping assistant powered by LangGraph and Neo4j Agent Memory. It provides product search, personalized recommendations, inventory checking, and conversational memory through a FastAPI backend with SSE streaming.
 
+## Architecture Overview
+
+### Data Architecture
+
+The assistant draws from two complementary data stores connected by a shared `product_id` key:
+
+![Dual Database Architecture](docs/images/dual-database-architecture.png)
+
+- **Databricks Lakehouse** — 5 Delta tables in Unity Catalog (`retail_assistant.retail`) holding 1.15M transactions, 5,000 customers, 115K reviews, 417K daily inventory snapshots, and 20 stores. Optimized for SQL analytics: revenue trends, customer segments, basket analysis.
+- **Neo4j Knowledge Graph** — 570 products with Category, Brand, and Attribute nodes connected by relationships (IN_CATEGORY, MADE_BY, SIMILAR_TO, BOUGHT_TOGETHER, HAS_ATTRIBUTE). Includes agent memory (Message, Entity, Preference, Fact, Task) and a vector index for semantic search.
+
+### Multi-Agent Architecture
+
+A two-agent supervisor system deployed on Databricks using the Mosaic AI Agent Framework:
+
+![Agent Architecture](docs/images/agent-architecture.png)
+
+- **Supervisor** — A LangGraph StateGraph that classifies user intent and routes to the appropriate agent. Analytics questions go to Genie; product/recommendation questions go to the Neo4j KG Agent. Combined queries hit both agents and the supervisor synthesizes a unified response.
+- **Genie Lakehouse Agent** — Translates natural language to SQL over the retail Delta tables.
+- **Neo4j KG Agent** — A LangGraph ReAct agent (`create_react_agent` with `context_schema=RetailContext`) deployed to a Databricks Model Serving endpoint. Uses `ToolRuntime[RetailContext]` to inject a `MemoryClient` for product search, recommendations, memory, and inventory tools.
+
 ## Quick Start
 
 ### Prerequisites

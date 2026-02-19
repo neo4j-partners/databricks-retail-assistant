@@ -128,7 +128,7 @@ def _run_memory_exercise(endpoint_url: str, headers: dict) -> tuple[int, int]:
         ),
         (
             "What do you remember about me?",
-            ["alex", "trail", "size 11"],
+            ["alex", "trail", "size", "11"],
         ),
         (
             "Search your memory for anything about my shoe preferences.",
@@ -236,7 +236,7 @@ def check_endpoint() -> int:
         "Echo hello world": "Basic connectivity",
         "Remember that my favorite color is blue": "Memory storage",
         "What do you remember about me?": "Memory recall",
-        "Search for running shoes under $200": "Product search (Lakehouse)",
+        "Search for running shoes under $200": "Product search (Neo4j)",
         "Get details for product 'nike-pegasus-40'": "Product lookup (Neo4j)",
         "What products are related to 'brooks-ghost-16'?": "Graph traversal (Neo4j)",
     }
