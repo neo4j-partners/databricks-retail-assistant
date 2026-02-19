@@ -1,5 +1,11 @@
 # FIXIT: Product Tools `args_schema` vs `ToolRuntime` Injection
 
+## Status: VERIFIED LOCALLY
+
+All fixes applied and passing 14/14 tests in `fixit_sandbox/`.
+
+---
+
 ## The Bug
 
 The three product tools in `dbx_agent/product_search.py` (`search_products`, `get_product_details`, `get_related_products`) fail at runtime because `runtime` is `None` when the tool executes. The memory tools in `dbx_agent/memory_tool.py` work fine.
@@ -12,11 +18,7 @@ Two differences between the product tools and the working memory tools:
 
 2. **Product tools default `runtime` to `None`** (`runtime: ToolRuntime[RetailContext] = None`). The memory tools declare it without a default (`runtime: ToolRuntime[RetailContext]`). The `= None` default means even when injection fails silently, the tool still gets called — just with `runtime=None`, causing `AttributeError: 'NoneType' object has no attribute 'context'`.
 
-## Proposed Fix: Remove `args_schema=` from Product Tool Decorators
-
-**Yes, this is the correct approach.** This is confirmed by official LangChain documentation and the LangGraph codebase patterns.
-
-### Evidence from Official Docs
+## Research Sources
 
 **Source: [LangChain Tools Documentation](https://docs.langchain.com/oss/python/langchain/tools)**
 
@@ -48,42 +50,15 @@ From the docs:
 > **`ToolRuntime`**: A unified parameter that provides tools access to state, context, store, streaming, config, and tool call ID. This replaces the older pattern of using separate `InjectedState`, `InjectedStore`, `get_runtime`, and `InjectedToolCallId` annotations. The runtime automatically provides these capabilities to your tool functions without you having to pass them explicitly or use global state.
 
 The `runtime` parameter is:
-- **Hidden from the LLM** — it does not appear in the tool's schema sent to the model
+- **Hidden from the LLM** — it does not appear in the tool's `tool_call_schema`
 - **Automatically injected** by `ToolNode` / `create_react_agent` at execution time
 - **Requires LangChain to see the type hint** in the function signature during schema inference
 
-### Why Memory Tools Work
+---
 
-`memory_tool.py` uses the correct pattern:
+## The Fix (Applied)
 
-```python
-@tool  # <-- No args_schema
-async def remember_message(
-    content: str,
-    runtime: ToolRuntime[RetailContext],  # <-- No default
-) -> str:
-```
-
-LangChain infers the schema from the function signature, sees `ToolRuntime`, hides it from the LLM schema, and injects it at runtime. The LLM only sees `content: str`.
-
-### Why Product Tools Break
-
-`product_search.py` uses the conflicting pattern:
-
-```python
-@tool(args_schema=SearchProductsInput)  # <-- Overrides schema inference
-async def search_products(
-    query: str,
-    ...,
-    runtime: ToolRuntime[RetailContext] = None,  # <-- Never seen by LangChain
-) -> str:
-```
-
-LangChain uses `SearchProductsInput` exclusively. It never inspects the function signature, never finds the `ToolRuntime` hint, and never injects `runtime`.
-
-## The Fix
-
-### Step 1: Remove `args_schema` from all three `@tool` decorators
+### Change 1: Remove `args_schema` from all three `@tool` decorators
 
 ```python
 # Before
@@ -95,61 +70,86 @@ async def search_products(...)
 async def search_products(...)
 ```
 
-### Step 2: Remove `= None` default from `runtime` parameters
-
-```python
-# Before
-runtime: ToolRuntime[RetailContext] = None,
-
-# After
-runtime: ToolRuntime[RetailContext],
-```
+### Change 2: Remove `= None` default from `runtime` parameters
 
 This ensures that if injection ever fails, the error is immediate and obvious rather than a deferred `AttributeError`.
 
-### Step 3: Keep the Pydantic input classes (optional)
+### Change 3: Remove Pydantic input classes
 
-The `SearchProductsInput`, `ProductDetailsInput`, and `RelatedProductsInput` classes can remain in the file as documentation. They just won't be passed to `@tool` anymore. LangChain will auto-generate an equivalent schema from the function parameters, their type hints, and `Field()` descriptions.
+`SearchProductsInput`, `ProductDetailsInput`, and `RelatedProductsInput` were removed entirely since they no longer serve a purpose.
 
-To preserve the `Field(ge=0)` / `Field(ge=1, le=50)` validators that Pydantic provides, add `Annotated` hints to the function parameters:
+### Change 4: Add `*,` before `runtime` where needed (discovered during testing)
 
-```python
-from typing import Annotated
-from pydantic import Field
-
-@tool
-async def search_products(
-    query: str = Field(description="Search query describing what the customer is looking for"),
-    category: str | None = Field(default=None, description="Filter by product category"),
-    brand: str | None = Field(default=None, description="Filter by brand name"),
-    max_price: Annotated[float | None, Field(default=None, ge=0, description="Maximum price filter")] = None,
-    limit: Annotated[int, Field(default=10, ge=1, le=50, description="Maximum number of results")] = 10,
-    runtime: ToolRuntime[RetailContext],
-) -> str:
-```
-
-Or, if the validators aren't critical for the LLM-facing schema (the LLM doesn't enforce `ge`/`le` anyway), simply rely on type hints and the docstring:
+Python does not allow a non-default parameter after parameters with defaults. In `search_products` and `get_related_products`, `runtime` (no default) follows parameters like `limit=10`. The fix: make `runtime` keyword-only by placing `*,` before it. This is correct because LangGraph injects `runtime` by name, not by position.
 
 ```python
-@tool
+# SyntaxError — non-default after default
 async def search_products(
     query: str,
-    category: str | None = None,
-    brand: str | None = None,
-    max_price: float | None = None,
     limit: int = 10,
-    runtime: ToolRuntime[RetailContext],
+    runtime: ToolRuntime[RetailContext],  # ERROR
 ) -> str:
-    """Search the product catalog by query. ..."""
+
+# Fixed — keyword-only parameter
+async def search_products(
+    query: str,
+    limit: int = 10,
+    *,
+    runtime: ToolRuntime[RetailContext],  # OK
+) -> str:
 ```
 
-## Summary
+`get_product_details` does not need `*,` because `product_id` has no default.
 
-| Aspect | Product Tools (broken) | Memory Tools (working) |
+---
+
+## Local Test Results
+
+### Test Suite: `fixit_sandbox/`
+
+Run with: `bash fixit_sandbox/run_tests.sh`
+
+```
+14 passed in 0.28s
+```
+
+### Test 1: Schema Inference (`test_schema_inference.py`) — 10/10 PASSED
+
+Imports the actual product and memory tools from `dbx_agent/` and verifies:
+
+| Tool | `runtime` hidden from LLM? | User-facing params correct? |
+|---|---|---|
+| `search_products` | PASS | PASS — `{query, category, brand, max_price, limit}` |
+| `get_product_details` | PASS | PASS — `{product_id}` |
+| `get_related_products` | PASS | PASS — `{product_id, relationship_type, limit}` |
+| `remember_message` | PASS | PASS — `{content}` |
+| `recall_memory` | PASS | PASS — `{}` (no user args) |
+
+### Test 2: Runtime Injection (`test_runtime_injection.py`) — 4/4 PASSED
+
+Builds a minimal LangGraph `StateGraph` with `context_schema=MockContext`, a fake LLM node, and a `ToolNode`. Verifies end-to-end that:
+
+| Test | Description | Result |
+|---|---|---|
+| `test_schema_hides_runtime` | `tool_call_schema` excludes `runtime` | PASS |
+| `test_injection_with_custom_context` | Tool receives `MockContext(user_id="alice")` | PASS |
+| `test_injection_with_default_context` | Tool receives default `MockContext()` | PASS |
+| `test_injection_no_user_args` | Tool with only `runtime` param (no user args) works | PASS |
+
+---
+
+## Summary Table
+
+| Aspect | Before (broken) | After (fixed) |
 |---|---|---|
 | `@tool` decorator | `@tool(args_schema=...)` | `@tool` |
 | Schema source | Explicit Pydantic model | Auto-inferred from signature |
 | `runtime` default | `= None` (silent failure) | No default (loud failure) |
+| `runtime` position | After defaulted params (SyntaxError) | Keyword-only via `*,` |
+| Pydantic input classes | Present but misleading | Removed |
 | `ToolRuntime` injection | Skipped (schema override) | Works correctly |
 
-**Recommendation: Remove `args_schema=` and `= None` default. This is the canonical pattern shown in all official LangChain/LangGraph documentation for tools that use `ToolRuntime` injection.**
+## Next Steps
+
+- [ ] Redeploy to Databricks: `uv run python -m dbx_agent.deploy`
+- [ ] Verify on endpoint: `uv run python -m dbx_agent.check_endpoint`

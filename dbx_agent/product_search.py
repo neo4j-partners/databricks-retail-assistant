@@ -38,6 +38,7 @@ async def search_products(
     brand: str | None = None,
     max_price: float | None = None,
     limit: int = 10,
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Search the product catalog by query. Use this when a customer asks about products, wants to browse, or is looking for something specific."""
@@ -129,6 +130,7 @@ async def get_related_products(
     product_id: str,
     relationship_type: str | None = None,
     limit: int = 5,
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Find products related to a given product through graph relationships. Use this for recommendations like 'what goes well with this' or 'similar items'."""
