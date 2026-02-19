@@ -16,7 +16,6 @@ Prerequisites:
     3. For Step 3 (not Step 2): Databricks secrets for Neo4j
 """
 
-import importlib.resources
 import os
 import sys
 import time
@@ -28,14 +27,28 @@ from backend.dbx_agent.config import CONFIG, DeployConfig, RunMode
 def _get_package_dir() -> Path:
     """Resolve the backend/dbx_agent/ directory.
 
-    Uses __file__ when available (CLI), falls back to importlib
-    for Databricks notebooks where __file__ is not defined.
+    Uses __file__ when available (local CLI). On Databricks, Python
+    files run through IPython where __file__ is not defined, so we
+    fall back to inspecting the config module's file location (which
+    *is* set because it was imported normally, not executed directly).
     """
-    try:
-        return _get_package_dir()
-    except NameError:
-        # Databricks notebook — __file__ not defined
-        return Path(str(importlib.resources.files("backend.dbx_agent")))
+    # Try __file__ first (works when running as `python -m backend.dbx_agent.deploy`)
+    this_file = globals().get("__file__")
+    if this_file:
+        return Path(this_file).parent
+
+    # Databricks Workspace: the directly-executed file has no __file__,
+    # but imported modules do. config.py is a sibling, so use its path.
+    import backend.dbx_agent.config as _cfg
+
+    cfg_file = getattr(_cfg, "__file__", None)
+    if cfg_file:
+        return Path(cfg_file).parent
+
+    raise RuntimeError(
+        "Cannot determine package directory: neither __file__ nor "
+        "backend.dbx_agent.config.__file__ is available."
+    )
 
 
 def get_current_user() -> str:
