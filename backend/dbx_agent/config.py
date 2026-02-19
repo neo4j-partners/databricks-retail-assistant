@@ -63,6 +63,9 @@ class DeployConfig:
             "Echo hello world",
             "Remember that my favorite color is blue",
             "What do you remember about me?",
+            "Search for running shoes under $100",
+            "Get details for product 'trail-runner-pro'",
+            "What products are related to 'trail-runner-pro'?",
         ]
     )
 

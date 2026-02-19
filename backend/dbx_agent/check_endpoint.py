@@ -1,6 +1,6 @@
-"""Verify the deployed prototype agent endpoint.
+"""Verify the deployed agent endpoint on Databricks.
 
-Checks the endpoint exists, sends sample queries, and prints responses.
+Checks the endpoint exists, sends sample queries from CONFIG, and prints responses.
 Uses raw REST calls (like aircraft_analyst) instead of the SDK's query() method,
 which can have issues deserializing ChatAgent responses.
 
@@ -8,6 +8,7 @@ Usage:
     uv run python -m backend.dbx_agent.check_endpoint
 """
 
+import os
 import sys
 
 import requests
@@ -49,8 +50,6 @@ def _get_workspace_url_and_token() -> tuple[str, str]:
         pass
 
     # Method 3: Environment variables
-    import os
-
     url = os.environ.get("DATABRICKS_HOST", "").rstrip("/")
     token = os.environ.get("DATABRICKS_TOKEN", "")
     if url and token:
@@ -89,6 +88,7 @@ def _extract_content(result: dict) -> str | None:
 def check_endpoint() -> int:
     """Run basic checks against the deployed endpoint."""
     from databricks.sdk import WorkspaceClient
+    from databricks.sdk.service.serving import EndpointStateReady
 
     w = WorkspaceClient()
     endpoint_name = CONFIG.resolved_endpoint_name
@@ -102,8 +102,6 @@ def check_endpoint() -> int:
     except Exception as e:
         print(f"  Endpoint not found: {e}")
         return 1
-
-    from databricks.sdk.service.serving import EndpointStateReady
 
     if state != EndpointStateReady.READY:
         print("\n  Endpoint is not ready yet — skipping queries.")

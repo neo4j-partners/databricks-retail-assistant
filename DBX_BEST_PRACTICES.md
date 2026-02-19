@@ -1,6 +1,16 @@
-# Async Event Loop Issue in Databricks Model Serving
+# Databricks Best Practices
 
-## The Problem
+## File Naming: Avoid `test_` Prefix
+
+**Do not name files with a `test_` or `test` prefix** (e.g., `test_local.py`, `test_endpoint.py`). Databricks automatically discovers and tries to run these as pytest test files, not as normal Python applications. This causes confusing failures when the file is a CLI script, not a test suite.
+
+**Instead**, use descriptive names like `check_endpoint.py`, `validate_local.py`, or `run_smoke.py`.
+
+---
+
+## Async Event Loop in Model Serving
+
+### The Problem
 
 The prototype agent deployed to Databricks Model Serving worked for single requests but failed on subsequent requests that used async memory tools. The error was a truncated `StructuredTool._arun()` task pending error — an async task trying to use a Neo4j driver bound to a dead event loop.
 
@@ -19,11 +29,11 @@ This is the classic "async driver bound to wrong event loop" problem. `asyncio.r
 - Second request with an async tool (e.g., `recall_memory`) failed with HTTP 400
 - Sync tools (e.g., `echo`) always worked regardless of request order
 
-## The Fix
+### The Fix
 
 Replaced `asyncio.run()` with a **persistent event loop running in a background thread**. All async work is dispatched to this loop via `asyncio.run_coroutine_threadsafe()`.
 
-### Before (broken)
+#### Before (broken)
 
 ```python
 def predict(self, messages, context=None, custom_inputs=None):
@@ -38,7 +48,7 @@ async def _async_predict(self, messages, context, custom_inputs):
     # ... invoke agent
 ```
 
-### After (fixed)
+#### After (fixed)
 
 ```python
 def _create_background_loop() -> asyncio.AbstractEventLoop:
@@ -76,7 +86,7 @@ class PrototypeAgent(ChatAgent):
 - Every subsequent request dispatches to the same loop
 - `run_coroutine_threadsafe()` is thread-safe and returns a `concurrent.futures.Future` that blocks the calling thread until the coroutine completes
 
-## What We Learned from the Agent Memory Library
+### What We Learned from the Agent Memory Library
 
 The `neo4j-agent-memory` library at `/Users/ryanknight/projects/neo4j-labs/agent-memory` is **100% async**. There are no sync alternatives for any of the core APIs:
 
