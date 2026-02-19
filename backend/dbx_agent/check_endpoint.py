@@ -18,13 +18,21 @@ def check_endpoint() -> int:
     w = WorkspaceClient()
     endpoint_name = CONFIG.resolved_endpoint_name
 
-    # Check endpoint exists
+    # Check endpoint exists and is ready
     print(f"Checking endpoint: {endpoint_name}")
     try:
         endpoint = w.serving_endpoints.get(endpoint_name)
-        print(f"  Status: {endpoint.state.ready if endpoint.state else 'unknown'}")
+        state = endpoint.state.ready if endpoint.state else None
+        print(f"  Status: {state}")
     except Exception as e:
         print(f"  Endpoint not found: {e}")
+        return 1
+
+    from databricks.sdk.service.serving import EndpointStateReady
+
+    if state != EndpointStateReady.READY:
+        print("\n  Endpoint is not ready yet — skipping queries.")
+        print("  Re-run this script once the endpoint reaches READY state.")
         return 1
 
     # Send sample queries
@@ -39,13 +47,14 @@ def check_endpoint() -> int:
                 name=endpoint_name,
                 messages=[{"role": "user", "content": query}],
             )
-            # Extract response text
-            if hasattr(response, "choices") and response.choices:
-                text = response.choices[0].message.content
-            elif hasattr(response, "messages") and response.messages:
-                text = response.messages[-1].get("content", str(response.messages[-1]))
+            # response may be a typed object or a raw dict depending on SDK version
+            resp = response if isinstance(response, dict) else response.as_dict()
+            if "choices" in resp and resp["choices"]:
+                text = resp["choices"][0]["message"]["content"]
+            elif "messages" in resp and resp["messages"]:
+                text = resp["messages"][-1].get("content", str(resp["messages"][-1]))
             else:
-                text = str(response)
+                text = str(resp)
             print(f"A: {text[:200]}")
         except Exception as e:
             print(f"Error: {e}")
