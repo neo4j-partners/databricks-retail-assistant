@@ -21,7 +21,7 @@ Deploy a **two-agent supervisor system** on Databricks using the Mosaic AI Agent
 | **Genie Lakehouse Agent** | Unity Catalog Delta tables | Natural language SQL over transactions, customers, revenue, product performance |
 | **Supervisor** | Routes between agents | Determines which agent (or both) should handle a query, synthesizes combined responses |
 
-The supervisor is a LangGraph graph that receives the user message, classifies intent, delegates to the appropriate sub-agent(s), and returns a unified response. It is wrapped as a `ChatAgent`, logged with MLflow, registered in Unity Catalog, and deployed to a Model Serving endpoint with `agents.deploy()`.
+The supervisor is a [Databricks Supervisor Agent](https://docs.databricks.com/aws/en/generative-ai/agent-framework/multi-agent-systems) (AgentBricks) that combines both sub-agents into a single system. It uses advanced routing techniques to classify user intent, delegate to the appropriate sub-agent(s), and synthesize a unified response — no custom orchestration code required. The supervisor is configured through the Databricks UI and deployed as a Model Serving endpoint.
 
 ### Expected Outcomes
 
@@ -40,7 +40,7 @@ The supervisor is a LangGraph graph that receives the user message, classifies i
                           |
                    +--------------+
                    |  Supervisor  |
-                   |  (LangGraph) |
+                   | (AgentBricks)|
                    +------+-------+
                           |
               +-----------+-----------+
@@ -58,7 +58,7 @@ The supervisor is a LangGraph graph that receives the user message, classifies i
 
 ### Component Breakdown
 
-**Supervisor** — A LangGraph `StateGraph` with conditional routing. The LLM reads agent descriptions and the user query, then decides which agent(s) to invoke. If both agents return results, the supervisor synthesizes a combined answer.
+**Supervisor** — A Databricks Supervisor Agent (AgentBricks) configured through the workspace UI. The supervisor reads agent descriptions and the user query, then decides which agent(s) to invoke. If both agents return results, the supervisor synthesizes a combined answer. No custom routing code is needed — AgentBricks handles intent classification and orchestration automatically.
 
 **Neo4j KG Agent** — A tool-calling ReAct agent with access to the existing 14 tools. Registered as a Unity Catalog function (or wrapped as a serving endpoint) so the supervisor can invoke it. Connects to Neo4j Aura over the network.
 
@@ -96,20 +96,21 @@ Refactor the existing tools layer to be environment-agnostic using LangGraph's `
 
 ### R3: Multi-Agent Supervisor
 
-Build a LangGraph supervisor that coordinates the two agents:
+Create a Databricks Supervisor Agent (AgentBricks) that coordinates the two agents:
 
-- The supervisor receives the user message and classifies intent into: `graph_query`, `analytics_query`, or `combined_query`
-- `graph_query` — product search, recommendations, cart ops, inventory checks — routes to Neo4j KG Agent
-- `analytics_query` — revenue, trends, customer segments, order history — routes to Genie Agent
-- `combined_query` — e.g., "recommend trending products in my price range" — routes to both, then synthesizes
-- The supervisor passes conversation context between agents when needed
+- Configure the supervisor through the Databricks workspace UI (Agents > Supervisor Agent > Create)
+- Add the Neo4j KG Agent as a sub-agent (Type: Agent, Source: the deployed Model Serving endpoint)
+- Add the Genie Lakehouse Agent as a sub-agent (Type: Genie Space, Source: the retail Genie Space)
+- Provide detailed descriptions for each agent so the supervisor can route accurately:
+  - Neo4j KG Agent: "Product search, recommendations, cart operations, inventory checks, and user preference memory"
+  - Genie Agent: "Revenue trends, customer segments, order history, basket analysis, and inventory analytics over retail transaction data"
+- The supervisor handles intent classification, routing, combined queries, and response synthesis automatically
 
-### R4: MLflow Registration and Deployment
+### R4: Deployment
 
-- Log the supervisor agent with MLflow, declaring all resource dependencies (LLM endpoint, Genie Space, SQL warehouse)
-- Register in Unity Catalog as `retail.agents.retail_supervisor`
-- Deploy via `agents.deploy()` with scale-to-zero enabled
-- Enable MLflow tracing for observability and the Review App for stakeholder feedback
+- The Neo4j KG Agent is logged with MLflow, registered in Unity Catalog, and deployed via `agents.deploy()` (see Phase 3)
+- The Genie Lakehouse Agent is configured as a Genie Space in the workspace (see Phase 2)
+- The Supervisor Agent is created via AgentBricks in the workspace UI, which automatically deploys it as a Model Serving endpoint with tracing and the Review App enabled
 
 ### R5: Evaluation
 
@@ -146,20 +147,18 @@ Build a LangGraph supervisor that coordinates the two agents:
 - [ ] Build the LangGraph agent with `create_react_agent(model, ALL_TOOLS, context_schema=RetailContext)`
 - [ ] Add thin `ChatAgent` shim for Databricks Model Serving and test in a notebook
 
-### Phase 4: Supervisor
+### Phase 4: Supervisor (AgentBricks)
 
-- [ ] Build the LangGraph supervisor `StateGraph` with routing logic
-- [ ] Wire in both sub-agents (Neo4j KG Agent as a node, GenieAgent as a node)
-- [ ] Implement the intent classifier (LLM-based, using agent descriptions)
-- [ ] Handle combined queries with parallel invocation and response synthesis
-- [ ] Wrap in `ChatAgent` and test end-to-end in a notebook
+- [ ] Create a Databricks Supervisor Agent in the workspace UI
+- [ ] Add the Neo4j KG Agent (Model Serving endpoint) as a sub-agent with description
+- [ ] Add the Genie Lakehouse Agent (Genie Space) as a sub-agent with description
+- [ ] Test with representative queries spanning both agents
+- [ ] Verify combined queries route to both agents and synthesize correctly
 
-### Phase 5: Deploy
+### Phase 5: Deploy and Evaluate
 
-- [ ] Log the supervisor with MLflow, declaring resource dependencies
-- [ ] Register in Unity Catalog
-- [ ] Deploy with `agents.deploy()`
-- [ ] Verify the serving endpoint, Review App, and tracing are functional
+- [ ] Verify the supervisor's Model Serving endpoint is running
+- [ ] Confirm tracing and Review App are enabled on the supervisor endpoint
 - [ ] Run the evaluation suite and establish baseline metrics
 
 ---
@@ -330,125 +329,23 @@ genie_agent = GenieAgent(
 )
 ```
 
-### Step 7: Supervisor with LangGraph
+### Step 7: Databricks Supervisor Agent (AgentBricks)
 
-```python
-from langgraph.graph import StateGraph, END
-from mlflow.langchain.chat_agent_langgraph import ChatAgentState
+Unlike the Neo4j KG Agent which is built in code, the supervisor is created through the Databricks workspace UI — no custom orchestration code required.
 
-def create_supervisor(neo4j_agent, genie_agent, llm):
-    def route(state: ChatAgentState):
-        """LLM-based router that classifies intent."""
-        last_message = state["messages"][-1]["content"]
-        classification = llm.invoke([
-            {"role": "system", "content": (
-                "Classify the user query into one of: "
-                "graph_query (product search, recommendations, cart, inventory), "
-                "analytics_query (revenue, trends, segments, order history), "
-                "combined_query (needs both). Respond with only the label."
-            )},
-            {"role": "user", "content": last_message},
-        ])
-        return classification.content.strip()
+1. Navigate to **Agents > Supervisor Agent > Create Supervisor Agent**
+2. **Name**: `supervisor-agent-retail` (or auto-generated)
+3. **Configure Agents** — add both sub-agents:
 
-    def call_neo4j(state, config):
-        result = neo4j_agent.invoke(state, config)
-        return {"messages": result["messages"]}
+| Type | Source | Agent Name | Description |
+|------|--------|------------|-------------|
+| Agent | Neo4j KG Agent serving endpoint | `neo4j_kg_agent` | Product search, recommendations, cart operations, inventory checks, and user preference memory backed by a Neo4j knowledge graph |
+| Genie Space | Retail Genie Space | `retail_analytics` | Revenue trends, customer segments, order history, basket analysis, and inventory analytics over retail transaction data in Unity Catalog |
 
-    def call_genie(state, config):
-        result = genie_agent.invoke(state, config)
-        return {"messages": result["messages"]}
+4. Click **Create Agent** — the supervisor handles intent routing, combined queries, and response synthesis automatically
+5. Test via the built-in playground or Review App
 
-    def synthesize(state, config):
-        """Combine results from both agents into a unified response."""
-        response = llm.invoke([
-            {"role": "system", "content": "Synthesize the following agent responses into a single coherent answer."},
-            *state["messages"],
-        ])
-        return {"messages": [response]}
-
-    workflow = StateGraph(ChatAgentState)
-    workflow.add_node("neo4j", call_neo4j)
-    workflow.add_node("genie", call_genie)
-    workflow.add_node("synthesize", synthesize)
-    workflow.set_entry_point("router")
-    workflow.add_node("router", lambda s: s)  # pass-through
-
-    workflow.add_conditional_edges("router", route, {
-        "graph_query": "neo4j",
-        "analytics_query": "genie",
-        "combined_query": "neo4j",  # neo4j first, then genie, then synthesize
-    })
-    workflow.add_edge("neo4j", END)  # direct graph queries end here
-    workflow.add_edge("genie", END)  # direct analytics queries end here
-    # combined path: neo4j -> genie -> synthesize -> END
-    # (conditional edges handle this in the full implementation)
-
-    return workflow.compile()
-```
-
-### Step 8: Thin ChatAgent Adapter for Databricks Deployment
-
-The `ChatAgent` wrapper is an I/O adapter for Databricks Model Serving, not the architecture. The agent logic lives in the LangGraph graph above; this shim translates the serving protocol:
-
-```python
-# supervisor_agent.py — the file MLflow logs via Models-from-Code
-from mlflow.pyfunc import ChatAgent
-from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
-
-class RetailSupervisorAgent(ChatAgent):
-    def __init__(self):
-        self.graph = create_supervisor(neo4j_agent, genie_agent, llm)
-        self.context = RetailContext(client=make_databricks_client())
-
-    def predict(self, messages: list[ChatAgentMessage], context=None, custom_inputs=None) -> ChatAgentResponse:
-        request = {"messages": self._convert_messages_to_dict(messages)}
-        output = self.graph.invoke(request, context=self.context)
-        return ChatAgentResponse(messages=output["messages"])
-
-AGENT = RetailSupervisorAgent()
-mlflow.models.set_model(AGENT)
-```
-
-### Step 9: MLflow Logging and Deployment
-
-```python
-import mlflow
-from mlflow.models.resources import (
-    DatabricksServingEndpoint,
-    DatabricksGenieSpace,
-    DatabricksSQLWarehouse,
-)
-from databricks import agents
-
-resources = [
-    DatabricksServingEndpoint(endpoint_name="databricks-meta-llama-3-3-70b-instruct"),
-    DatabricksGenieSpace(genie_space_id="<RETAIL_GENIE_SPACE_ID>"),
-    DatabricksSQLWarehouse(warehouse_id="<SQL_WAREHOUSE_ID>"),
-]
-
-with mlflow.start_run():
-    logged = mlflow.langchain.log_model(
-        lc_model="./supervisor_agent.py",  # Models-from-Code
-        name="retail_supervisor",
-        pip_requirements=[
-            "mlflow>=3.1",
-            "langgraph",
-            "databricks-langchain>=0.15",
-            "neo4j",
-        ],
-        resources=resources,
-    )
-
-mlflow.set_registry_uri("databricks-uc")
-mlflow.register_model(logged.model_uri, "retail.agents.retail_supervisor")
-
-deployment = agents.deploy(
-    model_name="retail.agents.retail_supervisor",
-    model_version=1,
-    scale_to_zero_enabled=True,
-)
-```
+The supervisor is deployed as its own Model Serving endpoint with tracing and feedback collection enabled by default.
 
 ---
 
@@ -470,7 +367,7 @@ deployment = agents.deploy(
 | Package | Version | Purpose |
 |---------|---------|---------|
 | `databricks-langchain` | >=0.15.0 | `GenieAgent`, `ChatDatabricks` |
-| `langgraph` | >=0.2 | Agent graphs, supervisor orchestration |
+| `langgraph` | >=0.2 | Neo4j KG Agent (`create_react_agent`) |
 | `mlflow` | >=3.1 | Agent logging, registration, tracing |
 | `databricks-agents` | >=1.1.0 | `agents.deploy()` for Model Serving |
 | `neo4j` | >=5.0 | Neo4j driver for KG agent tools |
@@ -486,8 +383,8 @@ deployment = agents.deploy(
 - [What is a Genie Space](https://docs.databricks.com/aws/en/genie/)
 - [Genie Conversation API](https://docs.databricks.com/aws/en/genie/conversation-api)
 - [Use Genie in multi-agent systems](https://docs.databricks.com/aws/en/generative-ai/agent-framework/multi-agent-genie)
+- [Databricks Supervisor Agent (AgentBricks)](https://docs.databricks.com/aws/en/generative-ai/agent-framework/multi-agent-systems)
 - [Agent system design patterns](https://docs.databricks.com/aws/en/generative-ai/guide/agent-system-design-patterns)
-- [LangGraph multi-agent Genie notebook](https://docs.databricks.com/notebooks/source/generative-ai/langgraph-multiagent-genie.html)
 - [Log and register AI agents](https://docs.databricks.com/aws/en/generative-ai/agent-framework/log-agent)
 - [LangGraph create_react_agent reference](https://langchain-ai.github.io/langgraph/reference/prebuilt/#create_react_agent)
 - [LangChain ToolRuntime / runtime injection](https://python.langchain.com/docs/how_to/tool_configure/)

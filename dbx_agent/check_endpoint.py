@@ -154,9 +154,9 @@ def _run_memory_exercise(endpoint_url: str, headers: dict) -> tuple[int, int]:
 
             print(f"    Response: {text[:300]}")
 
-            # Check for expected keywords (case-insensitive)
-            text_lower = text.lower()
-            missing = [kw for kw in expected_keywords if kw.lower() not in text_lower]
+            # Check for expected keywords (case-insensitive, ignore markdown)
+            text_plain = text.lower().replace("*", "").replace("_", "")
+            missing = [kw for kw in expected_keywords if kw.lower() not in text_plain]
             if missing:
                 print(f"    FAIL — missing keywords: {missing}")
                 failed += 1
