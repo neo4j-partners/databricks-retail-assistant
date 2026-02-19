@@ -16,12 +16,26 @@ Prerequisites:
     3. For Step 3 (not Step 2): Databricks secrets for Neo4j
 """
 
+import importlib.resources
 import os
 import sys
 import time
 from pathlib import Path
 
 from backend.dbx_agent.config import CONFIG, DeployConfig, RunMode
+
+
+def _get_package_dir() -> Path:
+    """Resolve the backend/dbx_agent/ directory.
+
+    Uses __file__ when available (CLI), falls back to importlib
+    for Databricks notebooks where __file__ is not defined.
+    """
+    try:
+        return _get_package_dir()
+    except NameError:
+        # Databricks notebook — __file__ not defined
+        return Path(str(importlib.resources.files("backend.dbx_agent")))
 
 
 def get_current_user() -> str:
@@ -56,14 +70,14 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     print(f"Experiment: {experiment_name}")
 
     # The serving.py file — MLflow loads this via Models from Code
-    model_file = Path(__file__).parent / "serving.py"
+    model_file = _get_package_dir() / "serving.py"
     if not model_file.exists():
         raise FileNotFoundError(f"Model file not found: {model_file}")
     print(f"Model file: {model_file}")
 
     # agent.py is imported by serving.py at runtime
     code_files = [
-        str(Path(__file__).parent / "agent.py"),
+        str(_get_package_dir() / "agent.py"),
     ]
     print(f"Including code files: {[Path(f).name for f in code_files]}")
 
