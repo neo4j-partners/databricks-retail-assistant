@@ -152,10 +152,9 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         "nest-asyncio>=1.5.0",
     ]
 
-    # Install the bundled wheel at serving time
-    extra_pip_requirements = []
-    if wheel_path.exists():
-        extra_pip_requirements.append(f"code/{wheel_name}")
+    # Include the bundled wheel in pip_requirements so it installs at serving time
+    if wheel_path:
+        pip_requirements.append(f"code/{wheel_name}")
 
     with mlflow.start_run(run_name=config.run_name):
         log_kwargs = {
@@ -164,8 +163,6 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
             "pip_requirements": pip_requirements,
             "code_paths": code_files,
         }
-        if extra_pip_requirements:
-            log_kwargs["extra_pip_requirements"] = extra_pip_requirements
 
         model_info = mlflow.pyfunc.log_model(**log_kwargs)
         print(f"Model logged: {model_info.model_uri}")
