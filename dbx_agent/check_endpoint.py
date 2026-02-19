@@ -184,6 +184,8 @@ def check_endpoint() -> int:
 
     # Check endpoint exists and is ready
     print(f"Checking endpoint: {endpoint_name}")
+    print(f"  LLM endpoint: {CONFIG.llm_endpoint}")
+    print(f"  Embedding model: {CONFIG.embedding_model}")
     try:
         endpoint = w.serving_endpoints.get(endpoint_name)
         state = endpoint.state.ready if endpoint.state else None

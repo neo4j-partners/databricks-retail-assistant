@@ -1,18 +1,9 @@
 """Deployment configuration for the retail agent prototype.
 
-Ported from aircraft_analyst/src/graph_agent/config.py with retail-specific
-defaults. See LANGCHAIN_AGENT.md Section 7 for the production version.
-
-All settings can be overridden via environment variables using the
-pattern: RETAIL_AGENT_<SETTING_NAME>.
-
 Usage:
     from dbx_agent.config import CONFIG, RunMode
-
-    # Override via env: RETAIL_AGENT_RUN_MODE=delete
 """
 
-import os
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -101,34 +92,4 @@ class DeployConfig:
         }
 
 
-def _load_config_from_env() -> DeployConfig:
-    """Load configuration with environment variable overrides."""
-    run_mode_str = os.getenv("RETAIL_AGENT_RUN_MODE", "deploy").lower()
-    run_mode = RunMode.DELETE if run_mode_str == "delete" else RunMode.DEPLOY
-
-    return DeployConfig(
-        run_mode=run_mode,
-        wait_for_ready=os.getenv("RETAIL_AGENT_WAIT_FOR_READY", "true").lower() == "true",
-        max_wait_seconds=int(os.getenv("RETAIL_AGENT_MAX_WAIT_SECONDS", "600")),
-        catalog=os.getenv("RETAIL_AGENT_CATALOG", "retail_assistant"),
-        schema=os.getenv("RETAIL_AGENT_SCHEMA", "retail"),
-        model_name=os.getenv("RETAIL_AGENT_MODEL_NAME", "dbx_agent_prototype"),
-        endpoint_name=os.getenv("RETAIL_AGENT_ENDPOINT_NAME", ""),
-        experiment_name_pattern=os.getenv(
-            "RETAIL_AGENT_EXPERIMENT_NAME", "/Users/{user}/retail_agent_prototype"
-        ),
-        run_name=os.getenv("RETAIL_AGENT_RUN_NAME", "retail_agent_prototype"),
-        artifact_path=os.getenv("RETAIL_AGENT_ARTIFACT_PATH", "dbx_agent_prototype"),
-        secret_scope=os.getenv("RETAIL_AGENT_SECRET_SCOPE", "retail-agent-secrets"),
-        llm_endpoint=os.getenv(
-            "RETAIL_AGENT_LLM_ENDPOINT", "databricks-claude-sonnet-4-6"
-        ),
-        embedding_model=os.getenv(
-            "RETAIL_AGENT_EMBEDDING_MODEL", "databricks-bge-large-en"
-        ),
-        embedding_dimensions=int(os.getenv("RETAIL_AGENT_EMBEDDING_DIMENSIONS", "1024")),
-        scale_to_zero=os.getenv("RETAIL_AGENT_SCALE_TO_ZERO", "true").lower() == "true",
-    )
-
-
-CONFIG = _load_config_from_env()
+CONFIG = DeployConfig()
