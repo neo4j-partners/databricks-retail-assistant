@@ -342,5 +342,10 @@ async def _generate_embeddings(session):
 if __name__ == "__main__":
     sys.exit(asyncio.run(load_sample_data()))
 else:
-    # Databricks Workspace: __name__ is not "__main__" when using the Run button
+    # Databricks Workspace: __name__ is not "__main__" when using the Run button.
+    # The notebook already has a running event loop, so asyncio.run() fails.
+    # nest_asyncio (pre-installed on Databricks) allows nested event loops.
+    import nest_asyncio
+
+    nest_asyncio.apply()
     asyncio.run(load_sample_data())
