@@ -83,14 +83,16 @@ The Genie Space must include:
 - Synonyms for business terms (e.g., "sales" = revenue, "items sold" = quantity)
 - Instructions scoping Genie to read-only retail analytics
 
-### R2: Neo4j KG Agent as a Databricks-Compatible Agent
+### R2: Neo4j KG Agent — Modular, Portable Tools via `ToolRuntime`
 
-Refactor the existing tools layer into a standalone agent that can run inside Databricks:
+Refactor the existing tools layer to be environment-agnostic using LangGraph's `ToolRuntime` dependency injection pattern, then build the agent on top:
 
-- Wrap the 14 LangChain tools in a LangGraph `StateGraph` using the existing `create_tools(client)` factory
+- **Replace closure factories with `ToolRuntime[RetailContext]`** — the current `create_tools(client)` pattern closes over a `MemoryClient` at tool creation time, coupling the tools to their runtime. Instead, tools declare a `runtime: ToolRuntime[RetailContext]` parameter that LangGraph injects automatically. The same tool objects run in any environment; only the context differs at invocation time.
+- **Define a `RetailContext` dataclass** holding all external dependencies (`MemoryClient`, embedder, session info). This replaces the implicit closure with an explicit, typed contract.
+- **Use `create_react_agent` with `context_schema=RetailContext`** — LangGraph wires the context into every tool call automatically.
 - Use `ChatDatabricks` as the LLM (Llama 3.3 70B or DBRX) instead of OpenAI
 - Package the Neo4j connection credentials as Databricks secrets
-- The agent must conform to the `ChatAgent` interface (`predict` and `predict_stream` methods)
+- A thin `ChatAgent` adapter wraps the LangGraph agent for Databricks Model Serving I/O compatibility — it is a 5-line shim, not the architecture
 
 ### R3: Multi-Agent Supervisor
 
@@ -134,13 +136,15 @@ Build a LangGraph supervisor that coordinates the two agents:
 - [ ] Test with representative analytics questions and iterate on accuracy
 - [ ] Validate the `GenieAgent` wrapper works programmatically
 
-### Phase 3: Neo4j KG Agent
+### Phase 3: Neo4j KG Agent — ToolRuntime Refactor
 
-- [ ] Extract the tools layer from the FastAPI backend into a standalone module
+- [ ] Define `RetailContext` dataclass in `backend/tools/context.py`
+- [ ] Refactor all 14 tools from closure factories to `ToolRuntime[RetailContext]` injection (see R2)
+- [ ] Replace `create_tools(client)` factory with a flat `ALL_TOOLS` list — no factory needed
 - [ ] Replace `OpenAI`/`AzureOpenAI` LLM with `ChatDatabricks`
 - [ ] Store Neo4j credentials in Databricks secrets, load them at agent init
-- [ ] Build the LangGraph tool-calling agent using the existing tools
-- [ ] Wrap in `ChatAgent` interface and test in a notebook
+- [ ] Build the LangGraph agent with `create_react_agent(model, ALL_TOOLS, context_schema=RetailContext)`
+- [ ] Add thin `ChatAgent` shim for Databricks Model Serving and test in a notebook
 
 ### Phase 4: Supervisor
 
@@ -162,7 +166,155 @@ Build a LangGraph supervisor that coordinates the two agents:
 
 ## Key Code Patterns
 
-### Genie Agent Setup
+### Why `ToolRuntime` Over Closure Factories
+
+The current codebase uses closure factories — `create_tools(client: MemoryClient)` returns `@tool` functions that close over the `MemoryClient`. This pattern has portability problems:
+
+- The `MemoryClient` is baked in at tool creation time. Running the same tools with a different client (local vs Databricks) means rebuilding every tool.
+- Closures cannot be serialized by MLflow. The Models-from-Code workaround re-executes the entire module, which works but forces tool construction into the module's top level.
+- Testing requires mocking at the factory call site rather than passing a test context directly.
+
+LangGraph v1 introduced `ToolRuntime[Context]` with `context_schema` on `create_react_agent` to solve this. Tools declare what they need; the framework injects it at invocation time. The same tool objects run in any environment — only the context differs.
+
+| | Closure Factory (current) | ToolRuntime (proposed) |
+|---|---|---|
+| Dependency binding | Implicit closure at creation time | Explicit injection at invocation time |
+| Environment portability | Rebuild tools per environment | Same tool objects everywhere |
+| Type safety | None — closure is untyped | `RetailContext` dataclass is typed and inspectable |
+| Testing | Mock the factory's arguments | Pass a test `RetailContext` directly |
+| MLflow serialization | Requires module-level reconstruction | Plain functions; Models-from-Code works cleanly |
+
+### Step 1: Define the Shared Context
+
+```python
+# backend/tools/context.py
+from dataclasses import dataclass
+from neo4j_agent_memory import MemoryClient
+
+@dataclass
+class RetailContext:
+    """All external dependencies for retail agent tools.
+
+    Injected by LangGraph at invocation time via ToolRuntime.
+    Local FastAPI and Databricks Model Serving each construct
+    their own RetailContext — tool code is identical in both.
+    """
+    client: MemoryClient
+    session_id: str | None = None
+```
+
+### Step 2: Refactor Tools to Use `ToolRuntime`
+
+Before (closure factory):
+
+```python
+# current: backend/tools/product_search.py
+def create_product_search_tools(client: MemoryClient) -> list[BaseTool]:
+    @tool(args_schema=SearchProductsInput)
+    async def search_products(query: str, ...) -> str:
+        embedding = await client._embedder.embed(query)       # closed over
+        result = await client.graph.execute_read(cypher, params)  # closed over
+        ...
+    return [search_products, ...]
+```
+
+After (`ToolRuntime` injection):
+
+```python
+# proposed: backend/tools/product_search.py
+from langchain_core.tools import tool, ToolRuntime
+from backend.tools.context import RetailContext
+
+@tool(args_schema=SearchProductsInput)
+async def search_products(
+    query: str,
+    category: str | None = None,
+    brand: str | None = None,
+    max_price: float | None = None,
+    limit: int = 10,
+    runtime: ToolRuntime[RetailContext],  # injected by LangGraph, hidden from LLM
+) -> str:
+    """Search the product catalog by query."""
+    client = runtime.context.client
+    embedding = await client._embedder.embed(query)
+    result = await client.graph.execute_read(cypher, params)
+    ...
+```
+
+The `runtime` parameter is reserved — LangGraph detects it by type hint and injects it automatically. It never appears in the tool schema sent to the LLM.
+
+### Step 3: Flat Tool List (No Factory)
+
+```python
+# proposed: backend/tools/__init__.py
+from backend.tools.product_search import search_products, get_product_details, get_related_products
+from backend.tools.recommendations import get_recommendations, get_bought_together, explain_product_connection
+from backend.tools.inventory import check_inventory, find_alternatives
+from backend.tools.cart import get_cart, add_to_cart, remove_from_cart, update_cart_item, clear_cart, apply_coupon
+from backend.tools.memory_tools import search_memory
+
+ALL_TOOLS = [
+    search_products, get_product_details, get_related_products,
+    get_recommendations, get_bought_together, explain_product_connection,
+    check_inventory, find_alternatives,
+    get_cart, add_to_cart, remove_from_cart, update_cart_item, clear_cart, apply_coupon,
+    search_memory,
+]
+```
+
+No factory function. No closures. Tools are plain module-level functions.
+
+### Step 4: Build the Neo4j KG Agent
+
+```python
+# backend/agent.py
+from databricks_langchain import ChatDatabricks
+from langgraph.prebuilt import create_react_agent
+from backend.tools import ALL_TOOLS
+from backend.tools.context import RetailContext
+
+llm = ChatDatabricks(endpoint="databricks-meta-llama-3-3-70b-instruct")
+
+neo4j_agent = create_react_agent(
+    model=llm,
+    tools=ALL_TOOLS,
+    context_schema=RetailContext,
+    prompt=(
+        "You are a retail product assistant with access to a Neo4j knowledge graph. "
+        "Use your tools to search products, get recommendations, manage carts, "
+        "check inventory, and recall user preferences from memory."
+    ),
+)
+```
+
+### Step 5: Invocation — Same Agent, Different Context
+
+```python
+# Local FastAPI
+from neo4j_agent_memory import MemoryClient
+local_client = MemoryClient(...)
+await local_client.connect()
+
+result = neo4j_agent.invoke(
+    {"messages": [{"role": "user", "content": "find running shoes"}]},
+    context=RetailContext(client=local_client, session_id=request.session_id),
+)
+
+# Databricks Model Serving — identical agent, different context
+from databricks.sdk import WorkspaceClient
+w = WorkspaceClient()
+neo4j_uri = w.dbutils.secrets.get("neo4j", "uri")
+neo4j_password = w.dbutils.secrets.get("neo4j", "password")
+databricks_client = MemoryClient(uri=neo4j_uri, password=neo4j_password, ...)
+await databricks_client.connect()
+
+result = neo4j_agent.invoke(
+    {"messages": messages},
+    context=RetailContext(client=databricks_client, session_id=serving_input.session_id),
+)
+```
+
+### Step 6: Genie Agent Setup
 
 ```python
 from databricks_langchain.genie import GenieAgent
@@ -178,32 +330,11 @@ genie_agent = GenieAgent(
 )
 ```
 
-### Neo4j KG Agent Setup
-
-```python
-from databricks_langchain import ChatDatabricks
-from langgraph.prebuilt import create_react_agent
-from backend.tools import create_tools
-
-llm = ChatDatabricks(endpoint="databricks-meta-llama-3-3-70b-instruct")
-tools = create_tools(memory_client)
-
-neo4j_agent = create_react_agent(
-    model=llm,
-    tools=tools,
-    prompt=(
-        "You are a retail product assistant with access to a Neo4j knowledge graph. "
-        "Use your tools to search products, get recommendations, manage carts, "
-        "check inventory, and recall user preferences from memory."
-    ),
-)
-```
-
-### Supervisor with LangGraph
+### Step 7: Supervisor with LangGraph
 
 ```python
 from langgraph.graph import StateGraph, END
-from mlflow.langchain.chat_agent_langgraph import ChatAgentState, ChatAgentToolNode
+from mlflow.langchain.chat_agent_langgraph import ChatAgentState
 
 def create_supervisor(neo4j_agent, genie_agent, llm):
     def route(state: ChatAgentState):
@@ -256,7 +387,30 @@ def create_supervisor(neo4j_agent, genie_agent, llm):
     return workflow.compile()
 ```
 
-### MLflow Logging and Deployment
+### Step 8: Thin ChatAgent Adapter for Databricks Deployment
+
+The `ChatAgent` wrapper is an I/O adapter for Databricks Model Serving, not the architecture. The agent logic lives in the LangGraph graph above; this shim translates the serving protocol:
+
+```python
+# supervisor_agent.py — the file MLflow logs via Models-from-Code
+from mlflow.pyfunc import ChatAgent
+from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
+
+class RetailSupervisorAgent(ChatAgent):
+    def __init__(self):
+        self.graph = create_supervisor(neo4j_agent, genie_agent, llm)
+        self.context = RetailContext(client=make_databricks_client())
+
+    def predict(self, messages: list[ChatAgentMessage], context=None, custom_inputs=None) -> ChatAgentResponse:
+        request = {"messages": self._convert_messages_to_dict(messages)}
+        output = self.graph.invoke(request, context=self.context)
+        return ChatAgentResponse(messages=output["messages"])
+
+AGENT = RetailSupervisorAgent()
+mlflow.models.set_model(AGENT)
+```
+
+### Step 9: MLflow Logging and Deployment
 
 ```python
 import mlflow
@@ -274,9 +428,9 @@ resources = [
 ]
 
 with mlflow.start_run():
-    logged = mlflow.pyfunc.log_model(
-        artifact_path="retail_supervisor",
-        python_model="supervisor_agent.py",
+    logged = mlflow.langchain.log_model(
+        lc_model="./supervisor_agent.py",  # Models-from-Code
+        name="retail_supervisor",
         pip_requirements=[
             "mlflow>=3.1",
             "langgraph",
@@ -320,7 +474,7 @@ deployment = agents.deploy(
 | `mlflow` | >=3.1 | Agent logging, registration, tracing |
 | `databricks-agents` | >=1.1.0 | `agents.deploy()` for Model Serving |
 | `neo4j` | >=5.0 | Neo4j driver for KG agent tools |
-| `langchain-core` | >=0.3 | Tool decorator, base classes |
+| `langchain-core` | >=0.3 | `@tool` decorator, `ToolRuntime` injection |
 
 ---
 
@@ -335,3 +489,6 @@ deployment = agents.deploy(
 - [Agent system design patterns](https://docs.databricks.com/aws/en/generative-ai/guide/agent-system-design-patterns)
 - [LangGraph multi-agent Genie notebook](https://docs.databricks.com/notebooks/source/generative-ai/langgraph-multiagent-genie.html)
 - [Log and register AI agents](https://docs.databricks.com/aws/en/generative-ai/agent-framework/log-agent)
+- [LangGraph create_react_agent reference](https://langchain-ai.github.io/langgraph/reference/prebuilt/#create_react_agent)
+- [LangChain ToolRuntime / runtime injection](https://python.langchain.com/docs/how_to/tool_configure/)
+- [MLflow Models-from-Code for LangGraph](https://mlflow.org/blog/langgraph-model-from-code)
