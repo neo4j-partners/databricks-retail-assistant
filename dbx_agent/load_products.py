@@ -1,21 +1,86 @@
-"""Load sample product data into Neo4j for the retail assistant demo."""
+"""Load sample product data into Neo4j for the retail assistant demo.
+
+Databricks-only version. Gets Neo4j credentials from Databricks secrets
+using the same scope and keys as the deployed agent (see config.py).
+
+Usage:
+    uv run python -m dbx_agent.load_products
+
+Prerequisites:
+    1. Databricks CLI configured (databricks auth login)
+    2. Databricks secrets set:
+         databricks secrets put-secret retail-agent-secrets neo4j-uri
+         databricks secrets put-secret retail-agent-secrets neo4j-password
+"""
 
 import asyncio
+import sys
 
 from neo4j import AsyncGraphDatabase
 
-from backend.config import get_settings
-from backend.scripts.product_catalog import BOUGHT_TOGETHER, CATEGORIES, PRODUCTS, SHARED_ATTRIBUTES
+from backend.scripts.product_catalog import (
+    BOUGHT_TOGETHER,
+    CATEGORIES,
+    PRODUCTS,
+    SHARED_ATTRIBUTES,
+)
+from dbx_agent.config import CONFIG
 
 
-async def load_sample_data():
+def _get_neo4j_credentials() -> tuple[str, str]:
+    """Get Neo4j URI and password from Databricks secrets.
+
+    Tries dbutils (notebook), then WorkspaceClient (CLI/jobs).
+    """
+    scope = CONFIG.secret_scope
+    uri_key = CONFIG.neo4j_uri_secret
+    password_key = CONFIG.neo4j_password_secret
+
+    # Method 1: dbutils (Databricks notebook)
+    try:
+        from pyspark.dbutils import DBUtils
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession.builder.getOrCreate()
+        dbutils = DBUtils(spark)
+        uri = dbutils.secrets.get(scope, uri_key)
+        password = dbutils.secrets.get(scope, password_key)
+        if uri and password:
+            print(f"  Credentials from dbutils secrets ({scope})")
+            return uri, password
+    except Exception:
+        pass
+
+    # Method 2: WorkspaceClient (CLI)
+    try:
+        from databricks.sdk import WorkspaceClient
+
+        w = WorkspaceClient()
+        uri = w.secrets.get_secret(scope, uri_key).value
+        password = w.secrets.get_secret(scope, password_key).value
+        if uri and password:
+            print(f"  Credentials from WorkspaceClient secrets ({scope})")
+            return uri, password
+    except Exception:
+        pass
+
+    raise ValueError(
+        f"Could not read Neo4j credentials from Databricks secrets "
+        f"(scope={scope}, keys={uri_key}, {password_key}). "
+        f"Set them with: databricks secrets put-secret {scope} {uri_key}"
+    )
+
+
+async def load_sample_data() -> int:
     """Load all sample data into Neo4j."""
-    settings = get_settings()
-    uri = settings.neo4j_uri
-    user = settings.neo4j_username
-    password = settings.neo4j_password.get_secret_value()
+    print("Getting Neo4j credentials from Databricks secrets...")
+    try:
+        uri, password = _get_neo4j_credentials()
+    except ValueError as e:
+        print(f"  Error: {e}")
+        return 1
 
-    driver = AsyncGraphDatabase.driver(uri, auth=(user, password))
+    driver = AsyncGraphDatabase.driver(uri, auth=("neo4j", password))
 
     async with driver.session() as session:
         print("Clearing existing data...")
@@ -42,14 +107,15 @@ async def load_sample_data():
         print("Dropping stale message embedding indexes...")
         await _drop_stale_message_indexes(session)
 
-        print("Generating embeddings...")
+        print("Generating product embeddings...")
         await _generate_embeddings(session)
 
     await driver.close()
-    print("\nSample data loaded successfully!")
+    print(f"\nSample data loaded successfully!")
     print(f"  Products: {len(PRODUCTS)}")
     print(f"  Categories: {len(CATEGORIES)}")
     print(f"  Bought-together pairs: {len(BOUGHT_TOGETHER)}")
+    return 0
 
 
 async def _clear_database(session):
@@ -80,7 +146,6 @@ async def _create_products(session):
 
 async def _create_categories_and_brands(session):
     """Create Category and Brand nodes with relationships."""
-    # Create categories
     await session.run(
         """
         UNWIND $categories AS cat
@@ -90,7 +155,6 @@ async def _create_categories_and_brands(session):
         {"categories": [{"name": k, "description": v} for k, v in CATEGORIES.items()]},
     )
 
-    # Create brands from products
     await session.run(
         """
         MATCH (p:Product)
@@ -100,7 +164,6 @@ async def _create_categories_and_brands(session):
         """
     )
 
-    # Create relationships
     await session.run(
         """
         MATCH (p:Product), (c:Category {name: p.category})
@@ -148,7 +211,6 @@ async def _create_bought_together(session):
 
 async def _create_attributes(session):
     """Create Attribute nodes and HAS_ATTRIBUTE relationships."""
-    # Create Attribute nodes
     await session.run(
         """
         UNWIND $attrs AS attr
@@ -157,8 +219,6 @@ async def _create_attributes(session):
         {"attrs": [{"name": a[0], "value": a[1]} for a in SHARED_ATTRIBUTES]},
     )
 
-    # Build product-to-attribute links from the Python-side attributes data
-    # Map: attribute_name -> (product_attributes_key, attr_node_name)
     attr_mappings = [
         ("cushion", "Cushion Level"),
         ("surface", "Surface"),
@@ -191,11 +251,9 @@ async def _create_attributes(session):
 async def _create_vector_index(session):
     """Create vector index for product embeddings.
 
-    Dimensions come from EMBEDDING_DIMENSIONS in .env (default 1536 for OpenAI,
-    use 1024 for Databricks BGE models).
+    Dimensions from CONFIG.embedding_dimensions (1024 for Databricks BGE).
     """
-    settings = get_settings()
-    dims = settings.embedding_dimensions
+    dims = CONFIG.embedding_dimensions
 
     try:
         await session.run(
@@ -236,50 +294,51 @@ async def _drop_stale_message_indexes(session):
 
 
 async def _generate_embeddings(session):
-    """Generate and store embeddings for products using OpenAI."""
-    settings = get_settings()
-    api_key = settings.openai_api_key or settings.azure_openai_api_key
-    if not api_key:
-        print("  No OpenAI API key configured — skipping embedding generation.")
+    """Generate and store product embeddings using Databricks Foundation Model API."""
+    try:
+        import mlflow.deployments
+    except ImportError:
+        print("  mlflow not available — skipping embedding generation.")
         print("  Products will work with text search fallback.")
         return
 
-    model = settings.azure_openai_embedding_deployment or "text-embedding-3-small"
+    model = CONFIG.embedding_model
+    print(f"  Model: {model}")
 
     try:
-        from openai import AsyncOpenAI
-
-        client = AsyncOpenAI(api_key=api_key.get_secret_value())
-
-        # Build texts to embed
+        client = mlflow.deployments.get_deploy_client("databricks")
         texts = [f"{p.name}: {p.description}" for p in PRODUCTS]
 
-        # Batch embed
-        response = await client.embeddings.create(
-            input=texts,
-            model=model,
-        )
+        # Batch in chunks of 100 to avoid request size limits
+        batch_size = 100
+        all_embeddings = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            response = client.predict(
+                endpoint=model,
+                inputs={"input": batch},
+            )
+            all_embeddings.extend(item["embedding"] for item in response["data"])
+            print(f"  Embedded {min(i + batch_size, len(texts))}/{len(texts)} products")
 
-        # Store embeddings on products
         for i, product in enumerate(PRODUCTS):
-            embedding = response.data[i].embedding
             await session.run(
                 """
                 MATCH (p:Product {id: $product_id})
                 SET p.embedding = $embedding
                 """,
-                {"product_id": product.id, "embedding": embedding},
+                {"product_id": product.id, "embedding": all_embeddings[i]},
             )
 
         print(f"  Generated embeddings for {len(PRODUCTS)} products")
 
-    except ImportError:
-        print("  openai package not installed — skipping embedding generation.")
-        print("  Install with: pip install openai")
     except Exception as e:
         print(f"  Embedding generation failed: {e}")
         print("  Products will work with text search fallback.")
 
 
 if __name__ == "__main__":
+    sys.exit(asyncio.run(load_sample_data()))
+else:
+    # Databricks Workspace: __name__ is not "__main__" when using the Run button
     asyncio.run(load_sample_data())

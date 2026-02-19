@@ -54,6 +54,10 @@ class DeployConfig:
     # LLM — Databricks-hosted, no API key needed
     llm_endpoint: str = "databricks-meta-llama-3-3-70b-instruct"
 
+    # Embedding — Databricks Foundation Model API (pre-deployed, no setup needed)
+    embedding_model: str = "databricks-bge-large-en"
+    embedding_dimensions: int = 1024
+
     # Deployment
     scale_to_zero: bool = True
 
@@ -119,6 +123,10 @@ def _load_config_from_env() -> DeployConfig:
         llm_endpoint=os.getenv(
             "RETAIL_AGENT_LLM_ENDPOINT", "databricks-meta-llama-3-3-70b-instruct"
         ),
+        embedding_model=os.getenv(
+            "RETAIL_AGENT_EMBEDDING_MODEL", "databricks-bge-large-en"
+        ),
+        embedding_dimensions=int(os.getenv("RETAIL_AGENT_EMBEDDING_DIMENSIONS", "1024")),
         scale_to_zero=os.getenv("RETAIL_AGENT_SCALE_TO_ZERO", "true").lower() == "true",
     )
 

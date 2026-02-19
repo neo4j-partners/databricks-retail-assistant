@@ -27,13 +27,12 @@ async def remember_message(
     client = runtime.context.client
     session_id = runtime.context.session_id or "default"
 
-    # Store the message (no embeddings or entity extraction for prototype)
     await client.short_term.add_message(
         session_id,
         "user",
         content,
         extract_entities=False,
-        generate_embedding=False,
+        generate_embedding=True,
     )
 
     # Retrieve the conversation to confirm storage

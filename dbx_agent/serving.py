@@ -14,6 +14,7 @@ References:
 import asyncio
 import os
 import threading
+import traceback
 from uuid import uuid4
 
 import mlflow
@@ -76,6 +77,8 @@ class PrototypeAgent(ChatAgent):
             from neo4j_agent_memory import MemoryClient, MemorySettings, Neo4jConfig
             from pydantic import SecretStr
 
+            from embedder import DatabricksEmbedder
+
             mlflow.langchain.autolog()
 
             # Create persistent event loop before anything async
@@ -87,7 +90,24 @@ class PrototypeAgent(ChatAgent):
                     password=SecretStr(os.environ["NEO4J_PASSWORD"]),
                 ),
             )
-            self._client = MemoryClient(settings)
+
+            # Create Databricks embedder for semantic memory search.
+            # Uses mlflow.deployments which handles auth automatically
+            # inside the Model Serving container.
+            embedding_model = os.environ.get(
+                "RETAIL_AGENT_EMBEDDING_MODEL", "databricks-bge-large-en"
+            )
+            embedding_dims = int(os.environ.get(
+                "RETAIL_AGENT_EMBEDDING_DIMENSIONS", "1024"
+            ))
+            embedder = DatabricksEmbedder(
+                model=embedding_model,
+                dims=embedding_dims,
+            )
+            if not embedder.validate_endpoint():
+                embedder = None
+
+            self._client = MemoryClient(settings, embedder=embedder)
 
             # Connect MemoryClient on the persistent loop so the Neo4j
             # driver is bound to it from the start
@@ -101,8 +121,6 @@ class PrototypeAgent(ChatAgent):
             self._init_error = None
 
         except Exception as e:
-            import traceback
-
             self._init_error = f"Failed to initialize agent: {e}\n{traceback.format_exc()}"
             self._agent = None
 

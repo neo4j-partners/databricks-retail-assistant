@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     azure_openai_embedding_deployment: str | None = None
     azure_openai_embedding_dimensions: int = 1536
 
+    # Embedding dimensions for vector indexes (1536 for OpenAI, 1024 for Databricks BGE)
+    embedding_dimensions: int = 1536
+
     llm_provider: str = "openai"
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
