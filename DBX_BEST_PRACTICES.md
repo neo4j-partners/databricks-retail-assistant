@@ -104,3 +104,104 @@ However, the `run_sync` decorator still calls `asyncio.run()` per invocation (in
 ### Key Takeaway
 
 When bridging async-only libraries into sync frameworks (like Databricks `ChatAgent.predict()`), **never use `asyncio.run()` if the async code holds long-lived resources** (database connections, drivers, sessions). Use a persistent event loop in a background thread instead. This ensures all async resources stay on the same loop for the lifetime of the process.
+
+---
+
+## Stale Deploys: Verifying What's Actually Running
+
+### The Problem
+
+After fixing the event loop bug locally and redeploying, product search tools still failed with HTTP 400 errors. The error message from the endpoint was truncated: `'NoneType' object has no ...` — which was misleading and sent debugging in the wrong direction (investigating which attribute was None).
+
+### Root Cause
+
+The deployed code was **stale**. The server logs (`server.logs`) revealed the actual error:
+
+```
+RuntimeError: Task <Task pending ...> got Future <Future pending> attached to a different loop
+```
+
+And critically, the traceback showed line 105 of the deployed `serving.py`:
+
+```python
+return asyncio.run(self._async_predict(messages, context, custom_inputs))
+```
+
+The deployed version was still using `asyncio.run()` — the old broken pattern — even though the local code had been updated to use the persistent background loop. The deploy had either failed silently or an older model version was still being served.
+
+### Why It Was Confusing
+
+- **Memory tools appeared to work** on the first few requests because they were the first async Neo4j calls on fresh gunicorn workers. Subsequent tool calls on the same worker hit the loop mismatch.
+- **The HTTP 400 error message was truncated** by the endpoint, hiding the real `RuntimeError` and showing only `'NoneType' object has no` — which looked like a completely different bug (missing attribute on a None object).
+- **The local code was correct**, making it seem like the fix should have worked.
+
+### The Fix: Diagnostics Tool
+
+Added a `diagnostics_tool.py` — a **sync** tool (no Neo4j, so immune to the loop bug) that reports environment info when queried:
+
+```python
+@tool
+def agent_diagnostics(runtime: ToolRuntime[RetailContext]) -> str:
+    """Return diagnostic information about the agent environment."""
+    info = {}
+
+    # Library version
+    import neo4j_agent_memory
+    info["neo4j_agent_memory_version"] = neo4j_agent_memory.__version__
+
+    # Client status
+    client = runtime.context.client
+    info["has_graph"] = getattr(client, "_client", None) is not None
+    info["has_embedder"] = getattr(client, "_embedder", None) is not None
+
+    # Detect which async bridge pattern is deployed
+    import importlib, inspect
+    serving = importlib.import_module("serving")
+    source = inspect.getsource(serving.PrototypeAgent.predict)
+    if "run_coroutine_threadsafe" in source:
+        info["async_bridge"] = "persistent_loop"
+    elif "asyncio.run" in source:
+        info["async_bridge"] = "asyncio_run"
+    ...
+```
+
+The `async_bridge` field is the key diagnostic — it inspects the deployed `serving.py` source to confirm which async bridging pattern is actually running. Expected output after a correct deploy:
+
+```json
+{
+  "neo4j_agent_memory_version": "0.1.0",
+  "client_initialized": true,
+  "has_graph": true,
+  "has_embedder": true,
+  "async_bridge": "persistent_loop"
+}
+```
+
+If the deploy is stale, `async_bridge` will read `"asyncio_run"` — an immediate signal that the code hasn't been updated.
+
+### Integration with check_endpoint.py
+
+The diagnostics query runs **before** sample queries in `check_endpoint.py`. This way, if something is wrong with the deployed environment, you see it immediately without having to dig through server logs.
+
+### Lessons Learned
+
+1. **Databricks endpoint error messages are often truncated.** Always check `server.logs` for the full traceback — the truncated message can be misleading.
+2. **Always verify the deployed code matches local code.** A diagnostics tool that inspects its own source is a reliable way to confirm what's actually running.
+3. **Use sync diagnostics tools for debugging async issues.** A sync tool won't be affected by the very bug you're trying to diagnose.
+4. **Run diagnostics first.** Putting the version/environment check before sample queries in `check_endpoint.py` saves significant debugging time.
+
+---
+
+## Server Logs: Always Check the Full Traceback
+
+### The Problem
+
+Databricks Model Serving returns truncated error messages in HTTP 400 responses. The message `'NoneType' object has no` was actually a truncation of a `RuntimeError` about event loop mismatches — a completely different class of error.
+
+### How to Access Logs
+
+Server logs are available on the endpoint's serving page in the Databricks workspace. Save them locally (e.g., `server.logs`) for easier analysis. The logs contain full Python tracebacks with file paths, line numbers, and the complete error message.
+
+### Key Takeaway
+
+When an endpoint returns a vague or truncated error, **never debug from the truncated message alone**. Always pull the server logs first to see the real exception and full stack trace.
