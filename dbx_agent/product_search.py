@@ -12,7 +12,6 @@ from typing import Any
 
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
-from pydantic import BaseModel, Field
 
 from context import RetailContext
 
@@ -28,50 +27,18 @@ ALLOWED_RELATIONSHIP_TYPES = frozenset({
 
 
 # ---------------------------------------------------------------------------
-# Pydantic Input Schemas
-# ---------------------------------------------------------------------------
-
-
-class SearchProductsInput(BaseModel):
-    """Input for searching the product catalog."""
-
-    query: str = Field(description="Search query describing what the customer is looking for")
-    category: str | None = Field(default=None, description="Filter by product category")
-    brand: str | None = Field(default=None, description="Filter by brand name")
-    max_price: float | None = Field(default=None, ge=0, description="Maximum price filter")
-    limit: int = Field(default=10, ge=1, le=50, description="Maximum number of results")
-
-
-class ProductDetailsInput(BaseModel):
-    """Input for getting product details."""
-
-    product_id: str = Field(description="The product ID to look up")
-
-
-class RelatedProductsInput(BaseModel):
-    """Input for finding related products."""
-
-    product_id: str = Field(description="The product ID to find related products for")
-    relationship_type: str | None = Field(
-        default=None,
-        description="Filter by relationship type: IN_CATEGORY, MADE_BY, HAS_ATTRIBUTE, BOUGHT_TOGETHER, SIMILAR_TO",
-    )
-    limit: int = Field(default=5, ge=1, le=20, description="Maximum number of related products")
-
-
-# ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
 
 
-@tool(args_schema=SearchProductsInput)
+@tool
 async def search_products(
     query: str,
     category: str | None = None,
     brand: str | None = None,
     max_price: float | None = None,
     limit: int = 10,
-    runtime: ToolRuntime[RetailContext] = None,
+    runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Search the product catalog by query. Use this when a customer asks about products, wants to browse, or is looking for something specific."""
     client = runtime.context.client
@@ -130,10 +97,10 @@ async def search_products(
     return json.dumps({"products": products, "count": len(products)})
 
 
-@tool(args_schema=ProductDetailsInput)
+@tool
 async def get_product_details(
     product_id: str,
-    runtime: ToolRuntime[RetailContext] = None,
+    runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Get full details for a specific product by ID. Use this when the customer wants to know more about a particular product."""
     client = runtime.context.client
@@ -157,12 +124,12 @@ async def get_product_details(
     return json.dumps(dict(result[0]))
 
 
-@tool(args_schema=RelatedProductsInput)
+@tool
 async def get_related_products(
     product_id: str,
     relationship_type: str | None = None,
     limit: int = 5,
-    runtime: ToolRuntime[RetailContext] = None,
+    runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Find products related to a given product through graph relationships. Use this for recommendations like 'what goes well with this' or 'similar items'."""
     client = runtime.context.client

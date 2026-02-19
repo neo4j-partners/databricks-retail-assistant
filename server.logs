@@ -1,216 +1,500 @@
-[z27f7] 2026-02-19 02:53:21.226 INFO : Initializing .........
-[z27f7] WARNING:root:mlflow-server
-[z27f7] [2026-02-19 02:53:21 +0000] [12] [INFO] Starting gunicorn 23.0.0
-[z27f7] [2026-02-19 02:53:21 +0000] [12] [INFO] Listening at: http://0.0.0.0:8080 (12)
-[z27f7] [2026-02-19 02:53:21 +0000] [12] [INFO] Using worker: sync
-[z27f7] [2026-02-19 02:53:21 +0000] [13] [INFO] Booting worker with pid: 13
-[z27f7] [2026-02-19 02:53:21 +0000] [14] [INFO] Booting worker with pid: 14
-[z27f7] [2026-02-19 02:53:21 +0000] [15] [INFO] Booting worker with pid: 15
-[z27f7] [2026-02-19 02:53:21 +0000] [16] [INFO] Booting worker with pid: 16
-[z27f7] [2026-02-19 03:01:58 +0000] 2026/02/19 03:01:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e250e40> was created in a different Context
-[z27f7] [2026-02-19 03:01:58 +0000] 2026/02/19 03:01:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e033040> was created in a different Context
-[z27f7] [2026-02-19 03:01:58 +0000] 2026/02/19 03:01:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33df6b1c0> was created in a different Context
-[z27f7] [2026-02-19 03:01:58 +0000] 2026/02/19 03:01:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e00ac80> was created in a different Context
-[z27f7] [2026-02-19 03:01:58 +0000] 2026/02/19 03:01:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33df6ac40> was created in a different Context
-[z27f7] [2026-02-19 03:01:58 +0000] 2026/02/19 03:01:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33de3dbc0> was created in a different Context
-[z27f7] [2026-02-19 03:01:59 +0000] 2026/02/19 03:01:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33de97d00> was created in a different Context
-[z27f7] [2026-02-19 03:01:59 +0000] 2026/02/19 03:01:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e023d00> was created in a different Context
-[z27f7] [2026-02-19 03:01:59 +0000] 2026/02/19 03:01:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e09c700> was created in a different Context
-[z27f7] [2026-02-19 03:01:59 +0000] 2026/02/19 03:01:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e020cc0> was created in a different Context
-[z27f7] [2026-02-19 03:01:59 +0000] 2026/02/19 03:01:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33ddd6b00> was created in a different Context
-[z27f7] [2026-02-19 03:01:59 +0000] 2026/02/19 03:01:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c7ba0> at 0x7fe33e032840> was created in a different Context
-[z27f7] [2026-02-19 03:02:04 +0000] 2026/02/19 03:02:04 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33e065780> was created in a different Context
-[z27f7] [2026-02-19 03:02:04 +0000] 2026/02/19 03:02:04 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33df700c0> was created in a different Context
-[z27f7] [2026-02-19 03:02:04 +0000] 2026/02/19 03:02:04 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33df5f540> was created in a different Context
-[z27f7] [2026-02-19 03:02:04 +0000] 2026/02/19 03:02:04 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33e013100> was created in a different Context
-[z27f7] [2026-02-19 03:02:04 +0000] 2026/02/19 03:02:04 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33df5f280> was created in a different Context
-[z27f7] [2026-02-19 03:02:05 +0000] Received notification from DBMS server: <GqlStatusObject gql_status='01N52', status_description='warn: property key does not exist. The property `created_at` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=4, column=12, offset=70>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 70, 'line': 4, 'column': 12}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: '\nMATCH (c:Conversation {session_id: $session_id})\nRETURN c\nORDER BY c.created_at DESC\nLIMIT 1\n'
-[z27f7] [2026-02-19 03:02:05 +0000] 2026/02/19 03:02:05 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33de3cf00> was created in a different Context
-[z27f7] [2026-02-19 03:02:05 +0000] 2026/02/19 03:02:05 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33de97c80> was created in a different Context
-[z27f7] [2026-02-19 03:02:06 +0000] 2026/02/19 03:02:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33de3ed40> was created in a different Context
-[z27f7] [2026-02-19 03:02:06 +0000] 2026/02/19 03:02:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33e064e80> was created in a different Context
-[z27f7] [2026-02-19 03:02:06 +0000] 2026/02/19 03:02:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33dffeb00> was created in a different Context
-[z27f7] [2026-02-19 03:02:06 +0000] 2026/02/19 03:02:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33e0656c0> was created in a different Context
-[z27f7] [2026-02-19 03:02:06 +0000] 2026/02/19 03:02:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33e252700> was created in a different Context
-[z27f7] [2026-02-19 03:02:06 +0000] 2026/02/19 03:02:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33e064a80> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33c0c0880> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33c0c00c0> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33c0a7800> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33dcac540> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33c0a7340> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33dcac540> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33c0c1280> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] 2026/02/19 03:02:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7fe3630c78d0> at 0x7fe33c27fec0> was created in a different Context
-[z27f7] [2026-02-19 03:02:08 +0000] Encountered an unexpected error while evaluating the model. Error 'Task <Task pending name='Task-96' coro=<StructuredTool._arun() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py:124> cb=[Task.task_wakeup()]> got Future <Future pending> attached to a different loop'
-[z27f7] Traceback (most recent call last):
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/graph/client.py", line 105, in execute_read
-[z27f7] result = await session.run(query, parameters or {})
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 320, in run
-[z27f7] await self._auto_result._run(
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/result.py", line 237, in _run
-[z27f7] await self._attach()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/result.py", line 439, in _attach
-[z27f7] await self._connection.fetch_message()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 204, in inner
-[z27f7] await coroutine_func(*args, **kwargs)
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 864, in fetch_message
-[z27f7] tag, fields = await self.inbox.pop(
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 77, in pop
-[z27f7] await self._buffer_one_chunk()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 54, in _buffer_one_chunk
-[z27f7] await receive_into_buffer(self._socket, self._buffer, 2)
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 340, in receive_into_buffer
-[z27f7] n = await sock.recv_into(
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 191, in recv_into
-[z27f7] res = await self._wait_for_read(self._reader.read, nbytes)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 143, in _wait_for_io
-[z27f7] return await wait_for(io_fut, timeout)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
-[z27f7] return await fut
-[z27f7] ^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 713, in read
-[z27f7] await self._wait_for_data('read')
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 545, in _wait_for_data
-[z27f7] await self._waiter
-[z27f7] RuntimeError: Task <Task pending name='Task-96' coro=<StructuredTool._arun() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py:124> cb=[Task.task_wakeup()]> got Future <Future pending> attached to a different loop
-[z27f7]
-[z27f7] During handling of the above exception, another exception occurred:
-[z27f7]
-[z27f7] Traceback (most recent call last):
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 881, in transformation
-[z27f7] (raw_predictions, databricks_output) = _score_model(
-[z27f7] ^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 519, in _score_model
-[z27f7] prediction = score_pyfunc_model(model, data, params)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/scoring_server_utils.py", line 519, in score_pyfunc_model
-[z27f7] return model.predict(data, params=params)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 844, in predict
-[z27f7] return self._predict(data, params)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 894, in _predict
-[z27f7] return self._predict_fn(data, params=params)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/chat_agent.py", line 96, in predict
-[z27f7] response = self.chat_agent.predict(messages, context, custom_inputs)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/utils/data_validation.py", line 126, in wrapper
-[z27f7] return func(self, *args, **kwargs)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/model/serving.py", line 105, in predict
-[z27f7] return asyncio.run(self._async_predict(messages, context, custom_inputs))
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/runners.py", line 194, in run
-[z27f7] return runner.run(main)
-[z27f7] ^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/runners.py", line 118, in run
-[z27f7] return self._loop.run_until_complete(task)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
-[z27f7] return future.result()
-[z27f7] ^^^^^^^^^^^^^^^
-[z27f7] File "/model/serving.py", line 127, in _async_predict
-[z27f7] result = await self._agent.ainvoke(request, context=retail_context)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3161, in ainvoke
-[z27f7] async for chunk in self.astream(
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2974, in astream
-[z27f7] async for _ in runner.atick(
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 304, in atick
-[z27f7] await arun_with_retry(
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 138, in arun_with_retry
-[z27f7] return await task.proc.ainvoke(task.input, config)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
-[z27f7] input = await asyncio.create_task(
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
-[z27f7] ret = await self.afunc(*args, **kwargs)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
-[z27f7] outputs = await asyncio.gather(*coros)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
-[z27f7] return await self._execute_tool_async(tool_request, input_type, config)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
-[z27f7] content = _handle_tool_error(e, flag=self._handle_tool_errors)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
-[z27f7] content = flag(e)  # type: ignore [assignment, call-arg]
-[z27f7] ^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
-[z27f7] raise e
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
-[z27f7] response = await tool.ainvoke(call_args, config)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
-[z27f7] return await super().ainvoke(input, config, **kwargs)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
-[z27f7] return await self.arun(tool_input, **kwargs)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
-[z27f7] raise error_to_raise
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
-[z27f7] response = await coro_with_context(coro, context)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
-[z27f7] return await self.coroutine(*args, **kwargs)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/model/code/memory_tool.py", line 67, in recall_memory
-[z27f7] conversation = await client.short_term.get_conversation(session_id)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/memory/short_term.py", line 504, in get_conversation
-[z27f7] results = await self._client.execute_read(
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/graph/client.py", line 104, in execute_read
-[z27f7] async with self._get_session() as session:
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 120, in __aexit__
-[z27f7] await self.close()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 225, in close
-[z27f7] await self._disconnect()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 135, in _disconnect
-[z27f7] return await super()._disconnect(sync=sync)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/workspace.py", line 285, in _disconnect
-[z27f7] await self._pool.release(self._connection)
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 498, in release
-[z27f7] await connection.reset()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt6.py", line 495, in reset
-[z27f7] await self.fetch_all()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 882, in fetch_all
-[z27f7] detail_delta, summary_delta = await self.fetch_message()
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 864, in fetch_message
-[z27f7] tag, fields = await self.inbox.pop(
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 77, in pop
-[z27f7] await self._buffer_one_chunk()
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 54, in _buffer_one_chunk
-[z27f7] await receive_into_buffer(self._socket, self._buffer, 2)
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 340, in receive_into_buffer
-[z27f7] n = await sock.recv_into(
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 191, in recv_into
-[z27f7] res = await self._wait_for_read(self._reader.read, nbytes)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 143, in _wait_for_io
-[z27f7] return await wait_for(io_fut, timeout)
-[z27f7] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
-[z27f7] return await fut
-[z27f7] ^^^^^^^^^
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 713, in read
-[z27f7] await self._wait_for_data('read')
-[z27f7] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 545, in _wait_for_data
-[z27f7] await self._waiter
-[z27f7] RuntimeError: Task <Task pending name='Task-96' coro=<StructuredTool._arun() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py:124> cb=[Task.task_wakeup()]> got Future <Future pending> attached to a different loop
-[z27f7] During task with name 'tools' and id 'f28190cb-891c-0c12-912e-c000615b9641'
-[z27f7] 
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+[zmjk5] input = await asyncio.create_task(
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+[zmjk5] ret = await self.afunc(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
+[zmjk5] outputs = await asyncio.gather(*coros)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
+[zmjk5] return await self._execute_tool_async(tool_request, input_type, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
+[zmjk5] content = _handle_tool_error(e, flag=self._handle_tool_errors)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
+[zmjk5] content = flag(e)  # type: ignore [assignment, call-arg]
+[zmjk5] ^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
+[zmjk5] raise e
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
+[zmjk5] response = await tool.ainvoke(call_args, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
+[zmjk5] return await super().ainvoke(input, config, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
+[zmjk5] return await self.arun(tool_input, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
+[zmjk5] raise error_to_raise
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
+[zmjk5] response = await coro_with_context(coro, context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
+[zmjk5] return await self.coroutine(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/code/product_search.py", line 168, in get_related_products
+[zmjk5] client = runtime.context.client
+[zmjk5] ^^^^^^^^^^^^^^^
+[zmjk5] AttributeError: 'NoneType' object has no attribute 'context'
+[zmjk5] During task with name 'tools' and id '8314e951-6e5f-d540-f30f-410d2a8c9721'
+[zmjk5]
+[zmjk5] [2026-02-19 04:41:30 +0000] 2026/02/19 04:41:30 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d6eb640> was created in a different Context
+[zmjk5] [2026-02-19 04:41:30 +0000] 2026/02/19 04:41:30 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d75e500> was created in a different Context
+[zmjk5] [2026-02-19 04:41:30 +0000] 2026/02/19 04:41:30 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d75de00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:30 +0000] 2026/02/19 04:41:30 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d692900> was created in a different Context
+[zmjk5] [2026-02-19 04:41:30 +0000] 2026/02/19 04:41:30 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d75d900> was created in a different Context
+[zmjk5] [2026-02-19 04:41:30 +0000] 2026/02/19 04:41:30 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d82b500> was created in a different Context
+[zmjk5] [2026-02-19 04:41:31 +0000] 2026/02/19 04:41:31 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d75d200> was created in a different Context
+[zmjk5] [2026-02-19 04:41:31 +0000] 2026/02/19 04:41:31 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d69a280> was created in a different Context
+[zmjk5] [2026-02-19 04:41:31 +0000] 2026/02/19 04:41:31 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d6e9600> was created in a different Context
+[zmjk5] [2026-02-19 04:41:31 +0000] 2026/02/19 04:41:31 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d634f40> was created in a different Context
+[zmjk5] [2026-02-19 04:41:31 +0000] 2026/02/19 04:41:31 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d6d0f80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:31 +0000] 2026/02/19 04:41:31 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d6e6a00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d767200> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c112f40> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c112900> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0ea800> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c1124c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0ac2c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c117f80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c114c80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c1138c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0ebbc0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0ac880> was created in a different Context
+[zmjk5] [2026-02-19 04:41:32 +0000] 2026/02/19 04:41:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0d3b40> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d513d00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d69d8c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d510880> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d598f40> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0cebc0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] [#BD0A]  _: <CONNECTION> error: Failed to write data to connection IPv4Address(('p-80f61c98-3c0d-0001.production-orch-0364.neo4j.io', 7687)) (ResolvedIPv4Address(('20.168.56.165', 7687))): ConnectionResetError(104, 'Connection reset by peer')
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d841000> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c28ea80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] 2026/02/19 04:41:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c10f0c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:33 +0000] Encountered an unexpected error while evaluating the model. Verify that the input is compatible with the model for inference. Error 'Failed to write data to connection IPv4Address(('p-80f61c98-3c0d-0001.production-orch-0364.neo4j.io', 7687)) (ResolvedIPv4Address(('20.168.56.165', 7687)))'
+[zmjk5] Traceback (most recent call last):
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 1008, in close
+[zmjk5] await self.socket.close()
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 201, in close
+[zmjk5] await self._writer.wait_closed()
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 364, in wait_closed
+[zmjk5] await self._protocol._get_close_waiter(self)
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/selector_events.py", line 988, in _read_ready__get_buffer
+[zmjk5] nbytes = self._sock.recv_into(buf)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] ConnectionResetError: [Errno 104] Connection reset by peer
+[zmjk5]
+[zmjk5] The above exception was the direct cause of the following exception:
+[zmjk5]
+[zmjk5] Traceback (most recent call last):
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 881, in transformation
+[zmjk5] (raw_predictions, databricks_output) = _score_model(
+[zmjk5] ^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 519, in _score_model
+[zmjk5] prediction = score_pyfunc_model(model, data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/scoring_server_utils.py", line 519, in score_pyfunc_model
+[zmjk5] return model.predict(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 844, in predict
+[zmjk5] return self._predict(data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 894, in _predict
+[zmjk5] return self._predict_fn(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/chat_agent.py", line 96, in predict
+[zmjk5] response = self.chat_agent.predict(messages, context, custom_inputs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/utils/data_validation.py", line 126, in wrapper
+[zmjk5] return func(self, *args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/serving.py", line 134, in predict
+[zmjk5] return future.result(timeout=120)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+[zmjk5] return self.__get_result()
+[zmjk5] ^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+[zmjk5] raise self._exception
+[zmjk5] File "/model/serving.py", line 152, in _async_predict
+[zmjk5] result = await self._agent.ainvoke(request, context=retail_context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3161, in ainvoke
+[zmjk5] async for chunk in self.astream(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2974, in astream
+[zmjk5] async for _ in runner.atick(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 304, in atick
+[zmjk5] await arun_with_retry(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 138, in arun_with_retry
+[zmjk5] return await task.proc.ainvoke(task.input, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+[zmjk5] input = await asyncio.create_task(
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+[zmjk5] ret = await self.afunc(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
+[zmjk5] outputs = await asyncio.gather(*coros)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
+[zmjk5] return await self._execute_tool_async(tool_request, input_type, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
+[zmjk5] content = _handle_tool_error(e, flag=self._handle_tool_errors)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
+[zmjk5] content = flag(e)  # type: ignore [assignment, call-arg]
+[zmjk5] ^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
+[zmjk5] raise e
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
+[zmjk5] response = await tool.ainvoke(call_args, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
+[zmjk5] return await super().ainvoke(input, config, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
+[zmjk5] return await self.arun(tool_input, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
+[zmjk5] raise error_to_raise
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
+[zmjk5] response = await coro_with_context(coro, context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
+[zmjk5] return await self.coroutine(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/code/memory_tool.py", line 34, in remember_message
+[zmjk5] await client.short_term.add_message(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/memory/short_term.py", line 443, in add_message
+[zmjk5] conv_id = await self._ensure_conversation(session_id, conversation_id)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/memory/short_term.py", line 899, in _ensure_conversation
+[zmjk5] results = await self._client.execute_read(
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/graph/client.py", line 105, in execute_read
+[zmjk5] result = await session.run(query, parameters or {})
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 320, in run
+[zmjk5] await self._auto_result._run(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/result.py", line 236, in _run
+[zmjk5] await self._connection.send_all()
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 204, in inner
+[zmjk5] await coroutine_func(*args, **kwargs)
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 838, in send_all
+[zmjk5] await self._send_all()
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 822, in _send_all
+[zmjk5] if await self.outbox.flush():
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 159, in flush
+[zmjk5] await AsyncUtil.callback(self.on_error, error)
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/util.py", line 64, in callback
+[zmjk5] return await res
+[zmjk5] ^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 899, in _set_defunct_write
+[zmjk5] await self._set_defunct(message, error=error, silent=silent)
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 975, in _set_defunct
+[zmjk5] raise SessionExpired(message) from error
+[zmjk5] neo4j.exceptions.SessionExpired: Failed to write data to connection IPv4Address(('p-80f61c98-3c0d-0001.production-orch-0364.neo4j.io', 7687)) (ResolvedIPv4Address(('20.168.56.165', 7687)))
+[zmjk5] During task with name 'tools' and id '5b1bf0b2-ecb6-fbba-d04a-babc379b9796'
+[zmjk5]
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948c0a24c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d731940> was created in a different Context
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d4f5500> was created in a different Context
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d698880> was created in a different Context
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948c0c50c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948c0b0080> was created in a different Context
+[zmjk5] [2026-02-19 04:41:34 +0000] 2026/02/19 04:41:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d547f40> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948c0a1d00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948c0d1600> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948c0a1d80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d75e640> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d6eae00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027970> at 0x7f948d6e6fc0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d69e4c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c107040> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c112840> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d6cf380> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0d3a80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f94866ff440> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f9487030040> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] 2026/02/19 04:41:35 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948707e280> was created in a different Context
+[zmjk5] [2026-02-19 04:41:35 +0000] Encountered an unexpected error while evaluating the model. Verify that the input is compatible with the model for inference. Error ''NoneType' object has no attribute 'context''
+[zmjk5] Traceback (most recent call last):
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 881, in transformation
+[zmjk5] (raw_predictions, databricks_output) = _score_model(
+[zmjk5] ^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 519, in _score_model
+[zmjk5] prediction = score_pyfunc_model(model, data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/scoring_server_utils.py", line 519, in score_pyfunc_model
+[zmjk5] return model.predict(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 844, in predict
+[zmjk5] return self._predict(data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 894, in _predict
+[zmjk5] return self._predict_fn(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/chat_agent.py", line 96, in predict
+[zmjk5] response = self.chat_agent.predict(messages, context, custom_inputs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/utils/data_validation.py", line 126, in wrapper
+[zmjk5] return func(self, *args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/serving.py", line 134, in predict
+[zmjk5] return future.result(timeout=120)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+[zmjk5] return self.__get_result()
+[zmjk5] ^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+[zmjk5] raise self._exception
+[zmjk5] File "/model/serving.py", line 152, in _async_predict
+[zmjk5] result = await self._agent.ainvoke(request, context=retail_context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3161, in ainvoke
+[zmjk5] async for chunk in self.astream(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2974, in astream
+[zmjk5] async for _ in runner.atick(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 304, in atick
+[zmjk5] await arun_with_retry(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 138, in arun_with_retry
+[zmjk5] return await task.proc.ainvoke(task.input, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+[zmjk5] input = await asyncio.create_task(
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+[zmjk5] ret = await self.afunc(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
+[zmjk5] outputs = await asyncio.gather(*coros)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
+[zmjk5] return await self._execute_tool_async(tool_request, input_type, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
+[zmjk5] content = _handle_tool_error(e, flag=self._handle_tool_errors)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
+[zmjk5] content = flag(e)  # type: ignore [assignment, call-arg]
+[zmjk5] ^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
+[zmjk5] raise e
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
+[zmjk5] response = await tool.ainvoke(call_args, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
+[zmjk5] return await super().ainvoke(input, config, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
+[zmjk5] return await self.arun(tool_input, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
+[zmjk5] raise error_to_raise
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
+[zmjk5] response = await coro_with_context(coro, context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
+[zmjk5] return await self.coroutine(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/code/product_search.py", line 77, in search_products
+[zmjk5] client = runtime.context.client
+[zmjk5] ^^^^^^^^^^^^^^^
+[zmjk5] AttributeError: 'NoneType' object has no attribute 'context'
+[zmjk5] During task with name 'tools' and id '11ce0555-d6bf-e9aa-24f1-3a37da7f4e0f'
+[zmjk5]
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f9486716c80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d51d0c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d518800> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f94866ffa40> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c117b80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f9486727dc0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0cec00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] 2026/02/19 04:41:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d6ef6c0> was created in a different Context
+[zmjk5] [2026-02-19 04:41:36 +0000] Encountered an unexpected error while evaluating the model. Verify that the input is compatible with the model for inference. Error ''NoneType' object has no attribute 'context''
+[zmjk5] Traceback (most recent call last):
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 881, in transformation
+[zmjk5] (raw_predictions, databricks_output) = _score_model(
+[zmjk5] ^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 519, in _score_model
+[zmjk5] prediction = score_pyfunc_model(model, data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/scoring_server_utils.py", line 519, in score_pyfunc_model
+[zmjk5] return model.predict(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 844, in predict
+[zmjk5] return self._predict(data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 894, in _predict
+[zmjk5] return self._predict_fn(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/chat_agent.py", line 96, in predict
+[zmjk5] response = self.chat_agent.predict(messages, context, custom_inputs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/utils/data_validation.py", line 126, in wrapper
+[zmjk5] return func(self, *args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/serving.py", line 134, in predict
+[zmjk5] return future.result(timeout=120)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+[zmjk5] return self.__get_result()
+[zmjk5] ^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+[zmjk5] raise self._exception
+[zmjk5] File "/model/serving.py", line 152, in _async_predict
+[zmjk5] result = await self._agent.ainvoke(request, context=retail_context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3161, in ainvoke
+[zmjk5] async for chunk in self.astream(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2974, in astream
+[zmjk5] async for _ in runner.atick(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 304, in atick
+[zmjk5] await arun_with_retry(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 138, in arun_with_retry
+[zmjk5] return await task.proc.ainvoke(task.input, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+[zmjk5] input = await asyncio.create_task(
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+[zmjk5] ret = await self.afunc(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
+[zmjk5] outputs = await asyncio.gather(*coros)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
+[zmjk5] return await self._execute_tool_async(tool_request, input_type, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
+[zmjk5] content = _handle_tool_error(e, flag=self._handle_tool_errors)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
+[zmjk5] content = flag(e)  # type: ignore [assignment, call-arg]
+[zmjk5] ^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
+[zmjk5] raise e
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
+[zmjk5] response = await tool.ainvoke(call_args, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
+[zmjk5] return await super().ainvoke(input, config, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
+[zmjk5] return await self.arun(tool_input, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
+[zmjk5] raise error_to_raise
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
+[zmjk5] response = await coro_with_context(coro, context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
+[zmjk5] return await self.coroutine(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/code/product_search.py", line 139, in get_product_details
+[zmjk5] client = runtime.context.client
+[zmjk5] ^^^^^^^^^^^^^^^
+[zmjk5] AttributeError: 'NoneType' object has no attribute 'context'
+[zmjk5] During task with name 'tools' and id '84d0441f-a374-64be-32e0-a84343e9c8b7'
+[zmjk5]
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948d51d900> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948673bc80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948673b540> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948707fb00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c28da00> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f9486739440> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c113a80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] 2026/02/19 04:41:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7f94b7027bf0> at 0x7f948c0cda80> was created in a different Context
+[zmjk5] [2026-02-19 04:41:37 +0000] Encountered an unexpected error while evaluating the model. Verify that the input is compatible with the model for inference. Error ''NoneType' object has no attribute 'context''
+[zmjk5] Traceback (most recent call last):
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 881, in transformation
+[zmjk5] (raw_predictions, databricks_output) = _score_model(
+[zmjk5] ^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 519, in _score_model
+[zmjk5] prediction = score_pyfunc_model(model, data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/scoring_server_utils.py", line 519, in score_pyfunc_model
+[zmjk5] return model.predict(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 844, in predict
+[zmjk5] return self._predict(data, params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 894, in _predict
+[zmjk5] return self._predict_fn(data, params=params)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/chat_agent.py", line 96, in predict
+[zmjk5] response = self.chat_agent.predict(messages, context, custom_inputs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/utils/data_validation.py", line 126, in wrapper
+[zmjk5] return func(self, *args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/serving.py", line 134, in predict
+[zmjk5] return future.result(timeout=120)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+[zmjk5] return self.__get_result()
+[zmjk5] ^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+[zmjk5] raise self._exception
+[zmjk5] File "/model/serving.py", line 152, in _async_predict
+[zmjk5] result = await self._agent.ainvoke(request, context=retail_context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3161, in ainvoke
+[zmjk5] async for chunk in self.astream(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2974, in astream
+[zmjk5] async for _ in runner.atick(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 304, in atick
+[zmjk5] await arun_with_retry(
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 138, in arun_with_retry
+[zmjk5] return await task.proc.ainvoke(task.input, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+[zmjk5] input = await asyncio.create_task(
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+[zmjk5] ret = await self.afunc(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
+[zmjk5] outputs = await asyncio.gather(*coros)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
+[zmjk5] return await self._execute_tool_async(tool_request, input_type, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
+[zmjk5] content = _handle_tool_error(e, flag=self._handle_tool_errors)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
+[zmjk5] content = flag(e)  # type: ignore [assignment, call-arg]
+[zmjk5] ^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
+[zmjk5] raise e
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
+[zmjk5] response = await tool.ainvoke(call_args, config)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
+[zmjk5] return await super().ainvoke(input, config, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
+[zmjk5] return await self.arun(tool_input, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
+[zmjk5] raise error_to_raise
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
+[zmjk5] response = await coro_with_context(coro, context)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
+[zmjk5] return await self.coroutine(*args, **kwargs)
+[zmjk5] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[zmjk5] File "/model/code/product_search.py", line 168, in get_related_products
+[zmjk5] client = runtime.context.client
+[zmjk5] ^^^^^^^^^^^^^^^
+[zmjk5] AttributeError: 'NoneType' object has no attribute 'context'
+[zmjk5] During task with name 'tools' and id '0c7c411d-47fe-ef46-742f-154f0dbb5ddf'
+[zmjk5]

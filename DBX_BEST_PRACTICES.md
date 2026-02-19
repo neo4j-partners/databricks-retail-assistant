@@ -8,6 +8,43 @@
 
 ---
 
+## Keep `code_paths` in Sync with Imports
+
+### The Problem
+
+Adding a new file to `dbx_agent/` (e.g., `diagnostics_tool.py`) and importing it from `agent.py` caused the deploy to fail with: *"Model server failed to load the model."* No useful error details were shown in the UI.
+
+### Root Cause
+
+MLflow packages the agent using `code_paths` in `deploy.py`. Files listed in `code_paths` are copied into the model artifact and added to `sys.path` at serving time. If a file is imported by `agent.py` but **not listed in `code_files`**, the import fails with `ModuleNotFoundError` during model loading.
+
+Because `dbx_agent/` uses **relative imports** (e.g., `from diagnostics_tool import ...`) for MLflow's flat packaging, there's no automatic discovery — every imported module must be explicitly listed.
+
+### The Fix
+
+When adding a new `.py` file to `dbx_agent/` that is imported at runtime, add it to the `code_files` list in `deploy.py`:
+
+```python
+code_files = [
+    str(pkg_dir / "agent.py"),
+    str(pkg_dir / "context.py"),
+    str(pkg_dir / "diagnostics_tool.py"),  # <-- new file
+    str(pkg_dir / "memory_tool.py"),
+    str(pkg_dir / "product_search.py"),
+]
+```
+
+### Checklist
+
+When adding a new module to `dbx_agent/`:
+
+1. Create the file with relative imports (e.g., `from context import RetailContext`)
+2. Import it from `agent.py` or another packaged file
+3. **Add it to `code_files` in `deploy.py`** — this is the step that's easy to forget
+4. Files only used locally (e.g., `deploy.py`, `check_endpoint.py`, `config.py`) do **not** need to be in `code_files` — only files imported by `serving.py` or its import chain
+
+---
+
 ## Async Event Loop in Model Serving
 
 ### The Problem
