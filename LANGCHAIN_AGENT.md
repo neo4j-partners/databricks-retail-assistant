@@ -88,7 +88,8 @@ After (`ToolRuntime` injection):
 
 ```python
 # proposed: backend/tools/product_search.py
-from langchain_core.tools import tool, ToolRuntime
+from langchain_core.tools import tool
+from langgraph.prebuilt import ToolRuntime
 from backend.tools.context import RetailContext
 
 @tool(args_schema=SearchProductsInput)
@@ -343,12 +344,34 @@ Converting tools to sync is not viable without rewriting the memory library. The
 1. **MemoryClient packaging** — `neo4j-agent-memory` is currently installed as a local editable package (`uv pip install -e`). For Databricks serving, it needs to be either published to PyPI or included as a wheel in the MLflow artifact. Which approach do we prefer?
 2. **Session/cart state** — Cart tools use Neo4j MERGE with a `session_id`. With `ToolRuntime`, this flows naturally via `RetailContext.session_id`. But how does the supervisor pass session identity down to the sub-agent? LangGraph's `config` dict or `context` parameter are both options.
 3. **Vector index** — `search_products` calls `db.index.vector.queryNodes()`. The Neo4j Aura instance must have the vector index pre-created. Is this already set up, or does it need to be part of the deployment runbook?
-4. **`ToolRuntime` bugs in `ToolNode`** — There are active LangGraph issues ([#6318](https://github.com/langchain-ai/langgraph/issues/6318), [#6431](https://github.com/langchain-ai/langgraph/issues/6431)) where `ToolRuntime` injection fails in `ToolNode` with Pydantic validation errors. Before committing to `ToolRuntime[RetailContext]`, we must verify against the pinned `langgraph` version. Fallback: use `InjectedToolArg` with `get_runtime()` inside the tool body, or write a custom `ToolNode` wrapper that injects the context manually.
+4. **`ToolRuntime` bugs in `ToolNode`** — There are active LangGraph issues ([#6318](https://github.com/langchain-ai/langgraph/issues/6318), [#6431](https://github.com/langchain-ai/langgraph/issues/6431)) where `ToolRuntime` injection fails in `ToolNode` with Pydantic validation errors. Before committing to `ToolRuntime[RetailContext]`, we must verify against the pinned `langgraph` version. Fallback: use `InjectedToolArg` (from `langchain_core.tools`) with `get_runtime()` inside the tool body, or write a custom `ToolNode` wrapper that injects the context manually.
+
+## Import Path Correction
+
+> **Note (Feb 2026):** The `ToolRuntime` class lives in `langgraph.prebuilt`, **not** `langchain_core.tools`. The correct imports are:
+>
+> ```python
+> from langchain_core.tools import tool          # @tool decorator
+> from langgraph.prebuilt import ToolRuntime      # runtime injection type
+> ```
+>
+> The `InjectedToolArg` fallback is in `langchain_core.tools`:
+>
+> ```python
+> from langchain_core.tools import InjectedToolArg
+> ```
+>
+> Verified with langgraph 1.0.8 / langchain-core 1.2.13.
+>
+> Related issues:
+> - [ToolRuntime not supported in ToolNode #6318](https://github.com/langchain-ai/langgraph/issues/6318)
+> - [runtime not passed with Pydantic BaseModel args_schema #33646](https://github.com/langchain-ai/langchain/issues/33646)
 
 ## References
 
 - **aircraft_analyst reference project**: `/Users/ryanknight/projects/aircraft_analyst/` — see `DATABRICKS_AGENT.md` for the deployment pipeline pattern (MLflow Models-from-Code, `agents.deploy()`, secrets mapping, endpoint testing)
 - [LangGraph create_react_agent reference](https://langchain-ai.github.io/langgraph/reference/prebuilt/#create_react_agent)
+- [LangChain Runtime docs](https://docs.langchain.com/oss/python/langchain/runtime) — ToolRuntime usage and context injection
 - [LangChain ToolRuntime / runtime injection](https://python.langchain.com/docs/how_to/tool_configure/)
 - [MLflow Models-from-Code for LangGraph](https://mlflow.org/blog/langgraph-model-from-code)
 - [Mosaic AI Agent Framework](https://docs.databricks.com/aws/en/generative-ai/agent-framework/)

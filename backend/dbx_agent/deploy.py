@@ -88,10 +88,31 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         raise FileNotFoundError(f"Model file not found: {model_file}")
     print(f"Model file: {model_file}")
 
-    # agent.py is imported by serving.py at runtime
+    # Code files imported by serving.py at runtime (via code_paths on sys.path)
+    pkg_dir = _get_package_dir()
     code_files = [
-        str(_get_package_dir() / "agent.py"),
+        str(pkg_dir / "agent.py"),
+        str(pkg_dir / "context.py"),
+        str(pkg_dir / "memory_tool.py"),
     ]
+
+    # neo4j-agent-memory wheel (built from ../agent-memory per MEMORY_LIBRARY.md)
+    # The agent-memory repo is a sibling of the project root's parent directory
+    wheel_name = "neo4j_agent_memory-0.0.1-py3-none-any.whl"
+    project_root = _get_package_dir().parent.parent  # backend/dbx_agent -> backend -> project root
+    wheel_path = project_root / ".." / "agent-memory" / "dist" / wheel_name
+    wheel_path = wheel_path.resolve()
+    if not wheel_path.exists():
+        # Also try neo4j-labs/agent-memory convention
+        wheel_path = (project_root / ".." / ".." / "neo4j-labs" / "agent-memory" / "dist" / wheel_name).resolve()
+
+    if wheel_path.exists():
+        code_files.append(str(wheel_path))
+        print(f"Including wheel: {wheel_path.name}")
+    else:
+        print(f"WARNING: Wheel not found at {wheel_path}")
+        print("Build it with: cd ../agent-memory && make build")
+
     print(f"Including code files: {[Path(f).name for f in code_files]}")
 
     pip_requirements = [
@@ -100,15 +121,28 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         "langgraph>=1.0.8",
         "langchain-core>=0.3.0",
         "databricks-langchain>=0.15.0",
+        "neo4j>=5.20.0",
+        "pydantic>=2.0.0",
+        "pydantic-settings>=2.0.0",
+        "openai>=1.0.0",
     ]
 
+    # Install the bundled wheel at serving time
+    extra_pip_requirements = []
+    if wheel_path.exists():
+        extra_pip_requirements.append(f"code/{wheel_name}")
+
     with mlflow.start_run(run_name=config.run_name):
-        model_info = mlflow.pyfunc.log_model(
-            artifact_path=config.artifact_path,
-            python_model=str(model_file),
-            pip_requirements=pip_requirements,
-            code_paths=code_files,
-        )
+        log_kwargs = {
+            "artifact_path": config.artifact_path,
+            "python_model": str(model_file),
+            "pip_requirements": pip_requirements,
+            "code_paths": code_files,
+        }
+        if extra_pip_requirements:
+            log_kwargs["extra_pip_requirements"] = extra_pip_requirements
+
+        model_info = mlflow.pyfunc.log_model(**log_kwargs)
         print(f"Model logged: {model_info.model_uri}")
         return model_info, model_info.model_uri
 

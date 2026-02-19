@@ -1,14 +1,19 @@
-"""Bare-bones LangGraph agent with a single echo tool.
+"""LangGraph agent with echo tool and neo4j-agent-memory integration.
 
-This is the Step 2 prototype from PROTOTYPE.md. It validates that
-create_react_agent + ChatAgent deploys to Databricks Model Serving
-without any external dependencies (no Neo4j, no OpenAI, no secrets).
+Step 3 prototype from PROTOTYPE.md. Builds on Step 2 by adding:
+- ToolRuntime[RetailContext] injection via context_schema
+- Async memory tools backed by neo4j-agent-memory short-term memory
+- The echo tool is retained for baseline validation
 
-The echo tool exists solely to prove the agent can invoke tools and
-return results through the serving endpoint.
+The agent uses create_react_agent with context_schema=RetailContext so
+that ToolRuntime[RetailContext] parameters are injected automatically.
 """
 
 from langchain_core.tools import tool
+from langgraph.prebuilt import ToolRuntime
+
+from context import RetailContext
+from memory_tool import MEMORY_TOOLS
 
 
 @tool
@@ -18,15 +23,21 @@ def echo(message: str) -> str:
 
 
 SYSTEM_PROMPT = (
-    "You are a test agent for validating Databricks deployment. "
-    "You have one tool called 'echo' that repeats messages back. "
-    "When the user sends a message, use the echo tool to repeat it, "
-    "then confirm it worked."
+    "You are a test agent for validating Databricks deployment with Neo4j memory. "
+    "You have three tools:\n"
+    "- 'echo': repeats messages back (for basic validation)\n"
+    "- 'remember_message': stores information in Neo4j short-term memory\n"
+    "- 'recall_memory': retrieves conversation history from memory\n\n"
+    "When the user asks you to remember something, use the remember_message tool. "
+    "When the user asks what you remember, use the recall_memory tool. "
+    "For other messages, use the echo tool."
 )
+
+ALL_TOOLS = [echo] + MEMORY_TOOLS
 
 
 def create_prototype_agent(llm=None):
-    """Create a minimal LangGraph ReAct agent with one echo tool.
+    """Create a LangGraph ReAct agent with echo and memory tools.
 
     Args:
         llm: Optional LLM override. Defaults to ChatDatabricks with
@@ -41,6 +52,7 @@ def create_prototype_agent(llm=None):
 
     return create_react_agent(
         model=llm,
-        tools=[echo],
+        tools=ALL_TOOLS,
         prompt=SYSTEM_PROMPT,
+        context_schema=RetailContext,
     )

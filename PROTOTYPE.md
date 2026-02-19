@@ -75,9 +75,25 @@ Run with: `uv run python -m backend.dbx_agent.deploy`
 
 ---
 
-## Step 3: Add `neo4j-agent-memory` and Validate ToolRuntime
+## Step 3: Add `neo4j-agent-memory` and Validate ToolRuntime — DONE (code ready, deploy pending)
 
 Once Step 2 passes, add the memory library and validate two things simultaneously: that the wheel packaging from `MEMORY_LIBRARY.md` works in Model Serving, and that the `ToolRuntime` injection pattern from `LANGCHAIN_AGENT.md` works in practice.
+
+### Files created/modified
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `backend/dbx_agent/context.py` | `RetailContext` dataclass (MemoryClient + session_id) | Done |
+| `backend/dbx_agent/memory_tool.py` | `remember_message` + `recall_memory` tools with `ToolRuntime[RetailContext]` | Done |
+| `backend/dbx_agent/agent.py` | Updated: `context_schema=RetailContext`, includes memory tools | Done |
+| `backend/dbx_agent/serving.py` | Updated: lazy MemoryClient, `asyncio.run()` bridge, context injection | Done |
+| `backend/dbx_agent/config.py` | Updated: `get_environment_vars()` returns Neo4j secrets | Done |
+| `backend/dbx_agent/deploy.py` | Updated: wheel in `code_paths`, new code files, expanded pip_requirements | Done |
+| `backend/dbx_agent/test_local.py` | Local validation script (agent + memory + ToolRuntime) | Done |
+
+### Import path correction
+
+`ToolRuntime` lives in `langgraph.prebuilt` (not `langchain_core.tools` as originally documented in `LANGCHAIN_AGENT.md`). Verified with langgraph 1.0.8 / langchain-core 1.2.13. See the "Import Path Correction" section added to `LANGCHAIN_AGENT.md`.
 
 ### Packaging the wheel
 

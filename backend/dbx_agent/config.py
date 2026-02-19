@@ -61,8 +61,8 @@ class DeployConfig:
     sample_queries: list[str] = field(
         default_factory=lambda: [
             "Echo hello world",
-            "Can you repeat back: testing deployment",
-            "Use the echo tool to say: prototype works",
+            "Remember that my favorite color is blue",
+            "What do you remember about me?",
         ]
     )
 
@@ -83,12 +83,15 @@ class DeployConfig:
         return self.experiment_name_pattern.replace("{user}", user)
 
     def get_environment_vars(self) -> dict[str, str]:
-        """Get environment variables for the serving endpoint.
+        """Get secret-backed environment variables for the serving endpoint.
 
-        Step 2: No secrets needed (echo tool has no external deps).
-        Step 3 will add Neo4j secrets per LANGCHAIN_AGENT.md Section 7.
+        Step 3: Neo4j secrets for MemoryClient connection.
+        Uses the {{secrets/scope/key}} pattern per LANGCHAIN_AGENT.md Section 7.
         """
-        return {}
+        return {
+            "NEO4J_URI": f"{{{{secrets/{self.secret_scope}/{self.neo4j_uri_secret}}}}}",
+            "NEO4J_PASSWORD": f"{{{{secrets/{self.secret_scope}/{self.neo4j_password_secret}}}}}",
+        }
 
 
 def _load_config_from_env() -> DeployConfig:
