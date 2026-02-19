@@ -57,3 +57,6 @@ def test_endpoint() -> int:
 
 if __name__ == "__main__":
     sys.exit(test_endpoint())
+else:
+    # Databricks Workspace: __name__ is not "__main__" when using the Run button
+    test_endpoint()

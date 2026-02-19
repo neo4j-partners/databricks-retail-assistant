@@ -26,42 +26,51 @@ class PrototypeAgent(ChatAgent):
     """ChatAgent wrapper with Neo4j memory integration."""
 
     def __init__(self):
+        # All attributes must be defined in __init__ (MLflow requirement)
         self._agent = None
+        self._initialized = False
+        self._init_error: str | None = None
         self._client = None
-        self._context = None
-
-    @property
-    def _secrets_available(self) -> bool:
-        """Check if Neo4j secrets are provisioned (not available during log_model())."""
-        return "NEO4J_URI" in os.environ and "NEO4J_PASSWORD" in os.environ
 
     def _ensure_initialized(self):
-        """Create the agent and MemoryClient on first call.
+        """Lazy initialization of agent and MemoryClient.
 
-        Lazy init is required because secrets (NEO4J_URI, NEO4J_PASSWORD)
-        are not available during log_model() — they are injected at serving
-        time via Databricks secret-backed environment variables.
+        Follows the aircraft_analyst pattern: catches all exceptions and
+        stores them in _init_error rather than crashing. predict() checks
+        _init_error and returns an error message to the caller.
+
+        During log_model() validation, secrets aren't available — we detect
+        this and skip init so predict() can return a placeholder response.
         """
-        if self._agent is not None:
+        if self._initialized:
             return
 
-        if not self._secrets_available:
-            return  # During log_model() validation — predict() returns placeholder
+        # Secrets not available during log_model() — skip init
+        if "NEO4J_URI" not in os.environ or "NEO4J_PASSWORD" not in os.environ:
+            return
 
-        from neo4j_agent_memory import MemoryClient, MemorySettings, Neo4jConfig
-        from pydantic import SecretStr
+        try:
+            from neo4j_agent_memory import MemoryClient, MemorySettings, Neo4jConfig
+            from pydantic import SecretStr
 
-        settings = MemorySettings(
-            neo4j=Neo4jConfig(
-                uri=os.environ["NEO4J_URI"],
-                password=SecretStr(os.environ["NEO4J_PASSWORD"]),
-            ),
-        )
-        self._client = MemoryClient(settings)
-        self._context = RetailContext(client=self._client)
+            mlflow.langchain.autolog()
 
-        mlflow.langchain.autolog()
-        self._agent = create_prototype_agent()
+            settings = MemorySettings(
+                neo4j=Neo4jConfig(
+                    uri=os.environ["NEO4J_URI"],
+                    password=SecretStr(os.environ["NEO4J_PASSWORD"]),
+                ),
+            )
+            self._client = MemoryClient(settings)
+            self._agent = create_prototype_agent()
+            self._initialized = True
+            self._init_error = None
+
+        except Exception as e:
+            import traceback
+
+            self._init_error = f"Failed to initialize agent: {e}\n{traceback.format_exc()}"
+            self._agent = None
 
     def predict(self, messages, context=None, custom_inputs=None):
         """Sync entry point required by Databricks Model Serving.
@@ -75,13 +84,14 @@ class PrototypeAgent(ChatAgent):
         """
         self._ensure_initialized()
 
-        # During log_model() validation, secrets aren't available yet.
-        # Return a placeholder so MLflow can capture the response schema.
+        # Not yet initialized — either log_model() validation (no secrets)
+        # or a real init error at serving time.
         if self._agent is None:
+            error_msg = self._init_error or "Agent not initialized (secrets not available during model logging)."
             return ChatAgentResponse(
                 messages=[ChatAgentMessage(
                     role="assistant",
-                    content="Agent not initialized (secrets not available during model logging).",
+                    content=f"Error: {error_msg}",
                     id=str(uuid4()),
                 )]
             )
@@ -96,8 +106,8 @@ class PrototypeAgent(ChatAgent):
 
     async def _async_predict(self, messages, context, custom_inputs):
         """Async implementation — connects MemoryClient and invokes agent."""
-        # Connect MemoryClient if not already connected
-        if not self._client.is_connected:
+        # Connect MemoryClient if not already connected (async operation)
+        if self._client and not self._client.is_connected:
             await self._client.connect()
 
         # Extract session_id from custom_inputs or generate one
