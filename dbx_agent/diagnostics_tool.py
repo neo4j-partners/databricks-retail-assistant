@@ -58,6 +58,30 @@ def agent_diagnostics(
     except Exception:
         info["async_bridge"] = "check_failed"
 
+    # ---- Tool injection instrumentation ----
+    try:
+        from agent import ALL_TOOLS
+
+        # Per-tool: langchain-core's detected injectable params
+        for t in ALL_TOOLS:
+            info[f"tool_{t.name}_injected_keys"] = sorted(t._injected_args_keys)
+            info[f"tool_{t.name}_schema_fields"] = sorted(
+                t.get_input_schema().model_fields.keys()
+            )
+
+        # ToolNode-level: langgraph's injection mapping
+        from langgraph.prebuilt import ToolNode
+
+        node = ToolNode(ALL_TOOLS)
+        for tool_name, injected in node._injected_args.items():
+            info[f"tool_{tool_name}_injected"] = {
+                "state": injected.state,
+                "store": injected.store,
+                "runtime": injected.runtime,
+            }
+    except Exception as exc:
+        info["injection_instrumentation_error"] = f"{type(exc).__name__}: {exc}"
+
     import json
 
     return json.dumps(info, indent=2)
