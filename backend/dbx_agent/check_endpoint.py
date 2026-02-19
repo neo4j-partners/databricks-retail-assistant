@@ -1,6 +1,8 @@
 """Verify the deployed prototype agent endpoint.
 
 Checks the endpoint exists, sends sample queries, and prints responses.
+Uses raw REST calls (like aircraft_analyst) instead of the SDK's query() method,
+which can have issues deserializing ChatAgent responses.
 
 Usage:
     uv run python -m backend.dbx_agent.check_endpoint
@@ -8,7 +10,80 @@ Usage:
 
 import sys
 
+import requests
+
 from backend.dbx_agent.config import CONFIG
+
+
+def _get_workspace_url_and_token() -> tuple[str, str]:
+    """Get Databricks workspace URL and auth token.
+
+    Tries dbutils (notebook), then WorkspaceClient (CLI/jobs),
+    then environment variables.
+    """
+    # Method 1: dbutils notebook context
+    try:
+        from pyspark.dbutils import DBUtils
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession.builder.getOrCreate()
+        dbutils = DBUtils(spark)
+        ctx = dbutils.notebook.entry_point.getDbutils().notebook().getContext()
+        url = ctx.apiUrl().get().rstrip("/")
+        token = ctx.apiToken().get()
+        if url and token:
+            return url, token
+    except Exception:
+        pass
+
+    # Method 2: WorkspaceClient config
+    try:
+        from databricks.sdk import WorkspaceClient
+
+        w = WorkspaceClient()
+        url = (w.config.host or "").rstrip("/")
+        token = w.config.token or ""
+        if url and token:
+            return url, token
+    except Exception:
+        pass
+
+    # Method 3: Environment variables
+    import os
+
+    url = os.environ.get("DATABRICKS_HOST", "").rstrip("/")
+    token = os.environ.get("DATABRICKS_TOKEN", "")
+    if url and token:
+        return url, token
+
+    raise ValueError("Could not determine Databricks workspace URL and token")
+
+
+def _extract_content(result: dict) -> str | None:
+    """Extract text content from a ChatAgent or standard response.
+
+    ChatAgent format:  {"messages": [{"role": "assistant", "content": "..."}]}
+    Standard format:   {"choices": [{"message": {"content": "..."}}]}
+    ResponsesAgent:    {"output": [{"type": "message", "content": [{"type": "output_text", "text": "..."}]}]}
+    """
+    # ChatAgent format
+    if "messages" in result and result["messages"]:
+        last = result["messages"][-1]
+        return last.get("content", str(last))
+
+    # Standard completion format
+    if "choices" in result and result["choices"]:
+        return result["choices"][0]["message"]["content"]
+
+    # ResponsesAgent format
+    if "output" in result:
+        for item in result.get("output", []):
+            if item.get("type") == "message":
+                for part in item.get("content", []):
+                    if part.get("type") == "output_text":
+                        return part.get("text")
+
+    return None
 
 
 def check_endpoint() -> int:
@@ -35,6 +110,19 @@ def check_endpoint() -> int:
         print("  Re-run this script once the endpoint reaches READY state.")
         return 1
 
+    # Get auth for raw REST calls
+    try:
+        workspace_url, token = _get_workspace_url_and_token()
+    except ValueError as e:
+        print(f"  Auth error: {e}")
+        return 1
+
+    endpoint_url = f"{workspace_url}/serving-endpoints/{endpoint_name}/invocations"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
     # Send sample queries
     print()
     print("Running sample queries:")
@@ -43,21 +131,19 @@ def check_endpoint() -> int:
     for query in CONFIG.sample_queries:
         print(f"\nQ: {query}")
         try:
-            response = w.serving_endpoints.query(
-                name=endpoint_name,
-                messages=[{"role": "user", "content": query}],
-            )
-            # response may be a typed object or a raw dict depending on SDK version
-            resp = response if isinstance(response, dict) else response.as_dict()
-            if "choices" in resp and resp["choices"]:
-                text = resp["choices"][0]["message"]["content"]
-            elif "messages" in resp and resp["messages"]:
-                text = resp["messages"][-1].get("content", str(resp["messages"][-1]))
+            payload = {"messages": [{"role": "user", "content": query}]}
+            resp = requests.post(endpoint_url, headers=headers, json=payload, timeout=120)
+            resp.raise_for_status()
+            result = resp.json()
+            text = _extract_content(result)
+            if text:
+                print(f"A: {text[:500]}")
             else:
-                text = str(resp)
-            print(f"A: {text[:200]}")
+                print(f"A (raw): {result}")
+        except requests.exceptions.HTTPError as e:
+            print(f"Error: HTTP {e.response.status_code}: {e.response.text[:200]}")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error: {type(e).__name__}: {e}")
 
     print()
     print("Done.")
