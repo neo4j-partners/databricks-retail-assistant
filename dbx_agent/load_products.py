@@ -253,14 +253,18 @@ async def _create_attributes(session):
 async def _create_vector_index(session):
     """Create vector index for product embeddings.
 
-    Dimensions from CONFIG.embedding_dimensions (1024 for Databricks BGE).
+    Drops and recreates the index to ensure dimensions match
+    CONFIG.embedding_dimensions (e.g. 1024 for Databricks BGE).
+    A stale index with wrong dimensions (e.g. 1536 from OpenAI) will
+    silently fail every vector query.
     """
     dims = CONFIG.embedding_dimensions
 
     try:
+        await session.run("DROP INDEX product_embedding IF EXISTS")
         await session.run(
             f"""
-            CREATE VECTOR INDEX product_embedding IF NOT EXISTS
+            CREATE VECTOR INDEX product_embedding
             FOR (p:Product)
             ON (p.embedding)
             OPTIONS {{indexConfig: {{
@@ -269,7 +273,7 @@ async def _create_vector_index(session):
             }}}}
             """
         )
-        print(f"  Vector index created (or already exists) — {dims} dimensions")
+        print(f"  Vector index created — {dims} dimensions")
     except Exception as e:
         print(f"  Vector index creation note: {e}")
 

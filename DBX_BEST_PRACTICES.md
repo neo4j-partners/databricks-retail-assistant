@@ -41,7 +41,7 @@ When adding a new module to `dbx_agent/`:
 1. Create the file with relative imports (e.g., `from context import RetailContext`)
 2. Import it from `agent.py` or another packaged file
 3. **Add it to `code_files` in `deploy.py`** — this is the step that's easy to forget
-4. Files only used locally (e.g., `deploy.py`, `check_endpoint.py`, `config.py`) do **not** need to be in `code_files` — only files imported by `serving.py` or its import chain
+4. Files only used locally (e.g., `deploy.py`, `check_endpoint.py`) do **not** need to be in `code_files` — only files imported by `serving.py` or its import chain. Note: `config.py` **is** needed because `agent.py` imports `CONFIG` from it at runtime.
 
 ---
 
