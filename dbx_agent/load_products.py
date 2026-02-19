@@ -339,13 +339,20 @@ async def _generate_embeddings(session):
         print("  Products will work with text search fallback.")
 
 
-if __name__ == "__main__":
-    sys.exit(asyncio.run(load_sample_data()))
-else:
-    # Databricks Workspace: __name__ is not "__main__" when using the Run button.
-    # The notebook already has a running event loop, so asyncio.run() fails.
-    # nest_asyncio (pre-installed on Databricks) allows nested event loops.
+# Databricks always has a running event loop (notebooks and job clusters).
+# nest_asyncio (pre-installed on Databricks since runtime 10.4) patches it
+# so asyncio.run() works inside the existing loop.
+try:
     import nest_asyncio
 
     nest_asyncio.apply()
+except ImportError:
+    pass  # Not on Databricks — not needed
+
+print(f"[load_products] __name__={__name__}, version=2025-02-18a")
+
+if __name__ == "__main__":
+    sys.exit(asyncio.run(load_sample_data()))
+else:
+    # Databricks Workspace: __name__ is not "__main__" when using the Run button
     asyncio.run(load_sample_data())
