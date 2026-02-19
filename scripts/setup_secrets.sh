@@ -14,7 +14,6 @@
 # Mapping (.env → Databricks secret):
 #   NEO4J_URI      → neo4j-uri
 #   NEO4J_PASSWORD → neo4j-password
-#   OPENAI_API_KEY → openai-api-key
 
 set -e
 
@@ -100,11 +99,6 @@ set_secret() {
 # Set required secrets
 set_secret "neo4j-uri" "$NEO4J_URI"
 set_secret "neo4j-password" "$NEO4J_PASSWORD"
-
-# Set optional secrets if provided
-if [[ -n "$OPENAI_API_KEY" && "$OPENAI_API_KEY" != "sk-..." ]]; then
-    set_secret "openai-api-key" "$OPENAI_API_KEY"
-fi
 
 log_info "Done! Secrets configured in scope: $SCOPE_NAME"
 echo ""

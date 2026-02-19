@@ -10,6 +10,7 @@ Usage:
 
 import os
 import sys
+from uuid import uuid4
 
 import requests
 
@@ -83,6 +84,94 @@ def _extract_content(result: dict) -> str | None:
                         return part.get("text")
 
     return None
+
+
+def _send_message(
+    endpoint_url: str,
+    headers: dict,
+    query: str,
+    custom_inputs: dict | None = None,
+    timeout: int = 120,
+) -> str | None:
+    """Send a single message to the endpoint and return extracted text."""
+    payload: dict = {"messages": [{"role": "user", "content": query}]}
+    if custom_inputs:
+        payload["custom_inputs"] = custom_inputs
+    resp = requests.post(endpoint_url, headers=headers, json=payload, timeout=timeout)
+    resp.raise_for_status()
+    return _extract_content(resp.json())
+
+
+def _run_memory_exercise(endpoint_url: str, headers: dict) -> tuple[int, int]:
+    """Exercise memory tools with a multi-turn conversation sharing a session.
+
+    Creates a unique session_id and sends a scripted conversation that tests:
+    1. Storing facts via remember_message
+    2. Recalling the full history via recall_memory
+    3. Searching memory semantically via search_memory
+    4. Using remembered context for recommendations
+    """
+    session_id = f"check-memory-{uuid4().hex[:8]}"
+    custom_inputs = {"session_id": session_id}
+    passed = 0
+    failed = 0
+
+    # Each turn: (query, list_of_keywords_expected_in_response)
+    turns = [
+        (
+            "Remember that my name is Alex and I prefer trail running shoes.",
+            ["stored", "alex"],
+        ),
+        (
+            "Remember that I wear size 11 and my budget is around $150.",
+            ["stored", "size"],
+        ),
+        (
+            "What do you remember about me?",
+            ["alex", "trail", "size 11"],
+        ),
+        (
+            "Search your memory for anything about my shoe preferences.",
+            ["trail", "running"],
+        ),
+        (
+            "Based on what you know about me, recommend a product.",
+            ["trail", "running"],
+        ),
+    ]
+
+    print(f"  Session ID: {session_id}")
+    print(f"  Turns: {len(turns)}")
+
+    for i, (query, expected_keywords) in enumerate(turns, 1):
+        print(f"\n  Turn {i}: {query}")
+        try:
+            text = _send_message(endpoint_url, headers, query, custom_inputs)
+            if text is None:
+                print(f"    FAIL — no response text")
+                failed += 1
+                continue
+
+            print(f"    Response: {text[:300]}")
+
+            # Check for expected keywords (case-insensitive)
+            text_lower = text.lower()
+            missing = [kw for kw in expected_keywords if kw.lower() not in text_lower]
+            if missing:
+                print(f"    FAIL — missing keywords: {missing}")
+                failed += 1
+            else:
+                print(f"    PASS")
+                passed += 1
+
+        except requests.exceptions.HTTPError as e:
+            print(f"    FAIL — HTTP {e.response.status_code}: {e.response.text[:200]}")
+            failed += 1
+        except Exception as e:
+            print(f"    FAIL — {type(e).__name__}: {e}")
+            failed += 1
+
+    return passed, failed
 
 
 def check_endpoint() -> int:
@@ -161,6 +250,13 @@ def check_endpoint() -> int:
             print(f"Error: HTTP {e.response.status_code}: {e.response.text[:200]}")
         except Exception as e:
             print(f"Error: {type(e).__name__}: {e}")
+
+    # Memory exercise — multi-turn session with shared session_id
+    print()
+    print("Running memory exercise:")
+    print("-" * 40)
+    mem_passed, mem_failed = _run_memory_exercise(endpoint_url, headers)
+    print(f"\nMemory exercise: {mem_passed} passed, {mem_failed} failed")
 
     print()
     print("Done.")

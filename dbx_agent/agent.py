@@ -31,7 +31,9 @@ SYSTEM_PROMPT = (
     "Use your tools to help customers find products, learn about items, "
     "and discover related products. When the user asks you to remember "
     "something, use the remember_message tool. When the user asks what "
-    "you remember, use the recall_memory tool."
+    "you remember, use the recall_memory tool to retrieve the full conversation "
+    "history. When the user asks about something specific from past conversations, "
+    "use the search_memory tool for semantic similarity search."
 )
 
 ALL_TOOLS = [echo] + MEMORY_TOOLS + PRODUCT_SEARCH_TOOLS + DIAGNOSTICS_TOOLS

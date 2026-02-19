@@ -1,15 +1,12 @@
-"""Prototype memory tool using neo4j-agent-memory short-term memory.
+"""Memory tools using neo4j-agent-memory.
 
-This is the Step 3 prototype from PROTOTYPE.md. It validates:
-1. The neo4j-agent-memory wheel works in the serving container
-2. ToolRuntime[RetailContext] injection works in practice
-3. The asyncio.run() bridge works with async-only tools
-
-The tool stores and retrieves messages via MemoryClient.short_term —
-the simplest meaningful interaction that exercises the Neo4j connection,
-the async driver, and the core MemoryClient API without requiring
-embeddings or entity extraction.
+Provides short-term store/recall and semantic search over memory:
+- remember_message: store a message in short-term memory
+- recall_memory: retrieve full conversation history
+- search_memory: semantic similarity search via Neo4jMemoryRetriever
 """
+
+import json
 
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
@@ -76,5 +73,41 @@ async def recall_memory(
     return "\n".join(lines)
 
 
+@tool
+async def search_memory(
+    query: str,
+    runtime: ToolRuntime[RetailContext],
+) -> str:
+    """Search memory for relevant past conversations and facts using semantic similarity.
+
+    Use this tool when the user asks about something specific from past conversations,
+    or when you need to find relevant context without retrieving the full history.
+    """
+    from neo4j_agent_memory.integrations.langchain import Neo4jMemoryRetriever
+
+    client = runtime.context.client
+    retriever = Neo4jMemoryRetriever(
+        memory_client=client,
+        k=5,
+        threshold=0.5,
+    )
+
+    docs = await retriever._get_relevant_documents_async(query)
+
+    results = []
+    for doc in docs[:5]:
+        results.append({
+            "content": doc.page_content,
+            "type": doc.metadata.get("type", "unknown"),
+            "similarity": doc.metadata.get("similarity", 0.0),
+        })
+
+    return json.dumps({
+        "query": query,
+        "results": results,
+        "count": len(results),
+    })
+
+
 # Flat tool list for import by agent.py
-MEMORY_TOOLS = [remember_message, recall_memory]
+MEMORY_TOOLS = [remember_message, recall_memory, search_memory]
