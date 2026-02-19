@@ -30,6 +30,11 @@ class PrototypeAgent(ChatAgent):
         self._client = None
         self._context = None
 
+    @property
+    def _secrets_available(self) -> bool:
+        """Check if Neo4j secrets are provisioned (not available during log_model())."""
+        return "NEO4J_URI" in os.environ and "NEO4J_PASSWORD" in os.environ
+
     def _ensure_initialized(self):
         """Create the agent and MemoryClient on first call.
 
@@ -39,6 +44,9 @@ class PrototypeAgent(ChatAgent):
         """
         if self._agent is not None:
             return
+
+        if not self._secrets_available:
+            return  # During log_model() validation — predict() returns placeholder
 
         from neo4j_agent_memory import MemoryClient, MemorySettings, Neo4jConfig
         from pydantic import SecretStr
@@ -65,19 +73,29 @@ class PrototypeAgent(ChatAgent):
         Uses nest_asyncio when an event loop is already running (Databricks
         notebook / IPython kernel during log_model() validation).
         """
+        self._ensure_initialized()
+
+        # During log_model() validation, secrets aren't available yet.
+        # Return a placeholder so MLflow can capture the response schema.
+        if self._agent is None:
+            return ChatAgentResponse(
+                messages=[ChatAgentMessage(
+                    role="assistant",
+                    content="Agent not initialized (secrets not available during model logging).",
+                    id=str(uuid4()),
+                )]
+            )
+
         try:
             asyncio.get_running_loop()
-            # Event loop already running (Databricks notebook / IPython)
             import nest_asyncio
             nest_asyncio.apply()
         except RuntimeError:
-            pass  # No running loop — asyncio.run() will create one
+            pass
         return asyncio.run(self._async_predict(messages, context, custom_inputs))
 
     async def _async_predict(self, messages, context, custom_inputs):
         """Async implementation — connects MemoryClient and invokes agent."""
-        self._ensure_initialized()
-
         # Connect MemoryClient if not already connected
         if not self._client.is_connected:
             await self._client.connect()
