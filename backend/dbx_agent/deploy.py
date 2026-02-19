@@ -96,22 +96,46 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         str(pkg_dir / "memory_tool.py"),
     ]
 
-    # neo4j-agent-memory wheel (built from ../agent-memory per MEMORY_LIBRARY.md)
-    # The agent-memory repo is a sibling of the project root's parent directory
+    # neo4j-agent-memory wheel
     wheel_name = "neo4j_agent_memory-0.0.1-py3-none-any.whl"
-    project_root = _get_package_dir().parent.parent  # backend/dbx_agent -> backend -> project root
-    wheel_path = project_root / ".." / "agent-memory" / "dist" / wheel_name
-    wheel_path = wheel_path.resolve()
-    if not wheel_path.exists():
-        # Also try neo4j-labs/agent-memory convention
-        wheel_path = (project_root / ".." / ".." / "neo4j-labs" / "agent-memory" / "dist" / wheel_name).resolve()
+    wheel_path = None
 
-    if wheel_path.exists():
+    # Check env var override first
+    env_wheel = os.environ.get("RETAIL_AGENT_WHEEL_PATH")
+    if env_wheel:
+        candidate = Path(env_wheel)
+        if candidate.is_dir():
+            candidate = candidate / wheel_name
+        if candidate.exists():
+            wheel_path = candidate
+
+    # Fallback: Databricks Volumes
+    if not wheel_path:
+        volumes_candidate = Path(f"/Volumes/{config.catalog}/{config.schema}/retail_volume/libs/{wheel_name}")
+        if volumes_candidate.exists():
+            wheel_path = volumes_candidate
+
+    # Fallback: local relative paths (sibling repo)
+    if not wheel_path:
+        project_root = _get_package_dir().parent.parent
+        for candidate in [
+            project_root / ".." / "agent-memory" / "dist" / wheel_name,
+            project_root / ".." / ".." / "neo4j-labs" / "agent-memory" / "dist" / wheel_name,
+        ]:
+            candidate = candidate.resolve()
+            if candidate.exists():
+                wheel_path = candidate
+                break
+
+    if wheel_path:
         code_files.append(str(wheel_path))
-        print(f"Including wheel: {wheel_path.name}")
+        print(f"Including wheel: {wheel_path}")
     else:
-        print(f"WARNING: Wheel not found at {wheel_path}")
-        print("Build it with: cd ../agent-memory && make build")
+        print(f"WARNING: Wheel '{wheel_name}' not found. Searched:")
+        print(f"  - RETAIL_AGENT_WHEEL_PATH env var")
+        print(f"  - /Volumes/{config.catalog}/{config.schema}/retail_volume/libs/")
+        print(f"  - ../agent-memory/dist/ (local)")
+        print(f"  - ../../neo4j-labs/agent-memory/dist/ (local)")
 
     print(f"Including code files: {[Path(f).name for f in code_files]}")
 
