@@ -242,3 +242,70 @@ Server logs are available on the endpoint's serving page in the Databricks works
 ### Key Takeaway
 
 When an endpoint returns a vague or truncated error, **never debug from the truncated message alone**. Always pull the server logs first to see the real exception and full stack trace.
+
+---
+
+## ToolRuntime Injection Fails with `args_schema`
+
+### The Problem
+
+Product search tools deployed to Databricks Model Serving failed with `AttributeError: 'NoneType' object has no attribute 'context'` — meaning `runtime` was `None`. Memory tools and the diagnostics tool worked fine. All tools used the same `ToolRuntime[RetailContext]` injection pattern.
+
+### Symptom
+
+- `search_products`, `get_product_details`, `get_related_products` → HTTP 400 on every call
+- `remember_message`, `recall_memory`, `agent_diagnostics` → worked correctly
+- Server logs showed `AttributeError` at `runtime.context.client` — `runtime` itself was `None`
+
+### Root Cause
+
+The product tools used `@tool(args_schema=SearchProductsInput)` with an explicit Pydantic model for the input schema. The memory tools used plain `@tool` with schema inferred from the function signature.
+
+```python
+# Broken — args_schema prevents ToolRuntime injection in the serving container
+@tool(args_schema=SearchProductsInput)
+async def search_products(
+    query: str,
+    category: str | None = None,
+    max_price: float | None = None,
+    limit: int = 10,
+    runtime: ToolRuntime[RetailContext] = None,
+) -> str:
+```
+
+When `args_schema` is provided, LangChain uses the Pydantic model to validate inputs. The Pydantic model doesn't include `runtime` (it's injected, not user-provided), so depending on the code path, the injection detection can fail — `runtime` never gets populated by the ToolNode, and the tool receives the default `None`.
+
+This is a known issue area in LangChain (GitHub issues #33646, #34293, #34246, PR #33999). While the fix is present in `langchain-core>=1.2.13`, the bug **still manifested in the Databricks serving container** despite using that version. The exact cause in the container is unclear — it could not be reproduced locally with identical library versions across three different invocation patterns (direct ainvoke, full agent, run_coroutine_threadsafe).
+
+### The Fix
+
+Remove `args_schema` and let LangChain infer the schema from the function signature. Use keyword-only syntax (`*,`) to separate `runtime` from the user-facing parameters:
+
+```python
+# Fixed — schema inferred from signature, runtime is keyword-only
+@tool
+async def search_products(
+    query: str,
+    category: str | None = None,
+    max_price: float | None = None,
+    limit: int = 10,
+    *,
+    runtime: ToolRuntime[RetailContext],
+) -> str:
+```
+
+Key changes:
+1. **Removed `args_schema=SearchProductsInput`** — LangChain infers the schema from the function signature, correctly excluding `ToolRuntime` parameters
+2. **Added `*,` before `runtime`** — makes `runtime` keyword-only, which is valid Python even after defaulted positional params
+3. **Removed `= None` default from `runtime`** — without a default, LangGraph must inject it; if injection fails, you get a clear error instead of a silent `None`
+
+### Why It's Hard to Debug
+
+- The bug only manifests in the Databricks serving container, not locally
+- The truncated HTTP 400 error message (`'NoneType' object has no ...`) doesn't indicate which tool or why
+- The same library versions work locally — the container's Python environment, gunicorn worker model, or MLflow's ChatAgent wrapper interact differently with the injection mechanism
+- Local tests with a `FakeToolCallingLLM` (in `tool_sandbox/run_tests.py`) pass all 12 combinations of tool patterns and invocation methods
+
+### Key Takeaway
+
+When using `ToolRuntime` (or `InjectedState`, `InjectedStore`) with LangChain tools, **do not use `args_schema`**. Let LangChain infer the schema from the function signature. This is "Pattern A" from the LangChain docs and the only pattern that reliably works across all deployment environments.

@@ -11,7 +11,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 PROFILE="$1"
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WHEEL_FILE="${REPO_ROOT}/dist/${WHEEL}"
 
 if [[ ! -f "$WHEEL_FILE" ]]; then

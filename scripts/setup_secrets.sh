@@ -5,11 +5,11 @@
 #
 # Usage:
 #   1. Copy .env.sample to .env and fill in your credentials
-#   2. Run: ./backend/scripts/setup_secrets.sh <profile> [scope-name]
+#   2. Run: ./scripts/setup_secrets.sh <profile> [scope-name]
 #      Examples:
-#        ./backend/scripts/setup_secrets.sh DEFAULT                  # Uses default scope: retail-agent-secrets
-#        ./backend/scripts/setup_secrets.sh my-profile               # Custom profile, default scope
-#        ./backend/scripts/setup_secrets.sh my-profile my-scope      # Custom profile and scope
+#        ./scripts/setup_secrets.sh DEFAULT                  # Uses default scope: retail-agent-secrets
+#        ./scripts/setup_secrets.sh my-profile               # Custom profile, default scope
+#        ./scripts/setup_secrets.sh my-profile my-scope      # Custom profile and scope
 #
 # Mapping (.env → Databricks secret):
 #   NEO4J_URI      → neo4j-uri
@@ -20,7 +20,7 @@ set -e
 
 # Databricks profile (required)
 if [[ -z "$1" ]]; then
-    echo "Usage: ./backend/scripts/setup_secrets.sh <profile> [scope-name]"
+    echo "Usage: ./scripts/setup_secrets.sh <profile> [scope-name]"
     echo "  profile:    Databricks CLI profile (e.g. DEFAULT, my-workspace)"
     echo "  scope-name: Secret scope (default: retail-agent-secrets)"
     exit 1
@@ -28,7 +28,7 @@ fi
 
 PROFILE="$1"
 SCOPE_NAME="${2:-retail-agent-secrets}"
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_FILE="${REPO_ROOT}/.env"
 
 # Pass --profile to all databricks CLI commands
