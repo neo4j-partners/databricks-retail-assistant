@@ -214,25 +214,33 @@ async def _create_vector_index(session):
         print(f"  Vector index creation note: {e}")
 
 
-async def _drop_stale_message_indexes(session):
-    """Drop agent-memory message embedding indexes if dimensions have changed.
+async def _drop_stale_memory_indexes(session):
+    """Drop agent-memory vector indexes so they can be recreated at the correct size.
 
-    The agent-memory library creates its own vector indexes during
-    MemoryClient.connect(). If the embedding dimensions changed (e.g.,
-    from 1536 OpenAI to 1024 Databricks BGE), stale indexes must be
-    dropped first so the library can recreate them at the correct size.
+    The agent-memory library creates vector indexes during MemoryClient.connect():
+        message_embedding_idx, entity_embedding_idx, preference_embedding_idx,
+        fact_embedding_idx, task_embedding_idx
+
+    If embedding dimensions changed (e.g., 1536 OpenAI → 1024 Databricks BGE),
+    these must be dropped first. Since _clear_database() already deleted all
+    nodes, we drop ALL agent-memory vector indexes so connect() recreates them
+    at the correct size.
     """
+    memory_indexes = [
+        "message_embedding_idx",
+        "entity_embedding_idx",
+        "preference_embedding_idx",
+        "fact_embedding_idx",
+        "task_embedding_idx",
+    ]
     try:
-        result = await session.run("SHOW INDEXES YIELD name, type WHERE type = 'VECTOR'")
-        records = [r async for r in result]
-        message_indexes = [r["name"] for r in records if "message" in r["name"].lower()]
-        for idx_name in message_indexes:
+        dropped = 0
+        for idx_name in memory_indexes:
             await session.run(f"DROP INDEX {idx_name} IF EXISTS")
-            print(f"  Dropped stale message index: {idx_name}")
-        if not message_indexes:
-            print("  No stale message indexes to drop")
+            dropped += 1
+        print(f"  Dropped {dropped} agent-memory vector indexes")
     except Exception as e:
-        print(f"  Message index cleanup note: {e}")
+        print(f"  Memory index cleanup note: {e}")
 
 
 async def _generate_embeddings(session):
