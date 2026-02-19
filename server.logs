@@ -1,500 +1,95 @@
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
-[hrqfw] return await self.coroutine(*args, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/model/code/memory_tool.py", line 94, in search_memory
-[hrqfw] docs = await retriever.ainvoke(query)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/retrievers.py", line 283, in ainvoke
-[hrqfw] result = await self._aget_relevant_documents(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/retrievers.py", line 323, in _aget_relevant_documents
-[hrqfw] return await run_in_executor(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/runnables/config.py", line 627, in run_in_executor
-[hrqfw] return await asyncio.get_running_loop().run_in_executor(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/thread.py", line 58, in run
-[hrqfw] result = self.fn(*self.args, **self.kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/runnables/config.py", line 618, in wrapper
-[hrqfw] return func(*args, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py", line 63, in _get_relevant_documents
-[hrqfw] return asyncio.run(self._get_relevant_documents_async(query))
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/runners.py", line 194, in run
-[hrqfw] return runner.run(main)
-[hrqfw] ^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/runners.py", line 118, in run
-[hrqfw] return self._loop.run_until_complete(task)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
-[hrqfw] return future.result()
-[hrqfw] ^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py", line 70, in _get_relevant_documents_async
-[hrqfw] messages = await self.memory_client.short_term.search_messages(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/memory/short_term.py", line 615, in search_messages
-[hrqfw] results = await self._client.execute_read(cypher_query, params)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/graph/client.py", line 108, in execute_read
-[hrqfw] result = await session.run(query, parameters or {})
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 305, in run
-[hrqfw] await self._connect(self._config.default_access_mode)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 126, in _connect
-[hrqfw] await super()._connect(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/workspace.py", line 184, in _connect
-[hrqfw] self._connection = await self._pool.acquire(**acquire_kwargs_)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 1219, in acquire
-[hrqfw] await self.ensure_routing_table_is_fresh(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 1153, in ensure_routing_table_is_fresh
-[hrqfw] await self.update_routing_table(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 1025, in update_routing_table
-[hrqfw] if await self._update_routing_table_from(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 938, in _update_routing_table_from
-[hrqfw] new_routing_table = await self.fetch_routing_table(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 836, in fetch_routing_table
-[hrqfw] new_routing_info = await self.fetch_routing_info(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 803, in fetch_routing_info
-[hrqfw] await self.release(cx)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 498, in release
-[hrqfw] await connection.reset()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt6.py", line 495, in reset
-[hrqfw] await self.fetch_all()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 882, in fetch_all
-[hrqfw] detail_delta, summary_delta = await self.fetch_message()
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 864, in fetch_message
-[hrqfw] tag, fields = await self.inbox.pop(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 77, in pop
-[hrqfw] await self._buffer_one_chunk()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 54, in _buffer_one_chunk
-[hrqfw] await receive_into_buffer(self._socket, self._buffer, 2)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 340, in receive_into_buffer
-[hrqfw] n = await sock.recv_into(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 191, in recv_into
-[hrqfw] res = await self._wait_for_read(self._reader.read, nbytes)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 143, in _wait_for_io
-[hrqfw] return await wait_for(io_fut, timeout)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
-[hrqfw] return await fut
-[hrqfw] ^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 713, in read
-[hrqfw] await self._wait_for_data('read')
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 545, in _wait_for_data
-[hrqfw] await self._waiter
-[hrqfw] RuntimeError: Task <Task pending name='Task-155' coro=<Neo4jMemoryRetriever._get_relevant_documents_async() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py:70> cb=[_run_until_complete_cb() at /opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py:182]> got Future <Future pending> attached to a different loop
-[hrqfw] During task with name 'tools' and id 'ffeade64-ba66-463e-6da9-e5c77600e22e'
-[hrqfw] 
-[hrqfw] [2026-02-19 15:15:19 +0000] 2026/02/19 15:15:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c03e80> was created in a different Context
-[hrqfw] [2026-02-19 15:15:19 +0000] 2026/02/19 15:15:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a4c100> was created in a different Context
-[hrqfw] [2026-02-19 15:15:19 +0000] 2026/02/19 15:15:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a85b00> was created in a different Context
-[hrqfw] [2026-02-19 15:15:19 +0000] 2026/02/19 15:15:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c69580> was created in a different Context
-[hrqfw] [2026-02-19 15:15:19 +0000] 2026/02/19 15:15:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a7b5c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a7b5c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c25900> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1f580> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247bc1b00> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a9a600> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1e700> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a4c340> was created in a different Context
-[hrqfw] [2026-02-19 15:15:20 +0000] 2026/02/19 15:15:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a47f80> was created in a different Context
-[hrqfw] [2026-02-19 15:15:55 +0000] 2026/02/19 15:15:55 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bedf00> was created in a different Context
-[hrqfw] [2026-02-19 15:15:55 +0000] 2026/02/19 15:15:55 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bef400> was created in a different Context
-[hrqfw] [2026-02-19 15:15:55 +0000] 2026/02/19 15:15:55 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bec6c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:55 +0000] 2026/02/19 15:15:55 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bee780> was created in a different Context
-[hrqfw] [2026-02-19 15:15:55 +0000] 2026/02/19 15:15:55 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bef7c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:55 +0000] 2026/02/19 15:15:55 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247beca80> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247befe40> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afe440> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afd0c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff24544d200> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247befdc0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247c64180> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afcec0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247a53080> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afd440> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bec700> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247c652c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:56 +0000] 2026/02/19 15:15:56 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247c1aac0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:57 +0000] 2026/02/19 15:15:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247a43680> was created in a different Context
-[hrqfw] [2026-02-19 15:15:57 +0000] 2026/02/19 15:15:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff24daef640> was created in a different Context
-[hrqfw] [2026-02-19 15:15:57 +0000] 2026/02/19 15:15:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2452f4a00> was created in a different Context
-[hrqfw] [2026-02-19 15:15:57 +0000] 2026/02/19 15:15:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff24d0ae140> was created in a different Context
-[hrqfw] [2026-02-19 15:15:57 +0000] 2026/02/19 15:15:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2452f7700> was created in a different Context
-[hrqfw] [2026-02-19 15:15:57 +0000] 2026/02/19 15:15:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247a43380> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff24db0ea40> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244dc1f40> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2452f7800> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afee00> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afc1c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244e84c00> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff24544d380> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2453b9040> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244d6c440> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244d8f2c0> was created in a different Context
-[hrqfw] [2026-02-19 15:15:58 +0000] 2026/02/19 15:15:58 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2452f7900> was created in a different Context
-[hrqfw] [2026-02-19 15:15:59 +0000] 2026/02/19 15:15:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2453b9140> was created in a different Context
-[hrqfw] [2026-02-19 15:15:59 +0000] 2026/02/19 15:15:59 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247ca5d80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2453b8f80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244d8e7c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff245151840> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2452f5dc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bef800> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244dc2500> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bef040> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244d82600> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afdac0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244d8e140> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247afea40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff2453b9800> was created in a different Context
-[hrqfw] [2026-02-19 15:16:00 +0000] 2026/02/19 15:16:00 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244e863c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:01 +0000] 2026/02/19 15:16:01 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244dc2640> was created in a different Context
-[hrqfw] [2026-02-19 15:16:01 +0000] 2026/02/19 15:16:01 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244d808c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:01 +0000] 2026/02/19 15:16:01 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff245151080> was created in a different Context
-[hrqfw] [2026-02-19 15:16:01 +0000] 2026/02/19 15:16:01 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247a404c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:01 +0000] 2026/02/19 15:16:01 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff247bed880> was created in a different Context
-[hrqfw] [2026-02-19 15:16:01 +0000] 2026/02/19 15:16:01 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff2729138d0> at 0x7ff244e840c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:02 +0000] 2026/02/19 15:16:02 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff247ac9d80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:02 +0000] 2026/02/19 15:16:02 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467a7380> was created in a different Context
-[hrqfw] [2026-02-19 15:16:02 +0000] 2026/02/19 15:16:02 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff24692bc00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:02 +0000] 2026/02/19 15:16:02 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246939180> was created in a different Context
-[hrqfw] [2026-02-19 15:16:02 +0000] 2026/02/19 15:16:02 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246929680> was created in a different Context
-[hrqfw] [2026-02-19 15:16:03 +0000] 2026/02/19 15:16:03 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff247ac9140> was created in a different Context
-[hrqfw] [2026-02-19 15:16:03 +0000] 2026/02/19 15:16:03 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467a4d80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246791b40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff24692a500> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246773380> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff247c15280> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246770e00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246793440> was created in a different Context
-[hrqfw] [2026-02-19 15:16:06 +0000] 2026/02/19 15:16:06 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff24693a800> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467ac640> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467ac540> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467af280> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467a75c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467ae440> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467a7ec0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:07 +0000] 2026/02/19 15:16:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467acf00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:08 +0000] 2026/02/19 15:16:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467ada40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:08 +0000] 2026/02/19 15:16:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff24db12780> was created in a different Context
-[hrqfw] [2026-02-19 15:16:08 +0000] 2026/02/19 15:16:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff247c15180> was created in a different Context
-[hrqfw] [2026-02-19 15:16:08 +0000] 2026/02/19 15:16:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff247c15280> was created in a different Context
-[hrqfw] [2026-02-19 15:16:08 +0000] 2026/02/19 15:16:08 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246781ec0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246955880> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff24db12780> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246955880> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff247ba4680> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2468beec0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2467ade80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:09 +0000] 2026/02/19 15:16:09 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2468cf000> was created in a different Context
-[hrqfw] [2026-02-19 15:16:10 +0000] 2026/02/19 15:16:10 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246780800> was created in a different Context
-[hrqfw] [2026-02-19 15:16:10 +0000] 2026/02/19 15:16:10 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff24db12780> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2468e4240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246780080> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2468e4380> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff246771180> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2468e4680> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290b9c0> at 0x7ff2468b6f40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a4e600> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a7b380> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c89300> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1c5c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:11 +0000] 2026/02/19 15:16:11 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a787c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:12 +0000] 2026/02/19 15:16:12 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a7a340> was created in a different Context
-[hrqfw] [2026-02-19 15:16:12 +0000] 2026/02/19 15:16:12 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aa6980> was created in a different Context
-[hrqfw] [2026-02-19 15:16:13 +0000] 2026/02/19 15:16:13 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a225c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:13 +0000] 2026/02/19 15:16:13 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c459c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:13 +0000] 2026/02/19 15:16:13 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1bb80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:13 +0000] 2026/02/19 15:16:13 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c69240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:13 +0000] 2026/02/19 15:16:13 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c89f40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:13 +0000] 2026/02/19 15:16:13 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a22480> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a9bf40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247abac40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a872c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247bc34c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a2d600> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a85dc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:14 +0000] 2026/02/19 15:16:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a7bec0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247abb1c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aafc40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a9a040> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247bd9e00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c09c40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c47840> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a0a000> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a39640> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1dec0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c47bc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:19 +0000] 2026/02/19 15:16:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a85240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:20 +0000] 2026/02/19 15:16:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff24db157c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:20 +0000] 2026/02/19 15:16:20 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a68bc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:22 +0000] 2026/02/19 15:16:22 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c88a80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:22 +0000] 2026/02/19 15:16:22 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247addd80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:22 +0000] 2026/02/19 15:16:22 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247adfe00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:22 +0000] 2026/02/19 15:16:22 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c47840> was created in a different Context
-[hrqfw] [2026-02-19 15:16:22 +0000] 2026/02/19 15:16:22 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff24db15d40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:22 +0000] 2026/02/19 15:16:22 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aa6a00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:23 +0000] 2026/02/19 15:16:23 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aad8c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:23 +0000] 2026/02/19 15:16:23 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a0b100> was created in a different Context
-[hrqfw] [2026-02-19 15:16:23 +0000] 2026/02/19 15:16:23 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c24140> was created in a different Context
-[hrqfw] [2026-02-19 15:16:23 +0000] 2026/02/19 15:16:23 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aa6a00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:23 +0000] 2026/02/19 15:16:23 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aa6d40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:24 +0000] 2026/02/19 15:16:24 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aad080> was created in a different Context
-[hrqfw] [2026-02-19 15:16:24 +0000] 2026/02/19 15:16:24 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a47b00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:26 +0000] 2026/02/19 15:16:26 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c24cc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:26 +0000] 2026/02/19 15:16:26 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aa6c40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:26 +0000] 2026/02/19 15:16:26 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c03240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:26 +0000] 2026/02/19 15:16:26 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c090c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:26 +0000] 2026/02/19 15:16:26 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff24db15d00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:26 +0000] 2026/02/19 15:16:26 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a98700> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c0bac0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247ade100> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247ade840> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247bc1b00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247adfa00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247aded00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:27 +0000] 2026/02/19 15:16:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a2d1c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a4f040> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c0bac0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a2c380> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a23b40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c8a540> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a22a00> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a47ac0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a464c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a47700> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a23240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:28 +0000] 2026/02/19 15:16:28 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c89980> was created in a different Context
-[hrqfw] [2026-02-19 15:16:29 +0000] 2026/02/19 15:16:29 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247ababc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:29 +0000] 2026/02/19 15:16:29 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a7a3c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:29 +0000] 2026/02/19 15:16:29 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247bdb600> was created in a different Context
-[hrqfw] [2026-02-19 15:16:29 +0000] 2026/02/19 15:16:29 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247ab8740> was created in a different Context
-[hrqfw] [2026-02-19 15:16:29 +0000] Encountered an unexpected error while evaluating the model. Error 'Task <Task pending name='Task-454' coro=<Neo4jMemoryRetriever._get_relevant_documents_async() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py:70> cb=[_run_until_complete_cb() at /opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py:182]> got Future <Future pending> attached to a different loop'
-[hrqfw] Traceback (most recent call last):
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/graph/client.py", line 108, in execute_read
-[hrqfw] result = await session.run(query, parameters or {})
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 320, in run
-[hrqfw] await self._auto_result._run(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/result.py", line 237, in _run
-[hrqfw] await self._attach()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/result.py", line 439, in _attach
-[hrqfw] await self._connection.fetch_message()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 204, in inner
-[hrqfw] await coroutine_func(*args, **kwargs)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 864, in fetch_message
-[hrqfw] tag, fields = await self.inbox.pop(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 77, in pop
-[hrqfw] await self._buffer_one_chunk()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 54, in _buffer_one_chunk
-[hrqfw] await receive_into_buffer(self._socket, self._buffer, 2)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 340, in receive_into_buffer
-[hrqfw] n = await sock.recv_into(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 191, in recv_into
-[hrqfw] res = await self._wait_for_read(self._reader.read, nbytes)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 143, in _wait_for_io
-[hrqfw] return await wait_for(io_fut, timeout)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
-[hrqfw] return await fut
-[hrqfw] ^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 713, in read
-[hrqfw] await self._wait_for_data('read')
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 545, in _wait_for_data
-[hrqfw] await self._waiter
-[hrqfw] RuntimeError: Task <Task pending name='Task-454' coro=<Neo4jMemoryRetriever._get_relevant_documents_async() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py:70> cb=[_run_until_complete_cb() at /opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py:182]> got Future <Future pending> attached to a different loop
-[hrqfw] 
-[hrqfw] During handling of the above exception, another exception occurred:
-[hrqfw] 
-[hrqfw] Traceback (most recent call last):
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 881, in transformation
-[hrqfw] (raw_predictions, databricks_output) = _score_model(
-[hrqfw] ^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 519, in _score_model
-[hrqfw] prediction = score_pyfunc_model(model, data, params)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/scoring_server_utils.py", line 519, in score_pyfunc_model
-[hrqfw] return model.predict(data, params=params)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 844, in predict
-[hrqfw] return self._predict(data, params)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 894, in _predict
-[hrqfw] return self._predict_fn(data, params=params)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/chat_agent.py", line 96, in predict
-[hrqfw] response = self.chat_agent.predict(messages, context, custom_inputs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/utils/data_validation.py", line 126, in wrapper
-[hrqfw] return func(self, *args, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/model/serving.py", line 160, in predict
-[hrqfw] return future.result(timeout=120)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 456, in result
-[hrqfw] return self.__get_result()
-[hrqfw] ^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
-[hrqfw] raise self._exception
-[hrqfw] File "/model/serving.py", line 178, in _async_predict
-[hrqfw] result = await self._agent.ainvoke(request, context=retail_context)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3161, in ainvoke
-[hrqfw] async for chunk in self.astream(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2974, in astream
-[hrqfw] async for _ in runner.atick(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 304, in atick
-[hrqfw] await arun_with_retry(
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 138, in arun_with_retry
-[hrqfw] return await task.proc.ainvoke(task.input, config)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
-[hrqfw] input = await asyncio.create_task(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
-[hrqfw] ret = await self.afunc(*args, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 846, in _afunc
-[hrqfw] outputs = await asyncio.gather(*coros)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1177, in _arun_one
-[hrqfw] return await self._execute_tool_async(tool_request, input_type, config)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1126, in _execute_tool_async
-[hrqfw] content = _handle_tool_error(e, flag=self._handle_tool_errors)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 430, in _handle_tool_error
-[hrqfw] content = flag(e)  # type: ignore [assignment, call-arg]
-[hrqfw] ^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 387, in _default_handle_tool_errors
-[hrqfw] raise e
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langgraph/prebuilt/tool_node.py", line 1083, in _execute_tool_async
-[hrqfw] response = await tool.ainvoke(call_args, config)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
-[hrqfw] return await super().ainvoke(input, config, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
-[hrqfw] return await self.arun(tool_input, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1130, in arun
-[hrqfw] raise error_to_raise
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/base.py", line 1096, in arun
-[hrqfw] response = await coro_with_context(coro, context)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/tools/structured.py", line 124, in _arun
-[hrqfw] return await self.coroutine(*args, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/model/code/memory_tool.py", line 94, in search_memory
-[hrqfw] docs = await retriever.ainvoke(query)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/retrievers.py", line 283, in ainvoke
-[hrqfw] result = await self._aget_relevant_documents(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/retrievers.py", line 323, in _aget_relevant_documents
-[hrqfw] return await run_in_executor(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/runnables/config.py", line 627, in run_in_executor
-[hrqfw] return await asyncio.get_running_loop().run_in_executor(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/thread.py", line 58, in run
-[hrqfw] result = self.fn(*self.args, **self.kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/langchain_core/runnables/config.py", line 618, in wrapper
-[hrqfw] return func(*args, **kwargs)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py", line 63, in _get_relevant_documents
-[hrqfw] return asyncio.run(self._get_relevant_documents_async(query))
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/runners.py", line 194, in run
-[hrqfw] return runner.run(main)
-[hrqfw] ^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/runners.py", line 118, in run
-[hrqfw] return self._loop.run_until_complete(task)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
-[hrqfw] return future.result()
-[hrqfw] ^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py", line 70, in _get_relevant_documents_async
-[hrqfw] messages = await self.memory_client.short_term.search_messages(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/memory/short_term.py", line 615, in search_messages
-[hrqfw] results = await self._client.execute_read(cypher_query, params)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/graph/client.py", line 107, in execute_read
-[hrqfw] async with self._get_session() as session:
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 120, in __aexit__
-[hrqfw] await self.close()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 225, in close
-[hrqfw] await self._disconnect()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/session.py", line 135, in _disconnect
-[hrqfw] return await super()._disconnect(sync=sync)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/work/workspace.py", line 285, in _disconnect
-[hrqfw] await self._pool.release(self._connection)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_pool.py", line 498, in release
-[hrqfw] await connection.reset()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt6.py", line 495, in reset
-[hrqfw] await self.fetch_all()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 882, in fetch_all
-[hrqfw] detail_delta, summary_delta = await self.fetch_message()
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_bolt.py", line 864, in fetch_message
-[hrqfw] tag, fields = await self.inbox.pop(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 77, in pop
-[hrqfw] await self._buffer_one_chunk()
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 54, in _buffer_one_chunk
-[hrqfw] await receive_into_buffer(self._socket, self._buffer, 2)
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async/io/_common.py", line 340, in receive_into_buffer
-[hrqfw] n = await sock.recv_into(
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 191, in recv_into
-[hrqfw] res = await self._wait_for_read(self._reader.read, nbytes)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j/_async_compat/network/_bolt_socket.py", line 143, in _wait_for_io
-[hrqfw] return await wait_for(io_fut, timeout)
-[hrqfw] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
-[hrqfw] return await fut
-[hrqfw] ^^^^^^^^^
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 713, in read
-[hrqfw] await self._wait_for_data('read')
-[hrqfw] File "/opt/conda/envs/mlflow-env/lib/python3.12/asyncio/streams.py", line 545, in _wait_for_data
-[hrqfw] await self._waiter
-[hrqfw] RuntimeError: Task <Task pending name='Task-454' coro=<Neo4jMemoryRetriever._get_relevant_documents_async() running at /opt/conda/envs/mlflow-env/lib/python3.12/site-packages/neo4j_agent_memory/integrations/langchain/retriever.py:70> cb=[_run_until_complete_cb() at /opt/conda/envs/mlflow-env/lib/python3.12/asyncio/base_events.py:182]> got Future <Future pending> attached to a different loop
-[hrqfw] During task with name 'tools' and id '123ce793-286b-20ce-2501-3093e3c9bf22'
-[hrqfw] 
-[hrqfw] [2026-02-19 15:16:32 +0000] 2026/02/19 15:16:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c8a240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:32 +0000] 2026/02/19 15:16:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1cb80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:32 +0000] 2026/02/19 15:16:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a45080> was created in a different Context
-[hrqfw] [2026-02-19 15:16:32 +0000] 2026/02/19 15:16:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c1cb80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:32 +0000] 2026/02/19 15:16:32 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff24581ac80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:33 +0000] 2026/02/19 15:16:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a451c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:33 +0000] 2026/02/19 15:16:33 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c036c0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247bd9240> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff245890080> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff2469eaf80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247c88cc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff24570fdc0> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a4e980> was created in a different Context
-[hrqfw] [2026-02-19 15:16:36 +0000] 2026/02/19 15:16:36 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247abbe40> was created in a different Context
-[hrqfw] [2026-02-19 15:16:38 +0000] 2026/02/19 15:16:38 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff247a23f80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:38 +0000] 2026/02/19 15:16:38 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff24581ac80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:38 +0000] 2026/02/19 15:16:38 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff245890780> was created in a different Context
-[hrqfw] [2026-02-19 15:16:38 +0000] 2026/02/19 15:16:38 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff245892180> was created in a different Context
-[hrqfw] [2026-02-19 15:16:38 +0000] 2026/02/19 15:16:38 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff2469eaf80> was created in a different Context
-[hrqfw] [2026-02-19 15:16:38 +0000] 2026/02/19 15:16:38 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x7ff27290bab0> at 0x7ff245890940> was created in a different Context
+[glwwq] [2026-02-19 17:25:31 +0000]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 147, in _load_model_closure
+[glwwq] [2026-02-19 17:25:31 +0000]     model = load_model_fn(path)
+[glwwq] [2026-02-19 17:25:31 +0000]             ^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/tracing/provider.py", line 752, in wrapper
+[glwwq] [2026-02-19 17:25:31 +0000]     result = f(*args, **kwargs)
+[glwwq] [2026-02-19 17:25:31 +0000]              ^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 1171, in load_model
+[glwwq] [2026-02-19 17:25:31 +0000]     model_impl = importlib.import_module(conf[MAIN])._load_pyfunc(data_path)
+[glwwq] [2026-02-19 17:25:31 +0000]                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/code_model.py", line 21, in _load_pyfunc
+[glwwq] [2026-02-19 17:25:31 +0000]     context, model, signature = _load_context_model_and_signature(local_path, model_config)
+[glwwq] [2026-02-19 17:25:31 +0000]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/model.py", line 1255, in _load_context_model_and_signature
+[glwwq] [2026-02-19 17:25:31 +0000]     python_model = _load_model_code_path(model_code_path, model_config)
+[glwwq] [2026-02-19 17:25:31 +0000]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/models/utils.py", line 1948, in _load_model_code_path
+[glwwq] [2026-02-19 17:25:31 +0000]     raise MlflowException(
+[glwwq] [2026-02-19 17:25:31 +0000] mlflow.exceptions.MlflowException: Failed to import code model from /model/serving.py. Error: No module named 'config'
+[glwwq] [2026-02-19 17:25:31 +0000] [67] [INFO] Worker exiting (pid: 67)
+[glwwq] [2026-02-19 17:25:31 +0000] An error occurred while loading the model: Failed to import code model from /model/serving.py. Error: No module named 'config'
+[glwwq] [2026-02-19 17:25:31 +0000] Traceback (most recent call last):
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/models/utils.py", line 1946, in _load_model_code_path
+[glwwq] [2026-02-19 17:25:31 +0000]     spec.loader.exec_module(module)
+[glwwq] [2026-02-19 17:25:31 +0000]   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+[glwwq] [2026-02-19 17:25:31 +0000]   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/model/serving.py", line 24, in <module>
+[glwwq] [2026-02-19 17:25:31 +0000]     from agent import create_prototype_agent
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/model/code/agent.py", line 15, in <module>
+[glwwq] [2026-02-19 17:25:31 +0000]     from config import CONFIG
+[glwwq] [2026-02-19 17:25:31 +0000] ModuleNotFoundError: No module named 'config'
+[glwwq] [2026-02-19 17:25:31 +0000]
+[glwwq] [2026-02-19 17:25:31 +0000] The above exception was the direct cause of the following exception:
+[glwwq] [2026-02-19 17:25:31 +0000] Traceback (most recent call last):
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 237, in get_model_option_or_exit
+[glwwq] [2026-02-19 17:25:31 +0000]     self.model = self.model_future.result()
+[glwwq] [2026-02-19 17:25:31 +0000]                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+[glwwq] [2026-02-19 17:25:31 +0000]     return self.__get_result()
+[glwwq] [2026-02-19 17:25:31 +0000]            ^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+[glwwq] [2026-02-19 17:25:31 +0000]     raise self._exception
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+[glwwq] [2026-02-19 17:25:31 +0000]     result = self.fn(*self.args, **self.kwargs)
+[glwwq] [2026-02-19 17:25:31 +0000]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 147, in _load_model_closure
+[glwwq] [2026-02-19 17:25:31 +0000]     model = load_model_fn(path)
+[glwwq] [2026-02-19 17:25:31 +0000]             ^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/tracing/provider.py", line 752, in wrapper
+[glwwq] [2026-02-19 17:25:31 +0000]     result = f(*args, **kwargs)
+[glwwq] [2026-02-19 17:25:31 +0000]              ^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/__init__.py", line 1171, in load_model
+[glwwq] [2026-02-19 17:25:31 +0000]     model_impl = importlib.import_module(conf[MAIN])._load_pyfunc(data_path)
+[glwwq] [2026-02-19 17:25:31 +0000]                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/loaders/code_model.py", line 21, in _load_pyfunc
+[glwwq] [2026-02-19 17:25:31 +0000]     context, model, signature = _load_context_model_and_signature(local_path, model_config)
+[glwwq] [2026-02-19 17:25:31 +0000]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/pyfunc/model.py", line 1255, in _load_context_model_and_signature
+[glwwq] [2026-02-19 17:25:31 +0000]     python_model = _load_model_code_path(model_code_path, model_config)
+[glwwq] [2026-02-19 17:25:31 +0000]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/models/utils.py", line 1948, in _load_model_code_path
+[glwwq] [2026-02-19 17:25:31 +0000]     raise MlflowException(
+[glwwq] [2026-02-19 17:25:31 +0000] mlflow.exceptions.MlflowException: Failed to import code model from /model/serving.py. Error: No module named 'config'
+[glwwq] [2026-02-19 17:25:31 +0000] [66] [INFO] Worker exiting (pid: 66)
+[glwwq] [2026-02-19 17:25:31 +0000] An error occurred while loading the model: Failed to import code model from /model/serving.py. Error: No module named 'config'
+[glwwq] [2026-02-19 17:25:31 +0000] Traceback (most recent call last):
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/models/utils.py", line 1946, in _load_model_code_path
+[glwwq] [2026-02-19 17:25:31 +0000]     spec.loader.exec_module(module)
+[glwwq] [2026-02-19 17:25:31 +0000]   File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+[glwwq] [2026-02-19 17:25:31 +0000]   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/model/serving.py", line 24, in <module>
+[glwwq] [2026-02-19 17:25:31 +0000]     from agent import create_prototype_agent
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/model/code/agent.py", line 15, in <module>
+[glwwq] [2026-02-19 17:25:31 +0000]     from config import CONFIG
+[glwwq] [2026-02-19 17:25:31 +0000] ModuleNotFoundError: No module named 'config'
+[glwwq] [2026-02-19 17:25:31 +0000]
+[glwwq] [2026-02-19 17:25:31 +0000] The above exception was the direct cause of the following exception:
+[glwwq] [2026-02-19 17:25:31 +0000] Traceback (most recent call last):
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 237, in get_model_option_or_exit
+[glwwq] [2026-02-19 17:25:31 +0000]     self.model = self.model_future.result()
+[glwwq] [2026-02-19 17:25:31 +0000]                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+[glwwq] [2026-02-19 17:25:31 +0000]     return self.__get_result()
+[glwwq] [2026-02-19 17:25:31 +0000]            ^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+[glwwq] [2026-02-19 17:25:31 +0000]     raise self._exception
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+[glwwq] [2026-02-19 17:25:31 +0000]     result = self.fn(*self.args, **self.kwargs)
+[glwwq] [2026-02-19 17:25:31 +0000]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflowserving/scoring_server/__init__.py", line 147, in _load_model_closure
+[glwwq] [2026-02-19 17:25:31 +0000]     model = load_model_fn(path)
+[glwwq] [2026-02-19 17:25:31 +0000]             ^^^^^^^^^^^^^^^^^^^
+[glwwq] [2026-02-19 17:25:31 +0000]   File "/opt/conda/envs/mlflow-env/lib/python3.12/site-packages/mlflow/tracing/provider.py", line 752, in wrapper
+[glwwq] [2026-02-19 17:25:31 +0000]     result = f(*args, **kwargs)
+[glwwq] [2026-02-19 17:25:31 +0000]              ^^^^^^^^^^^^^^^^^^

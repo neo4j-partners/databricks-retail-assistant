@@ -92,6 +92,7 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     pkg_dir = _get_package_dir()
     code_files = [
         str(pkg_dir / "agent.py"),
+        str(pkg_dir / "config.py"),
         str(pkg_dir / "context.py"),
         str(pkg_dir / "diagnostics_tool.py"),
         str(pkg_dir / "embedder.py"),
