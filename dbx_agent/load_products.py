@@ -53,11 +53,13 @@ def _get_neo4j_credentials() -> tuple[str, str]:
 
     # Method 2: WorkspaceClient (CLI)
     try:
+        import base64
+
         from databricks.sdk import WorkspaceClient
 
         w = WorkspaceClient()
-        uri = w.secrets.get_secret(scope, uri_key).value
-        password = w.secrets.get_secret(scope, password_key).value
+        uri = base64.b64decode(w.secrets.get_secret(scope, uri_key).value).decode("utf-8")
+        password = base64.b64decode(w.secrets.get_secret(scope, password_key).value).decode("utf-8")
         if uri and password:
             print(f"  Credentials from WorkspaceClient secrets ({scope})")
             return uri, password
