@@ -74,7 +74,12 @@ class PrototypeAgent(ChatAgent):
             return
 
         try:
-            from neo4j_agent_memory import MemoryClient, MemorySettings, Neo4jConfig
+            from neo4j_agent_memory import (
+                EmbeddingConfig,
+                MemoryClient,
+                MemorySettings,
+                Neo4jConfig,
+            )
             from pydantic import SecretStr
 
             from embedder import DatabricksEmbedder
@@ -83,13 +88,6 @@ class PrototypeAgent(ChatAgent):
 
             # Create persistent event loop before anything async
             self._loop = _create_background_loop()
-
-            settings = MemorySettings(
-                neo4j=Neo4jConfig(
-                    uri=os.environ["NEO4J_URI"],
-                    password=SecretStr(os.environ["NEO4J_PASSWORD"]),
-                ),
-            )
 
             # Create Databricks embedder for semantic memory search.
             # Uses mlflow.deployments which handles auth automatically
@@ -100,6 +98,16 @@ class PrototypeAgent(ChatAgent):
             embedding_dims = int(os.environ.get(
                 "RETAIL_AGENT_EMBEDDING_DIMENSIONS", "1024"
             ))
+
+            settings = MemorySettings(
+                neo4j=Neo4jConfig(
+                    uri=os.environ["NEO4J_URI"],
+                    password=SecretStr(os.environ["NEO4J_PASSWORD"]),
+                ),
+                embedding=EmbeddingConfig(
+                    dimensions=embedding_dims,
+                ),
+            )
             embedder = DatabricksEmbedder(
                 model=embedding_model,
                 dims=embedding_dims,

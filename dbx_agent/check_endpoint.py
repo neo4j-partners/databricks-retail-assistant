@@ -120,11 +120,11 @@ def _run_memory_exercise(endpoint_url: str, headers: dict) -> tuple[int, int]:
     turns = [
         (
             "Remember that my name is Alex and I prefer trail running shoes.",
-            ["stored", "alex"],
+            ["alex", "trail"],
         ),
         (
             "Remember that I wear size 11 and my budget is around $150.",
-            ["stored", "size"],
+            ["size", "11"],
         ),
         (
             "What do you remember about me?",

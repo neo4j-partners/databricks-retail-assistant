@@ -40,7 +40,7 @@ async def load_sample_data():
         await _create_vector_index(session)
 
         print("Dropping stale message embedding indexes...")
-        await _drop_stale_message_indexes(session)
+        await _drop_stale_memory_indexes(session)
 
         print("Generating embeddings...")
         await _generate_embeddings(session)
