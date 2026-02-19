@@ -231,13 +231,24 @@ def check_endpoint() -> int:
     except Exception as e:
         print(f"Error: {type(e).__name__}: {e}")
 
-    # Send sample queries
+    # Send sample queries — each tagged with the concept it demonstrates
+    query_concepts = {
+        "Echo hello world": "Basic connectivity",
+        "Remember that my favorite color is blue": "Memory storage",
+        "What do you remember about me?": "Memory recall",
+        "Search for running shoes under $200": "Product search (Lakehouse)",
+        "Get details for product 'nike-pegasus-40'": "Product lookup (Neo4j)",
+        "What products are related to 'brooks-ghost-16'?": "Graph traversal (Neo4j)",
+    }
+
     print()
     print("Running sample queries:")
-    print("-" * 40)
+    print("=" * 50)
 
-    for query in CONFIG.sample_queries:
-        print(f"\nQ: {query}")
+    for i, query in enumerate(CONFIG.sample_queries, 1):
+        concept = query_concepts.get(query, "General")
+        print(f"\n#### [{i}/{len(CONFIG.sample_queries)}] {concept}")
+        print(f"Q: {query}")
         try:
             payload = {"messages": [{"role": "user", "content": query}]}
             resp = requests.post(endpoint_url, headers=headers, json=payload, timeout=120)
@@ -252,6 +263,7 @@ def check_endpoint() -> int:
             print(f"Error: HTTP {e.response.status_code}: {e.response.text[:200]}")
         except Exception as e:
             print(f"Error: {type(e).__name__}: {e}")
+        print(f"#### end {concept}")
 
     # Memory exercise — multi-turn session with shared session_id
     print()
