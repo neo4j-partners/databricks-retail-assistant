@@ -7,7 +7,7 @@ All settings can be overridden via environment variables using the
 pattern: RETAIL_AGENT_<SETTING_NAME>.
 
 Usage:
-    from backend.dbx_agent.config import CONFIG, RunMode
+    from dbx_agent.config import CONFIG, RunMode
 
     # Override via env: RETAIL_AGENT_RUN_MODE=delete
 """

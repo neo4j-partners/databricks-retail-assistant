@@ -5,7 +5,7 @@ Uses raw REST calls (like aircraft_analyst) instead of the SDK's query() method,
 which can have issues deserializing ChatAgent responses.
 
 Usage:
-    uv run python -m backend.dbx_agent.check_endpoint
+    uv run python -m dbx_agent.check_endpoint
 """
 
 import os
@@ -13,7 +13,7 @@ import sys
 
 import requests
 
-from backend.dbx_agent.config import CONFIG
+from dbx_agent.config import CONFIG
 
 
 def _get_workspace_url_and_token() -> tuple[str, str]:

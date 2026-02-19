@@ -1,5 +1,7 @@
 # Databricks Quick Start
 
+The Databricks agent lives in `dbx_agent/` at the project root. It is deployed to Databricks Model Serving via MLflow and `agents.deploy()`.
+
 This project depends on `neo4j-agent-memory`, a library not published to PyPI. These steps build it as a wheel and install it on a Databricks cluster.
 
 ## Prerequisites

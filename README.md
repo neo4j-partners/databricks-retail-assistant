@@ -186,6 +186,16 @@ uv run python -m backend.scripts.lakehouse_tables --skip-tables
 ## Project Structure
 
 ```
+dbx_agent/                         # Databricks agent (deployed to Model Serving)
+├── agent.py                       # LangGraph ReAct agent with context_schema
+├── serving.py                     # ChatAgent shim for Databricks Model Serving
+├── config.py                      # Deployment configuration
+├── deploy.py                      # MLflow log → UC register → agents.deploy()
+├── check_endpoint.py              # Verify deployed endpoint
+├── context.py                     # RetailContext dataclass (ToolRuntime injection)
+├── memory_tool.py                 # Memory tools (ToolRuntime[RetailContext])
+└── product_search.py              # Product search tools (ToolRuntime[RetailContext])
+
 backend/
 ├── main.py              # Entry point (uvicorn runner)
 ├── app.py               # FastAPI app factory and lifespan
@@ -203,7 +213,7 @@ backend/
 │   ├── health.py        # GET /health
 │   ├── memory.py        # GET /memory/*
 │   └── products.py      # GET /products/*
-├── tools/               # LangGraph agent tools
+├── tools/               # LangGraph agent tools (local FastAPI)
 │   ├── cart.py
 │   ├── inventory.py
 │   ├── memory_tools.py
