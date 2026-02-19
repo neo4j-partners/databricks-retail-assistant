@@ -91,7 +91,7 @@ async def search_memory(
         threshold=0.5,
     )
 
-    docs = await retriever._get_relevant_documents_async(query)
+    docs = await retriever.ainvoke(query)
 
     results = []
     for doc in docs[:5]:
