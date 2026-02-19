@@ -13,6 +13,7 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
 from context import RetailContext
+from diagnostics_tool import DIAGNOSTICS_TOOLS
 from memory_tool import MEMORY_TOOLS
 from product_search import PRODUCT_SEARCH_TOOLS
 
@@ -33,7 +34,7 @@ SYSTEM_PROMPT = (
     "you remember, use the recall_memory tool."
 )
 
-ALL_TOOLS = [echo] + MEMORY_TOOLS + PRODUCT_SEARCH_TOOLS
+ALL_TOOLS = [echo] + MEMORY_TOOLS + PRODUCT_SEARCH_TOOLS + DIAGNOSTICS_TOOLS
 
 
 def create_prototype_agent(llm=None):

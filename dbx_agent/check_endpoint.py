@@ -121,6 +121,25 @@ def check_endpoint() -> int:
         "Content-Type": "application/json",
     }
 
+    # Run diagnostics check
+    print()
+    print("Running diagnostics:")
+    print("-" * 40)
+    try:
+        diag_payload = {"messages": [{"role": "user", "content": "Run agent_diagnostics and return the raw JSON output only, no commentary."}]}
+        resp = requests.post(endpoint_url, headers=headers, json=diag_payload, timeout=120)
+        resp.raise_for_status()
+        result = resp.json()
+        text = _extract_content(result)
+        if text:
+            print(text)
+        else:
+            print(f"(raw): {result}")
+    except requests.exceptions.HTTPError as e:
+        print(f"Error: HTTP {e.response.status_code}: {e.response.text[:300]}")
+    except Exception as e:
+        print(f"Error: {type(e).__name__}: {e}")
+
     # Send sample queries
     print()
     print("Running sample queries:")
