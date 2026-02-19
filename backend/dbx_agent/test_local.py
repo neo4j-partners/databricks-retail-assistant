@@ -1,8 +1,8 @@
-"""Local test script for the Step 3 prototype agent.
+"""Local test script for the dbx_agent.
 
-Validates the agent, memory tools, and ToolRuntime injection locally
-before deploying to Databricks. Requires a Neo4j instance (local Docker
-or Aura) with credentials in environment variables.
+Validates the agent, memory tools, product search tools, and ToolRuntime
+injection locally before deploying to Databricks. Requires a Neo4j instance
+(local Docker or Aura) with credentials in environment variables.
 
 Usage:
     # With Neo4j Aura or local instance:
@@ -20,8 +20,8 @@ import sys
 import uuid
 
 
-async def test_agent_with_memory():
-    """Test the agent with ToolRuntime injection and real Neo4j memory."""
+async def test_agent():
+    """Test the agent with ToolRuntime injection and real Neo4j."""
     from neo4j_agent_memory import MemoryClient, MemorySettings, Neo4jConfig
     from pydantic import SecretStr
 
@@ -30,7 +30,7 @@ async def test_agent_with_memory():
     neo4j_password = os.environ.get("NEO4J_PASSWORD", "password")
 
     print("=" * 60)
-    print("LOCAL TEST: Step 3 Prototype Agent")
+    print("LOCAL TEST: dbx_agent")
     print("=" * 60)
     print(f"Neo4j URI: {neo4j_uri}")
     print()
@@ -47,7 +47,7 @@ async def test_agent_with_memory():
     await client.connect()
     print("   Connected to Neo4j")
 
-    # 2. Create agent (use a local LLM or mock for testing)
+    # 2. Create agent
     print("2. Creating agent...")
     try:
         from backend.dbx_agent.agent import create_prototype_agent
@@ -61,12 +61,12 @@ async def test_agent_with_memory():
     agent = create_prototype_agent()
     print("   Agent created with tools:", [t.name for t in agent.tools])
 
-    # 3. Test echo tool (baseline)
-    print()
-    print("3. Testing echo tool...")
     session_id = f"test-{uuid.uuid4().hex[:8]}"
     ctx = RetailContext(client=client, session_id=session_id)
 
+    # 3. Test echo tool (baseline)
+    print()
+    print("3. Testing echo tool...")
     result = await agent.ainvoke(
         {"messages": [{"role": "user", "content": "Echo hello world"}]},
         context=ctx,
@@ -84,7 +84,6 @@ async def test_agent_with_memory():
     last_msg = result["messages"][-1]
     print(f"   Response: {last_msg.content[:200]}")
 
-    # Check if tool was called
     tool_msgs = [m for m in result["messages"] if hasattr(m, "type") and m.type == "tool"]
     if tool_msgs:
         print(f"   Tool call output: {tool_msgs[-1].content[:200]}")
@@ -105,9 +104,57 @@ async def test_agent_with_memory():
     if tool_msgs:
         print(f"   Tool call output: {tool_msgs[-1].content[:200]}")
 
-    # 6. Cleanup
+    # 6. Test search_products tool
     print()
-    print("6. Cleanup...")
+    print("6. Testing search_products tool...")
+    result = await agent.ainvoke(
+        {"messages": [{"role": "user", "content": "Search for running shoes under $100"}]},
+        context=ctx,
+    )
+    last_msg = result["messages"][-1]
+    print(f"   Response: {last_msg.content[:300]}")
+
+    tool_msgs = [m for m in result["messages"] if hasattr(m, "type") and m.type == "tool"]
+    if tool_msgs:
+        print(f"   Tool call output: {tool_msgs[-1].content[:300]}")
+    else:
+        print("   WARNING: No tool call detected")
+
+    # 7. Test get_product_details tool
+    print()
+    print("7. Testing get_product_details tool...")
+    result = await agent.ainvoke(
+        {"messages": [{"role": "user", "content": "Get me the details for product 'trail-runner-pro'"}]},
+        context=ctx,
+    )
+    last_msg = result["messages"][-1]
+    print(f"   Response: {last_msg.content[:300]}")
+
+    tool_msgs = [m for m in result["messages"] if hasattr(m, "type") and m.type == "tool"]
+    if tool_msgs:
+        print(f"   Tool call output: {tool_msgs[-1].content[:300]}")
+    else:
+        print("   WARNING: No tool call detected")
+
+    # 8. Test get_related_products tool
+    print()
+    print("8. Testing get_related_products tool...")
+    result = await agent.ainvoke(
+        {"messages": [{"role": "user", "content": "What products are related to 'trail-runner-pro'?"}]},
+        context=ctx,
+    )
+    last_msg = result["messages"][-1]
+    print(f"   Response: {last_msg.content[:300]}")
+
+    tool_msgs = [m for m in result["messages"] if hasattr(m, "type") and m.type == "tool"]
+    if tool_msgs:
+        print(f"   Tool call output: {tool_msgs[-1].content[:300]}")
+    else:
+        print("   WARNING: No tool call detected")
+
+    # 9. Cleanup
+    print()
+    print("9. Cleanup...")
     await client.close()
     print("   MemoryClient closed")
 
@@ -120,12 +167,13 @@ async def test_agent_with_memory():
     print("  - create_react_agent with context_schema=RetailContext")
     print("  - ToolRuntime[RetailContext] injection into async tools")
     print("  - neo4j-agent-memory short-term memory (add + retrieve)")
+    print("  - Product search (search_products, get_product_details, get_related_products)")
     print("  - asyncio async execution of tools")
 
 
 def main():
     try:
-        asyncio.run(test_agent_with_memory())
+        asyncio.run(test_agent())
         return 0
     except Exception as e:
         print()

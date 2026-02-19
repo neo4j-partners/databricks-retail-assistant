@@ -2,16 +2,18 @@
 
 Step 3 prototype from PROTOTYPE.md. Builds on Step 2 by adding:
 - Lazy MemoryClient init from secrets (NEO4J_URI, NEO4J_PASSWORD)
-- asyncio.run() bridge from sync predict() to async ainvoke()
+- Persistent event loop in a background thread for async bridging
 - RetailContext injection into the LangGraph agent
 
 References:
     - LANGCHAIN_AGENT.md Section 6 (ChatAgent adapter pattern)
     - PROTOTYPE.md Step 3 (neo4j-agent-memory integration)
+    - neo4j-agent-memory integrations/base.py (run_sync pattern)
 """
 
 import asyncio
 import os
+import threading
 from uuid import uuid4
 
 import mlflow
@@ -20,6 +22,26 @@ from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
 
 from agent import create_prototype_agent
 from context import RetailContext
+
+
+def _create_background_loop() -> asyncio.AbstractEventLoop:
+    """Create a persistent event loop running in a background thread.
+
+    This avoids the "async driver bound to wrong event loop" problem:
+    asyncio.run() creates and destroys a new loop each time, but the
+    Neo4j async driver is bound to the loop it was connected on. By
+    keeping one loop alive, all async work (connect, tool calls, etc.)
+    runs on the same loop across requests.
+    """
+    loop = asyncio.new_event_loop()
+
+    def _run(loop: asyncio.AbstractEventLoop) -> None:
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
+
+    thread = threading.Thread(target=_run, args=(loop,), daemon=True)
+    thread.start()
+    return loop
 
 
 class PrototypeAgent(ChatAgent):
@@ -31,6 +53,7 @@ class PrototypeAgent(ChatAgent):
         self._initialized = False
         self._init_error: str | None = None
         self._client = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def _ensure_initialized(self):
         """Lazy initialization of agent and MemoryClient.
@@ -55,6 +78,9 @@ class PrototypeAgent(ChatAgent):
 
             mlflow.langchain.autolog()
 
+            # Create persistent event loop before anything async
+            self._loop = _create_background_loop()
+
             settings = MemorySettings(
                 neo4j=Neo4jConfig(
                     uri=os.environ["NEO4J_URI"],
@@ -62,6 +88,14 @@ class PrototypeAgent(ChatAgent):
                 ),
             )
             self._client = MemoryClient(settings)
+
+            # Connect MemoryClient on the persistent loop so the Neo4j
+            # driver is bound to it from the start
+            future = asyncio.run_coroutine_threadsafe(
+                self._client.connect(), self._loop
+            )
+            future.result(timeout=30)
+
             self._agent = create_prototype_agent()
             self._initialized = True
             self._init_error = None
@@ -75,12 +109,9 @@ class PrototypeAgent(ChatAgent):
     def predict(self, messages, context=None, custom_inputs=None):
         """Sync entry point required by Databricks Model Serving.
 
-        Bridges to async via asyncio.run() because all memory tools and
-        the MemoryClient are async-only. See LANGCHAIN_AGENT.md
-        "Async Tools in Model Serving" section.
-
-        Uses nest_asyncio when an event loop is already running (Databricks
-        notebook / IPython kernel during log_model() validation).
+        Dispatches async work to the persistent background event loop
+        via run_coroutine_threadsafe(). This ensures the Neo4j async
+        driver always runs on the same loop it was connected on.
         """
         self._ensure_initialized()
 
@@ -96,20 +127,14 @@ class PrototypeAgent(ChatAgent):
                 )]
             )
 
-        try:
-            asyncio.get_running_loop()
-            import nest_asyncio
-            nest_asyncio.apply()
-        except RuntimeError:
-            pass
-        return asyncio.run(self._async_predict(messages, context, custom_inputs))
+        future = asyncio.run_coroutine_threadsafe(
+            self._async_predict(messages, context, custom_inputs),
+            self._loop,
+        )
+        return future.result(timeout=120)
 
     async def _async_predict(self, messages, context, custom_inputs):
-        """Async implementation — connects MemoryClient and invokes agent."""
-        # Connect MemoryClient if not already connected (async operation)
-        if self._client and not self._client.is_connected:
-            await self._client.connect()
-
+        """Async implementation — invokes agent with RetailContext."""
         # Extract session_id from custom_inputs or generate one
         session_id = None
         if custom_inputs and isinstance(custom_inputs, dict):

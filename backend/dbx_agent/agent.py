@@ -14,6 +14,7 @@ from langgraph.prebuilt import ToolRuntime
 
 from context import RetailContext
 from memory_tool import MEMORY_TOOLS
+from product_search import PRODUCT_SEARCH_TOOLS
 
 
 @tool
@@ -23,17 +24,16 @@ def echo(message: str) -> str:
 
 
 SYSTEM_PROMPT = (
-    "You are a test agent for validating Databricks deployment with Neo4j memory. "
-    "You have three tools:\n"
-    "- 'echo': repeats messages back (for basic validation)\n"
-    "- 'remember_message': stores information in Neo4j short-term memory\n"
-    "- 'recall_memory': retrieves conversation history from memory\n\n"
-    "When the user asks you to remember something, use the remember_message tool. "
-    "When the user asks what you remember, use the recall_memory tool. "
-    "For other messages, use the echo tool."
+    "You are a retail product assistant with access to a Neo4j knowledge graph. "
+    "You can search products, get product details, find related products, "
+    "and manage conversation memory.\n\n"
+    "Use your tools to help customers find products, learn about items, "
+    "and discover related products. When the user asks you to remember "
+    "something, use the remember_message tool. When the user asks what "
+    "you remember, use the recall_memory tool."
 )
 
-ALL_TOOLS = [echo] + MEMORY_TOOLS
+ALL_TOOLS = [echo] + MEMORY_TOOLS + PRODUCT_SEARCH_TOOLS
 
 
 def create_prototype_agent(llm=None):
