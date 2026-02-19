@@ -125,6 +125,7 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         "pydantic>=2.0.0",
         "pydantic-settings>=2.0.0",
         "openai>=1.0.0",
+        "nest-asyncio>=1.5.0",
     ]
 
     # Install the bundled wheel at serving time

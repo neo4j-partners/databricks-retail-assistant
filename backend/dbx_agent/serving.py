@@ -61,7 +61,17 @@ class PrototypeAgent(ChatAgent):
         Bridges to async via asyncio.run() because all memory tools and
         the MemoryClient are async-only. See LANGCHAIN_AGENT.md
         "Async Tools in Model Serving" section.
+
+        Uses nest_asyncio when an event loop is already running (Databricks
+        notebook / IPython kernel during log_model() validation).
         """
+        try:
+            asyncio.get_running_loop()
+            # Event loop already running (Databricks notebook / IPython)
+            import nest_asyncio
+            nest_asyncio.apply()
+        except RuntimeError:
+            pass  # No running loop — asyncio.run() will create one
         return asyncio.run(self._async_predict(messages, context, custom_inputs))
 
     async def _async_predict(self, messages, context, custom_inputs):
