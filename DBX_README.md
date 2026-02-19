@@ -9,24 +9,39 @@ This project depends on `neo4j-agent-memory`, a library not published to PyPI. T
 
 ## Cluster library versions
 
-Install these as **PyPI** libraries on the cluster. Avoid duplicates — if an older version is already installed, uninstall it first.
+Install these as **PyPI** libraries on the cluster. If an older version of a library is already installed, **uninstall it first** — duplicate entries with different versions cause pip resolution failures.
 
-| Library | Version | Source | Notes |
+| Library | Version | Type | Notes |
 |---|---|---|---|
-| `neo4j-agent-memory` | `0.0.1` | Wheel (Volume) | Built from `maf` branch — see Steps 1–3 below |
-| `neo4j` | `5.27.0` | PyPI | The agent-memory library requires `>=5.20.0`. Use 5.x, not 6.x — the neo4j 6.x driver has breaking API changes that may conflict with agent-memory |
-| `langgraph` | `0.4.1` | PyPI | Latest 0.x stable. The 1.x line is pre-release |
-| `langchain-core` | `0.3.51` | PyPI | Latest 0.3.x stable. The 1.x line is pre-release and may have breaking changes |
-| `langchain-openai` | `0.3.18` | PyPI | Must match the langchain-core 0.3.x line |
-| `openai` | `1.82.0` | PyPI | Required by agent-memory `[openai]` extra |
+| `neo4j-agent-memory` | `0.0.1` | Wheel | Built from `maf` branch (Steps 1–3 below) |
+| `neo4j` | `6.1.0` | PyPI | agent-memory requires `>=5.20.0` |
+| `langgraph` | `1.0.8` | PyPI | Required by `langchain==1.2.10` (`>=1.0.8,<1.1.0`) |
+| `langchain-core` | `>=1.2.0` | PyPI | Required by `langchain-openai` and `langchain` |
+| `langchain-openai` | `1.1.2` | PyPI | Requires `openai>=2.20.0,<3.0.0` |
+| `openai` | `2.21.0` | PyPI | Required by agent-memory `[openai]` extra and `langchain-openai` |
 | `pydantic` | `2.12.5` | PyPI | |
 | `pydantic-settings` | `2.13.0` | PyPI | |
 | `databricks-agents` | `1.9.3` | PyPI | |
-| `databricks-langchain` | `0.15.0` | PyPI | |
+| `databricks-langchain` | `0.15.0` | PyPI | Requires `langchain>=1.0.0`, `openai>=1.99.9` |
 | `neo4j-graphrag` | `1.13.0` | PyPI | |
 
-> **Why not the "latest" 1.x versions of langgraph/langchain-core/langchain-openai?**
-> PyPI shows `langgraph==1.0.8`, `langchain-core==1.2.13`, `langchain-openai==1.1.10` as "latest", but these are part of a recent major version bump that introduced breaking changes. The 0.x / 0.3.x lines are the current stable releases that the broader LangChain ecosystem (including `databricks-langchain`) is pinned against. Installing 1.x versions alongside 0.x dependencies causes pip resolution failures — which is why you saw neo4j, langgraph, and langchain-openai failing to resolve.
+### Version compatibility chain
+
+The versions above are driven by `databricks-langchain==0.15.0`, which requires:
+
+```
+databricks-langchain>=0.15.0
+  → langchain>=1.0.0 (latest: 1.2.10)
+    → langchain-core>=1.2.10,<2.0.0
+    → langgraph>=1.0.8,<1.1.0
+  → openai>=1.99.9 (effectively openai 2.x)
+
+langchain-openai==1.1.2
+  → langchain-core>=1.2.0,<2.0.0
+  → openai>=2.20.0,<3.0.0
+```
+
+All versions listed in the table are mutually compatible.
 
 ## Step 1: Build the wheel
 
@@ -65,7 +80,7 @@ This uploads the wheel to `/Volumes/retail_assistant/retail/retail_volume/libs/`
 4. Browse to `retail_assistant` > `retail` > `retail_volume` > `libs` > `neo4j_agent_memory-0.0.1-py3-none-any.whl`
 5. Click **Install**
 
-Then add the PyPI libraries from the table above (same **Install new** dialog, select **PyPI** as the source). Install each one individually.
+Then add each PyPI library from the table above (same **Install new** dialog, select **PyPI** as the source).
 
 Restart the cluster.
 
