@@ -1,6 +1,6 @@
 # Databricks Retail Assistant
 
-A retail shopping assistant powered by LangGraph and Neo4j Agent Memory. It provides product search, personalized recommendations, inventory checking, and conversational memory through a FastAPI backend with SSE streaming.
+A two-agent supervisor system deployed on Databricks using Genie, AgentBricks, and the Mosaic AI Agent Framework. A supervisor classifies user intent and routes analytics questions to a Genie Lakehouse Agent and product/recommendation questions to a Neo4j Knowledge Graph Agent. The KG agent is a LangGraph ReAct agent with persistent memory, deployed to Databricks Model Serving via MLflow.
 
 ## Architecture Overview
 
@@ -10,8 +10,8 @@ The assistant draws from two complementary data stores connected by a shared `pr
 
 ![Dual Database Architecture](docs/images/dual-database-architecture.png)
 
-- **Databricks Lakehouse** — 5 Delta tables in Unity Catalog (`retail_assistant.retail`) holding 1.15M transactions, 5,000 customers, 115K reviews, 417K daily inventory snapshots, and 20 stores. Optimized for SQL analytics: revenue trends, customer segments, basket analysis.
-- **Neo4j Knowledge Graph** — 570 products with Category, Brand, and Attribute nodes connected by relationships (IN_CATEGORY, MADE_BY, SIMILAR_TO, BOUGHT_TOGETHER, HAS_ATTRIBUTE). Includes agent memory (Message, Entity, Preference, Fact, Task) and a vector index for semantic search.
+- **Databricks Lakehouse.** 5 Delta tables in Unity Catalog (`retail_assistant.retail`) holding 1.15M transactions, 5,000 customers, 115K reviews, 417K daily inventory snapshots, and 20 stores. Optimized for SQL analytics, including revenue trends, customer segments, and basket analysis.
+- **Neo4j Knowledge Graph.** 570 products with Category, Brand, and Attribute nodes connected by relationships (IN_CATEGORY, MADE_BY, SIMILAR_TO, BOUGHT_TOGETHER, HAS_ATTRIBUTE). Includes agent memory (Message, Entity, Preference, Fact, Task) and a vector index for semantic search.
 
 ### Multi-Agent Architecture
 
@@ -19,9 +19,9 @@ A two-agent supervisor system deployed on Databricks using Genie, AgentBricks an
 
 ![Agent Architecture](docs/images/agent-architecture.png)
 
-- **Supervisor** — A [Databricks multi-agent supervisor](https://docs.databricks.com/aws/en/generative-ai/agent-framework/multi-agent-systems) that classifies user intent and routes to the appropriate agent. Analytics questions go to Genie; product/recommendation questions go to the Neo4j KG Agent. Combined queries hit both agents and the supervisor synthesizes a unified response.
-- **Genie Lakehouse Agent** — Translates natural language to SQL over the retail Delta tables.
-- **Neo4j KG Agent** — A LangGraph ReAct agent (`create_react_agent` with `context_schema=RetailContext`) deployed to a Databricks Model Serving endpoint. Uses `ToolRuntime[RetailContext]` to inject a `MemoryClient` for product search, recommendations, memory, and inventory tools.
+- **Supervisor.** A [Databricks multi-agent supervisor](https://docs.databricks.com/aws/en/generative-ai/agent-framework/multi-agent-systems) that classifies user intent and routes to the appropriate agent. Analytics questions go to Genie; product/recommendation questions go to the Neo4j KG Agent. Combined queries hit both agents and the supervisor synthesizes a unified response.
+- **Genie Lakehouse Agent.** Translates natural language to SQL over the retail Delta tables.
+- **Neo4j KG Agent.** A LangGraph ReAct agent (`create_react_agent` with `context_schema=RetailContext`) deployed to a Databricks Model Serving endpoint. Uses `ToolRuntime[RetailContext]` to inject a `MemoryClient` for product search, recommendations, memory, and inventory tools.
 
 ## Quick Start
 
@@ -78,7 +78,7 @@ uv run python -m backend.scripts.test_api
 
 ## Agent Memory
 
-Most AI chatbots forget everything the moment a conversation ends. This assistant is different — it uses [neo4j-agent-memory](https://github.com/neo4j-labs/agent-memory) to give the agent persistent, structured memory backed by a Neo4j graph. Every conversation, preference, and learned fact is stored as nodes and relationships in the same Neo4j instance that holds the product catalog. Because memories are also embedded as vectors, the agent can semantically search its own past — finding relevant context even when the wording is completely different from the original conversation.
+Most AI chatbots forget everything the moment a conversation ends. This assistant uses [neo4j-agent-memory](https://github.com/neo4j-labs/agent-memory) to give the agent persistent, structured memory backed by a Neo4j graph. Every conversation, preference, and learned fact is stored as nodes and relationships in the same Neo4j instance that holds the product catalog. Because memories are also embedded as vectors, the agent can semantically search its own past, finding relevant context even when the wording is completely different from the original conversation.
 
 ### Three layers of memory
 
