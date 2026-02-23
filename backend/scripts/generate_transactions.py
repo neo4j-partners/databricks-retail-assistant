@@ -21,6 +21,14 @@ from backend.scripts.product_catalog import (
     Product,
     generate_expanded_catalog,
 )
+from backend.scripts.product_knowledge import (
+    KNOWLEDGE_ARTICLES,
+    KnowledgeArticle,
+    REVIEWS as PRODUCT_REVIEWS,
+    Review as ProductReview,
+    SUPPORT_TICKETS,
+    SupportTicket,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -620,6 +628,9 @@ def verify_csvs(config: GeneratorConfig) -> bool:
         ("reviews.csv", Review),
         ("inventory_snapshots.csv", InventorySnapshot),
         ("stores.csv", Store),
+        ("knowledge_articles.csv", KnowledgeArticle),
+        ("support_tickets.csv", SupportTicket),
+        ("product_reviews.csv", ProductReview),
     ]
 
     print(f"Verifying CSVs in {config.output_dir}/\n")
@@ -727,6 +738,15 @@ def main() -> None:
     snapshots = generate_inventory_snapshots(products, transactions, config, rng)
     write_csv(snapshots, config.output_dir / "inventory_snapshots.csv")
 
+    print("\nWriting knowledge articles...")
+    write_csv(KNOWLEDGE_ARTICLES, config.output_dir / "knowledge_articles.csv")
+
+    print("\nWriting support tickets...")
+    write_csv(SUPPORT_TICKETS, config.output_dir / "support_tickets.csv")
+
+    print("\nWriting product reviews...")
+    write_csv(PRODUCT_REVIEWS, config.output_dir / "product_reviews.csv")
+
     # Validate a sample of high-volume records against their Pydantic schemas
     print("\nValidating samples...")
     validation_rng = random.Random(config.seed)
@@ -750,6 +770,9 @@ def main() -> None:
     print(f"  Reviews: {len(reviews):,}")
     print(f"  Inventory snapshots: {len(snapshots):,}")
     print(f"  Stores: {len(stores)}")
+    print(f"  Knowledge articles: {len(KNOWLEDGE_ARTICLES)}")
+    print(f"  Support tickets: {len(SUPPORT_TICKETS)}")
+    print(f"  Product reviews: {len(PRODUCT_REVIEWS)}")
 
 
 if __name__ == "__main__":

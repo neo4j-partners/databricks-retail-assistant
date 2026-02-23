@@ -1,0 +1,117 @@
+{
+  "products": [
+    { "productId": "P-001", "name": "EspressoMaster 3000", "category": "Appliances" },
+    { "productId": "P-002", "name": "AquaShield 4-Person Tent", "category": "Outdoors" },
+    { "productId": "P-003", "name": "SonicGlow Pro Toothbrush", "category": "Health & Beauty" },
+    { "productId": "P-004", "name": "CloudStep Running Sneakers", "category": "Apparel" },
+    { "productId": "P-005", "name": "SolarFlare 20k PowerBank", "category": "Electronics" }
+  ],
+  "knowledge_articles": [
+    { "articleId": "KA-001", "productId": "P-001", "documentType": "Troubleshooting", "title": "Fixing Grinding Noise in EspressoMaster", "content": "If your EspressoMaster 3000 is making a loud grinding noise and no coffee is dispensing, the burr grinder is likely jammed. Solution: Unplug the unit, remove the bean hopper, and use the included brush to clean out the burr grinder chamber. Reset the Wi-Fi module if the error light persists." },
+    { "articleId": "KA-002", "productId": "P-001", "documentType": "Manual", "title": "EspressoMaster 3000 Setup Guide", "content": "Welcome to the EspressoMaster 3000. This machine features a 15-bar pressure pump and a built-in ceramic burr grinder. Ensure the water reservoir is fully seated before first use to prevent Leaking Base symptoms." },
+    { "articleId": "KA-003", "productId": "P-001", "documentType": "FAQ", "title": "EspressoMaster Descaling Frequency", "content": "Q: How often should I descale? A: Descale your EspressoMaster every 3 months. If the steam wand loses pressure, descale immediately." },
+    { "articleId": "KA-004", "productId": "P-001", "documentType": "Troubleshooting", "title": "Water Leaking from Base", "content": "Symptom: Water pooling under the machine. Solution: Check the rubber O-ring gasket on the water tank. If cracked, order replacement part #G-402." },
+    { "articleId": "KA-005", "productId": "P-001", "documentType": "FAQ", "title": "Wi-Fi Connection Issues", "content": "If the app cannot find your EspressoMaster, hold the brew button for 10 seconds to factory reset the Wi-Fi module." },
+    { "articleId": "KA-006", "productId": "P-001", "documentType": "Manual", "title": "Steam Wand Maintenance", "content": "Purge the steam wand for 2 seconds after every use to prevent milk buildup and clogging." },
+
+    { "articleId": "KA-007", "productId": "P-002", "documentType": "Manual", "title": "AquaShield Tent Pitching Instructions", "content": "The AquaShield 4-Person Tent features color-coded aluminum poles and a 5000mm waterproof rainfly. Always stake out the guylines in heavy rain." },
+    { "articleId": "KA-008", "productId": "P-002", "documentType": "Troubleshooting", "title": "Stuck Zippers on Tent Doors", "content": "If the YKK zippers on your AquaShield tent snag on the storm flap, gently pull the fabric taut. Do not force the zipper. Apply a zipper lubricant wax if it feels stiff." },
+    { "articleId": "KA-009", "productId": "P-002", "documentType": "FAQ", "title": "Is the AquaShield 4-Season?", "content": "The AquaShield is a 3-season tent. It is excellent in heavy rain but not rated for heavy snow loads." },
+    { "articleId": "KA-010", "productId": "P-002", "documentType": "Troubleshooting", "title": "Condensation Inside Tent", "content": "Symptom: Wet walls inside the tent. Solution: Open the dual roof vents to improve airflow. This is condensation, not a seam leak." },
+    { "articleId": "KA-011", "productId": "P-002", "documentType": "Troubleshooting", "title": "Leaking Floor Seams", "content": "If water seeps through the tub floor, the factory seam tape may be compromised. Apply a urethane-based seam sealer to the affected area." },
+    { "articleId": "KA-012", "productId": "P-002", "documentType": "Manual", "title": "Tent Storage Guidelines", "content": "Never store the AquaShield tent wet. Mildew will form within 24 hours, voiding the warranty." },
+
+    { "articleId": "KA-013", "productId": "P-003", "documentType": "Manual", "title": "SonicGlow Pro User Guide", "content": "Your SonicGlow Pro features 5 brushing modes and a UV sanitizer case. Charge for 24 hours before first use." },
+    { "articleId": "KA-014", "productId": "P-003", "documentType": "Troubleshooting", "title": "Toothbrush Won't Hold Charge", "content": "If the SonicGlow Pro battery dies after 1-2 days, ensure the charging base is not plugged into a GFCI outlet that trips. If the issue persists, the lithium-ion cell requires warranty replacement." },
+    { "articleId": "KA-015", "productId": "P-003", "documentType": "FAQ", "title": "Brush Head Replacement", "content": "Replace the brush head every 3 months. A loose brush head indicates the internal metal shaft is damaged from pressing too hard." },
+    { "articleId": "KA-016", "productId": "P-003", "documentType": "Troubleshooting", "title": "UV Sanitizer Light Not Working", "content": "If the blue UV light in the case does not turn on, clean the metal contact points with rubbing alcohol." },
+    { "articleId": "KA-017", "productId": "P-003", "documentType": "Troubleshooting", "title": "Vibration Too Weak", "content": "If the vibration feels weak, ensure you are in 'Deep Clean' mode, not 'Sensitive' mode. Press the mode button twice to switch." },
+    { "articleId": "KA-018", "productId": "P-003", "documentType": "FAQ", "title": "Waterproof Rating", "content": "The SonicGlow Pro is IPX7 rated. It can be used in the shower safely." },
+
+    { "articleId": "KA-019", "productId": "P-004", "documentType": "Manual", "title": "CloudStep Sneakers Care Guide", "content": "CloudStep sneakers use proprietary memory foam and breathable mesh. Machine wash cold on a delicate cycle. Air dry only." },
+    { "articleId": "KA-020", "productId": "P-004", "documentType": "Troubleshooting", "title": "Outsole Peeling at Heel", "content": "If the rubber outsole begins peeling within 6 months, this is a known manufacturing defect in batch #882. Contact support for a full replacement." },
+    { "articleId": "KA-021", "productId": "P-004", "documentType": "FAQ", "title": "Sizing Guide: Do they run small?", "content": "CloudStep sneakers run a half-size small due to the thick memory foam insole. We recommend sizing up." },
+    { "articleId": "KA-022", "productId": "P-004", "documentType": "Troubleshooting", "title": "Squeaking Noise When Walking", "content": "Symptom: Squeaking on hard floors. Solution: Remove the insole and sprinkle a small amount of baby powder inside the shoe." },
+    { "articleId": "KA-023", "productId": "P-004", "documentType": "FAQ", "title": "Are they slip-resistant?", "content": "The CloudStep is designed for running on dry pavement. It is not rated as slip-resistant for restaurant or kitchen work." },
+    { "articleId": "KA-024", "productId": "P-004", "documentType": "Troubleshooting", "title": "Mesh Tearing", "content": "Tearing at the toe box usually indicates the shoe is too narrow for the wearer's foot. Consider trying our 'Wide' fit variant." },
+
+    { "articleId": "KA-025", "productId": "P-005", "documentType": "Manual", "title": "SolarFlare 20k Operations", "content": "The SolarFlare PowerBank packs a 20000mAh battery in a rugged, drop-proof casing. The solar panel is for emergency trickle charging only." },
+    { "articleId": "KA-026", "productId": "P-005", "documentType": "Troubleshooting", "title": "Solar Charging Very Slow", "content": "Symptom: Solar panel takes days to charge. Solution: This is normal. The 2W solar panel will take roughly 50 hours of direct sunlight to fully charge the 20000mAh battery. Plug into a wall outlet for fast charging." },
+    { "articleId": "KA-027", "productId": "P-005", "documentType": "Troubleshooting", "title": "PowerBank Overheating", "content": "If the unit becomes excessively hot while charging a phone, unplug immediately. Ensure you are not leaving it in a hot car dashboard, which triggers the thermal shutoff." },
+    { "articleId": "KA-028", "productId": "P-005", "documentType": "FAQ", "title": "Can I bring it on an airplane?", "content": "Yes, the 20000mAh (74Wh) capacity is well below the FAA limit for carry-on luggage." },
+    { "articleId": "KA-029", "productId": "P-005", "documentType": "Troubleshooting", "title": "Flashlight Won't Turn Off", "content": "Double-tap the power button rapidly to turn the emergency LED flashlight on or off." },
+    { "articleId": "KA-030", "productId": "P-005", "documentType": "Manual", "title": "Port Specifications", "content": "Features one 18W USB-C Power Delivery port and two 12W USB-A ports. Capable of charging three devices simultaneously." }
+  ],
+  "reviews": [
+    { "reviewId": "R-001", "productId": "P-001", "rating": 5, "date": "2024-01-15", "rawText": "Absolutely love the EspressoMaster 3000. The 15-bar pressure makes perfect crema. Highly recommend!" },
+    { "reviewId": "R-002", "productId": "P-001", "rating": 2, "date": "2024-02-10", "rawText": "Worked great for a month, then started making a horrible grinding noise and no coffee comes out. Returning it." },
+    { "reviewId": "R-003", "productId": "P-001", "rating": 4, "date": "2024-03-05", "rawText": "Great coffee, but the Wi-Fi app connection is flaky. Had to hold the brew button to reset the module to get it to sync." },
+    { "reviewId": "R-004", "productId": "P-001", "rating": 1, "date": "2024-04-20", "rawText": "Woke up to water leaking all over my counter. The base is totally flooded. Terrible design." },
+    { "reviewId": "R-005", "productId": "P-001", "rating": 5, "date": "2024-05-12", "rawText": "The built-in ceramic burr grinder is a game changer for fresh espresso every morning." },
+    { "reviewId": "R-006", "productId": "P-001", "rating": 3, "date": "2024-06-18", "rawText": "It's okay. The steam wand gets clogged easily if you don't purge it immediately after frothing milk." },
+
+    { "reviewId": "R-007", "productId": "P-002", "rating": 5, "date": "2024-07-01", "rawText": "Took the AquaShield out in heavy rain last weekend. We stayed bone dry! The 5000mm rainfly is legit." },
+    { "reviewId": "R-008", "productId": "P-002", "rating": 2, "date": "2024-07-15", "rawText": "Tent is spacious, but the zippers on the main door keep getting stuck on the flap. Very frustrating in the dark." },
+    { "reviewId": "R-009", "productId": "P-002", "rating": 4, "date": "2024-08-02", "rawText": "Good 4-person tent. A bit of condensation inside in the morning, but opening the roof vents fixed it." },
+    { "reviewId": "R-010", "productId": "P-002", "rating": 1, "date": "2024-08-20", "rawText": "Used it once and the tub floor seams started leaking. Water seeped right in during a mild storm." },
+    { "reviewId": "R-011", "productId": "P-002", "rating": 5, "date": "2024-09-10", "rawText": "Super easy to pitch. The color-coded aluminum poles made setup take less than 5 minutes." },
+    { "reviewId": "R-012", "productId": "P-002", "rating": 3, "date": "2024-09-25", "rawText": "Decent tent, but definitely just 3-season. Froze my butt off in late November. Not for snow." },
+
+    { "reviewId": "R-013", "productId": "P-003", "rating": 5, "date": "2024-10-05", "rawText": "My dentist noticed a huge difference. The Deep Clean mode on the SonicGlow Pro is incredibly powerful." },
+    { "reviewId": "R-014", "productId": "P-003", "rating": 1, "date": "2024-10-12", "rawText": "Battery won't hold a charge anymore. It dies after exactly 1 day. Expected better for the price." },
+    { "reviewId": "R-015", "productId": "P-003", "rating": 4, "date": "2024-10-28", "rawText": "Love the UV sanitizer case, really gives peace of mind. Wish the replacement heads were cheaper though." },
+    { "reviewId": "R-016", "productId": "P-003", "rating": 2, "date": "2024-11-03", "rawText": "The brush head feels loose and wobbly after only a month of use. I think the metal shaft bent." },
+    { "reviewId": "R-017", "productId": "P-003", "rating": 5, "date": "2024-11-15", "rawText": "Totally waterproof. I use it in the shower every day without any issues." },
+    { "reviewId": "R-018", "productId": "P-003", "rating": 3, "date": "2024-11-22", "rawText": "Vibration feels weak sometimes. Discovered I accidentally had it on Sensitive mode instead of Deep Clean." },
+
+    { "reviewId": "R-019", "productId": "P-004", "rating": 5, "date": "2024-12-01", "rawText": "The memory foam in these CloudStep sneakers is like walking on marshmallows. So comfortable!" },
+    { "reviewId": "R-020", "productId": "P-004", "rating": 1, "date": "2024-12-10", "rawText": "Garbage quality. The rubber outsole started peeling at the heel after just two months of light walking." },
+    { "reviewId": "R-021", "productId": "P-004", "rating": 3, "date": "2024-12-18", "rawText": "They run very small! I had to return my normal size and order a half-size up." },
+    { "reviewId": "R-022", "productId": "P-004", "rating": 2, "date": "2024-12-26", "rawText": "Comfortable, but they squeak loudly on hardwood floors. I sound like a clown walking through the office." },
+    { "reviewId": "R-023", "productId": "P-004", "rating": 5, "date": "2025-01-05", "rawText": "Breathable mesh is fantastic. My feet never get sweaty during summer runs." },
+    { "reviewId": "R-024", "productId": "P-004", "rating": 2, "date": "2025-01-12", "rawText": "The mesh tore at the toe box. Might be because my feet are wide, but still disappointing." },
+
+    { "reviewId": "R-025", "productId": "P-005", "rating": 5, "date": "2025-01-20", "rawText": "This SolarFlare PowerBank is a beast. Charged my phone 5 times on a camping trip. Super rugged." },
+    { "reviewId": "R-026", "productId": "P-005", "rating": 1, "date": "2025-01-28", "rawText": "The solar charging is a total gimmick. Left it in the sun all weekend and it only charged one bar." },
+    { "reviewId": "R-027", "productId": "P-005", "rating": 4, "date": "2025-02-05", "rawText": "Great capacity (20000mAh), perfect for flights. Just heavy." },
+    { "reviewId": "R-028", "productId": "P-005", "rating": 2, "date": "2025-02-12", "rawText": "It gets dangerously hot if you leave it on a car dashboard to use the solar panel. Overheating safety hazard." },
+    { "reviewId": "R-029", "productId": "P-005", "rating": 5, "date": "2025-02-18", "rawText": "Love the USB-C PD port. Fast charges my tablet in no time." },
+    { "reviewId": "R-030", "productId": "P-005", "rating": 3, "date": "2025-02-25", "rawText": "Flashlight randomly turned on in my backpack and I couldn't figure out how to turn it off. Had to double tap." }
+  ],
+  "support_tickets": [
+    { "ticketId": "T-001", "productId": "P-001", "status": "Closed", "issueDescription": "Machine is making an awful grinding noise and coffee isn't dispensing.", "resolutionText": "Advised customer to clean the burr grinder chamber with the brush. Coffee beans were jammed. Resolved." },
+    { "ticketId": "T-002", "productId": "P-001", "status": "Open", "issueDescription": "Water is leaking all over my counter from the base of the unit.", "resolutionText": "" },
+    { "ticketId": "T-003", "productId": "P-001", "status": "Closed", "issueDescription": "Cannot connect to Wi-Fi. The app says device not found.", "resolutionText": "Instructed customer to hold brew button for 10 seconds to reset Wi-Fi module. Successfully paired." },
+    { "ticketId": "T-004", "productId": "P-001", "status": "Closed", "issueDescription": "Steam wand has no pressure anymore.", "resolutionText": "Customer had not descaled in 8 months. Walked through descaling process. Pressure restored." },
+    { "ticketId": "T-005", "productId": "P-001", "status": "Closed", "issueDescription": "Milk is crusted inside the wand and it's clogged.", "resolutionText": "Advised on purging the wand after use. Sent replacement wand tip as one-time courtesy." },
+    { "ticketId": "T-006", "productId": "P-001", "status": "Open", "issueDescription": "Grinding noise again, I already cleaned the burr grinder but it's still screeching.", "resolutionText": "" },
+
+    { "ticketId": "T-007", "productId": "P-002", "status": "Closed", "issueDescription": "Zipper gets stuck on the flap every time I try to exit the tent.", "resolutionText": "Advised customer to pull fabric taut and sent a complimentary zipper wax kit." },
+    { "ticketId": "T-008", "productId": "P-002", "status": "Open", "issueDescription": "The floor seams leaked during a rainstorm. All our gear got wet.", "resolutionText": "" },
+    { "ticketId": "T-009", "productId": "P-002", "status": "Closed", "issueDescription": "Inside of the tent was completely soaked in the morning, but it didn't rain.", "resolutionText": "Explained condensation vs leaking. Instructed customer to open the dual roof vents for airflow." },
+    { "ticketId": "T-010", "productId": "P-002", "status": "Closed", "issueDescription": "Tent smells like mold and mildew.", "resolutionText": "Customer admitted to storing the tent wet. Explained this voids warranty. Recommended vinegar wash." },
+    { "ticketId": "T-011", "productId": "P-002", "status": "Closed", "issueDescription": "Missing one of the aluminum poles.", "resolutionText": "Shipped replacement green color-coded pole to customer address." },
+    { "ticketId": "T-012", "productId": "P-002", "status": "Open", "issueDescription": "Main zipper teeth are completely broken off.", "resolutionText": "" },
+
+    { "ticketId": "T-013", "productId": "P-003", "status": "Open", "issueDescription": "Battery dies completely after 1 day of use. Just bought it 2 months ago.", "resolutionText": "" },
+    { "ticketId": "T-014", "productId": "P-003", "status": "Closed", "issueDescription": "Brush head is wobbly.", "resolutionText": "Determined user was pressing too hard, bending the metal shaft. Issued RMA for replacement handle." },
+    { "ticketId": "T-015", "productId": "P-003", "status": "Closed", "issueDescription": "UV light inside the sanitizer case won't turn on.", "resolutionText": "Instructed customer to clean metal contact points with rubbing alcohol. Light now functioning." },
+    { "ticketId": "T-016", "productId": "P-003", "status": "Closed", "issueDescription": "Doesn't feel like it's vibrating hard enough to clean my teeth.", "resolutionText": "User had accidentally activated Sensitive mode. Advised double-pressing button for Deep Clean mode." },
+    { "ticketId": "T-017", "productId": "P-003", "status": "Closed", "issueDescription": "Dropped it in the bathtub, is it broken?", "resolutionText": "Informed user the device is IPX7 waterproof and safe to use." },
+    { "ticketId": "T-018", "productId": "P-003", "status": "Open", "issueDescription": "Battery won't charge at all, base gets very hot.", "resolutionText": "" },
+
+    { "ticketId": "T-019", "productId": "P-004", "status": "Closed", "issueDescription": "The rubber sole is peeling off the heel.", "resolutionText": "Identified as known defect from batch #882. Processed full replacement." },
+    { "ticketId": "T-020", "productId": "P-004", "status": "Closed", "issueDescription": "Ordered my usual size 10, but they are way too tight.", "resolutionText": "Explained CloudSteps run small. Facilitated exchange for size 10.5." },
+    { "ticketId": "T-021", "productId": "P-004", "status": "Closed", "issueDescription": "Shoes squeak incredibly loudly when I walk on tile.", "resolutionText": "Suggested removing insole and adding baby powder. Customer confirmed squeak stopped." },
+    { "ticketId": "T-022", "productId": "P-004", "status": "Closed", "issueDescription": "Mesh ripped at the side of my toes after 3 weeks.", "resolutionText": "Customer has wide feet. Exchanged standard fit for Wide fit variant." },
+    { "ticketId": "T-023", "productId": "P-004", "status": "Open", "issueDescription": "Slipped and fell at work in a kitchen, thought these were slip-resistant.", "resolutionText": "" },
+    { "ticketId": "T-024", "productId": "P-004", "status": "Open", "issueDescription": "Outsole peeling on left shoe only.", "resolutionText": "" },
+
+    { "ticketId": "T-025", "productId": "P-005", "status": "Closed", "issueDescription": "Solar panel doesn't work. Left it outside for 6 hours and it didn't charge my phone.", "resolutionText": "Educated user that solar is for emergency trickle charge (50 hours for full charge). Advised wall charging." },
+    { "ticketId": "T-026", "productId": "P-005", "status": "Closed", "issueDescription": "Device got insanely hot on my car dashboard.", "resolutionText": "Advised user of thermal safety shutoff. Instructed not to leave black electronics in direct car sun." },
+    { "ticketId": "T-027", "productId": "P-005", "status": "Closed", "issueDescription": "TSA confiscated it because they said it was too big.", "resolutionText": "Provided customer with FAA documentation proving 74Wh is under the limit to help them file a claim with TSA." },
+    { "ticketId": "T-028", "productId": "P-005", "status": "Closed", "issueDescription": "How do I turn off the flashlight?", "resolutionText": "Advised double-tapping the power button." },
+    { "ticketId": "T-029", "productId": "P-005", "status": "Open", "issueDescription": "USB-C port is loose, cable keeps falling out.", "resolutionText": "" },
+    { "ticketId": "T-030", "productId": "P-005", "status": "Open", "issueDescription": "Left in sun for 3 days and battery swelled up, casing popped open.", "resolutionText": "" }
+  ]
+}

@@ -55,6 +55,9 @@ CSV_FILES = [
     "reviews.csv",
     "inventory_snapshots.csv",
     "stores.csv",
+    "knowledge_articles.csv",
+    "support_tickets.csv",
+    "product_reviews.csv",
 ]
 
 
@@ -164,6 +167,57 @@ def _build_table_defs() -> list[TableDef]:
                 FROM read_files('{VOLUME_PATH}/stores.csv', format => 'csv', header => true)
             """,
             table_comment="Store dimension table with 20 physical retail locations across US regions.",
+        ),
+        TableDef(
+            name=f"{FQN}.knowledge_articles",
+            select_sql=f"""
+                SELECT
+                    article_id, product_id, document_type, title, content
+                FROM read_files('{VOLUME_PATH}/knowledge_articles.csv', format => 'csv', header => true)
+            """,
+            table_comment="Product knowledge base articles including manuals, FAQs, and troubleshooting guides. 4 articles per product.",
+            comments={
+                "article_id": "Unique article identifier (KA prefix + sequence).",
+                "product_id": "Product identifier matching the Neo4j product catalog.",
+                "document_type": "Article type: Manual, FAQ, or Troubleshooting.",
+                "title": "Article title describing the topic.",
+                "content": "Full article text with symptoms, solutions, and product-specific guidance.",
+            },
+        ),
+        TableDef(
+            name=f"{FQN}.support_tickets",
+            select_sql=f"""
+                SELECT
+                    ticket_id, product_id, status, issue_description, resolution_text
+                FROM read_files('{VOLUME_PATH}/support_tickets.csv', format => 'csv', header => true)
+            """,
+            table_comment="Customer support tickets with issue descriptions and resolutions. 4 tickets per product (3 closed, 1 open).",
+            comments={
+                "ticket_id": "Unique ticket identifier (T prefix + sequence).",
+                "product_id": "Product identifier matching the Neo4j product catalog.",
+                "status": "Ticket status: Open or Closed.",
+                "issue_description": "Customer-reported issue description.",
+                "resolution_text": "Support agent resolution notes. Empty string for open tickets.",
+            },
+        ),
+        TableDef(
+            name=f"{FQN}.product_reviews",
+            select_sql=f"""
+                SELECT
+                    review_id, product_id,
+                    CAST(rating AS INT) AS rating,
+                    CAST(date AS DATE) AS date,
+                    raw_text
+                FROM read_files('{VOLUME_PATH}/product_reviews.csv', format => 'csv', header => true)
+            """,
+            table_comment="Curated product reviews with full text. 4 reviews per product with a mix of ratings. Distinct from the transactional reviews table which has higher volume but no text.",
+            comments={
+                "review_id": "Unique review identifier (R prefix + sequence).",
+                "product_id": "Product identifier matching the Neo4j product catalog.",
+                "rating": "Product rating from 1 (worst) to 5 (best).",
+                "date": "Date the review was submitted.",
+                "raw_text": "Full review text written by the customer.",
+            },
         ),
     ]
 

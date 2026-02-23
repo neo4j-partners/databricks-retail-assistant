@@ -6,6 +6,7 @@ from neo4j import AsyncGraphDatabase
 
 from backend.config import get_settings
 from backend.scripts.product_catalog import BOUGHT_TOGETHER, CATEGORIES, PRODUCTS, SHARED_ATTRIBUTES
+from backend.scripts.product_knowledge import KNOWLEDGE_ARTICLES, REVIEWS, SUPPORT_TICKETS
 
 
 async def load_sample_data():
@@ -36,6 +37,15 @@ async def load_sample_data():
         print("Creating attribute nodes and relationships...")
         await _create_attributes(session)
 
+        print("Creating knowledge articles...")
+        await _create_knowledge_articles(session)
+
+        print("Creating support tickets...")
+        await _create_support_tickets(session)
+
+        print("Creating reviews...")
+        await _create_reviews(session)
+
         print("Creating vector index...")
         await _create_vector_index(session)
 
@@ -50,6 +60,9 @@ async def load_sample_data():
     print(f"  Products: {len(PRODUCTS)}")
     print(f"  Categories: {len(CATEGORIES)}")
     print(f"  Bought-together pairs: {len(BOUGHT_TOGETHER)}")
+    print(f"  Knowledge articles: {len(KNOWLEDGE_ARTICLES)}")
+    print(f"  Support tickets: {len(SUPPORT_TICKETS)}")
+    print(f"  Reviews: {len(REVIEWS)}")
 
 
 async def _clear_database(session):
@@ -185,6 +198,60 @@ async def _create_attributes(session):
         MERGE (p)-[:HAS_ATTRIBUTE]->(a)
         """,
         {"links": links},
+    )
+
+
+async def _create_knowledge_articles(session):
+    """Create KnowledgeArticle nodes with COVERS relationships to Products."""
+    await session.run(
+        """
+        UNWIND $articles AS article
+        MERGE (ka:KnowledgeArticle {article_id: article.article_id})
+        SET ka.product_id = article.product_id,
+            ka.document_type = article.document_type,
+            ka.title = article.title,
+            ka.content = article.content
+        WITH ka, article
+        MATCH (p:Product {id: article.product_id})
+        MERGE (ka)-[:COVERS]->(p)
+        """,
+        {"articles": [a.model_dump() for a in KNOWLEDGE_ARTICLES]},
+    )
+
+
+async def _create_support_tickets(session):
+    """Create SupportTicket nodes with ABOUT relationships to Products."""
+    await session.run(
+        """
+        UNWIND $tickets AS ticket
+        MERGE (st:SupportTicket {ticket_id: ticket.ticket_id})
+        SET st.product_id = ticket.product_id,
+            st.status = ticket.status,
+            st.issue_description = ticket.issue_description,
+            st.resolution_text = ticket.resolution_text
+        WITH st, ticket
+        MATCH (p:Product {id: ticket.product_id})
+        MERGE (st)-[:ABOUT]->(p)
+        """,
+        {"tickets": [t.model_dump() for t in SUPPORT_TICKETS]},
+    )
+
+
+async def _create_reviews(session):
+    """Create Review nodes with REVIEWS relationships to Products."""
+    await session.run(
+        """
+        UNWIND $reviews AS review
+        MERGE (r:Review {review_id: review.review_id})
+        SET r.product_id = review.product_id,
+            r.rating = review.rating,
+            r.date = review.date,
+            r.raw_text = review.raw_text
+        WITH r, review
+        MATCH (p:Product {id: review.product_id})
+        MERGE (r)-[:REVIEWS]->(p)
+        """,
+        {"reviews": [r.model_dump() for r in REVIEWS]},
     )
 
 

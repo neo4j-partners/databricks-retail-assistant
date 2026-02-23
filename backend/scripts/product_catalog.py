@@ -222,7 +222,7 @@ PRODUCTS: list[Product] = [
         name="Garmin Forerunner 265",
         description="GPS running smartwatch with AMOLED display. Tracks pace, heart rate, training status, and recovery.",
         price=450.00,
-        category="Accessories",
+        category="Outdoor Equipment",
         brand="Garmin",
         in_stock=True,
         inventory=15,
@@ -283,6 +283,72 @@ PRODUCTS: list[Product] = [
         style="training",
         attributes={"pieces": "5", "resistance_levels": "light to heavy", "material": "latex"},
     ),
+    # Outdoor Equipment
+    Product(
+        id="rei-half-dome-tent",
+        name="REI Co-op Half Dome SL 2+ Tent",
+        description="Lightweight 2-person backpacking tent with color-coded setup and full rainfly. Great balance of weight and livability.",
+        price=279.00,
+        category="Outdoor Equipment",
+        brand="REI Co-op",
+        in_stock=True,
+        inventory=20,
+        popularity=0.85,
+        style="outdoor",
+        attributes={"capacity": "2-person", "weight": "1.64kg", "seasons": "3-season", "setup": "freestanding"},
+    ),
+    Product(
+        id="nemo-disco-sleeping-bag",
+        name="NEMO Disco 30 Sleeping Bag",
+        description="Spoon-shaped sleeping bag with 30°F rating. Extra room at knees and elbows for side sleepers.",
+        price=219.95,
+        category="Outdoor Equipment",
+        brand="NEMO",
+        in_stock=True,
+        inventory=25,
+        popularity=0.80,
+        style="outdoor",
+        attributes={"temp_rating": "30°F", "fill": "synthetic", "shape": "spoon", "weight": "1.13kg"},
+    ),
+    Product(
+        id="msr-hubba-hubba-tent",
+        name="MSR Hubba Hubba NX 2 Tent",
+        description="Award-winning ultralight 2-person backpacking tent. Symmetrical design with two doors and two vestibules.",
+        price=450.00,
+        category="Outdoor Equipment",
+        brand="MSR",
+        in_stock=True,
+        inventory=12,
+        popularity=0.90,
+        style="outdoor",
+        attributes={"capacity": "2-person", "weight": "1.54kg", "seasons": "3-season", "setup": "freestanding"},
+    ),
+    Product(
+        id="kelty-cosmic-sleeping-bag",
+        name="Kelty Cosmic 20 Down Sleeping Bag",
+        description="Affordable 20°F down sleeping bag with 550-fill DriDown insulation. Great value for backpacking.",
+        price=129.95,
+        category="Outdoor Equipment",
+        brand="Kelty",
+        in_stock=True,
+        inventory=35,
+        popularity=0.75,
+        style="outdoor",
+        attributes={"temp_rating": "20°F", "fill": "550-fill down", "shape": "mummy", "weight": "1.36kg"},
+    ),
+    Product(
+        id="therm-a-rest-sleeping-pad",
+        name="Therm-a-Rest NeoAir XTherm Sleeping Pad",
+        description="Ultralight 4-season inflatable sleeping pad with R-value of 6.9. Premium warmth-to-weight ratio.",
+        price=229.95,
+        category="Outdoor Equipment",
+        brand="Therm-a-Rest",
+        in_stock=True,
+        inventory=18,
+        popularity=0.82,
+        style="outdoor",
+        attributes={"r_value": "6.9", "weight": "430g", "thickness": "6.4cm", "seasons": "4-season"},
+    ),
 ]
 
 # ---------------------------------------------------------------------------
@@ -295,6 +361,7 @@ CATEGORIES: dict[str, str] = {
     "Apparel": "Athletic clothing for running and training",
     "Accessories": "Watches, socks, hydration, and other running accessories",
     "Equipment": "Recovery and training equipment for runners",
+    "Outdoor Equipment": "Tents, sleeping bags, GPS devices, and gear for outdoor adventures",
 }
 
 # ---------------------------------------------------------------------------
@@ -481,6 +548,7 @@ EXPANDED_CATEGORIES: dict[str, str] = {
     **CATEGORIES,
     "Nutrition": "Energy gels, protein, electrolytes, and bars for athletic performance",
     "Outdoor": "Hiking boots, backpacks, trekking poles, and rain gear for outdoor activities",
+    "Outdoor Equipment": "Tents, sleeping bags, GPS devices, and gear for outdoor adventures",
 }
 
 # Description templates per category
