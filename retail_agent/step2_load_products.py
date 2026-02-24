@@ -77,6 +77,7 @@ def write_nodes(df, label, id_column):
      .mode("Overwrite")
      .option("labels", f":{label}")
      .option("node.keys", id_column)
+     .option("schema.optimization.node.keys", "UNIQUE")
      .save())
     count = df.count()
     print(f"  Wrote {count} {label} nodes")
@@ -414,6 +415,7 @@ def load_sample_data() -> int:
 
     # Sync driver for DDL operations
     driver = GraphDatabase.driver(uri, auth=("neo4j", password))
+    driver.verify_connectivity()
 
     print("Clearing existing data...")
     _clear_database(driver)
