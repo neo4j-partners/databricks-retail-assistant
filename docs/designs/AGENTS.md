@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-The current backend is a FastAPI application running locally with 14 LangChain tools (product search, recommendations, cart, inventory, memory) backed by a Neo4j knowledge graph. The chat endpoints are placeholders — no agent is wired in yet (Phase 7). Meanwhile, the lakehouse holds 500K+ orders and 1.15M line items in Delta tables that are completely disconnected from the assistant.
+The project has a LangGraph ReAct agent with 14 LangChain tools (product search, recommendations, cart, inventory, memory) backed by a Neo4j knowledge graph. Meanwhile, the lakehouse holds 500K+ orders and 1.15M line items in Delta tables that are completely disconnected from the assistant.
 
 This creates two problems:
 
@@ -87,7 +87,7 @@ The Genie Space must include:
 
 Refactor the existing tools layer to be environment-agnostic using LangGraph's `ToolRuntime` dependency injection pattern, then build the agent on top:
 
-- **Replace closure factories with `ToolRuntime[RetailContext]`** — the current `create_tools(client)` pattern closes over a `MemoryClient` at tool creation time, coupling the tools to their runtime. Instead, tools declare a `runtime: ToolRuntime[RetailContext]` parameter that LangGraph injects automatically. The same tool objects run in any environment; only the context differs at invocation time.
+- **Use `ToolRuntime[RetailContext]` for dependency injection** — tools declare a `runtime: ToolRuntime[RetailContext]` parameter that LangGraph injects automatically. The same tool objects run in any environment; only the context differs at invocation time.
 - **Define a `RetailContext` dataclass** holding all external dependencies (`MemoryClient`, embedder, session info). This replaces the implicit closure with an explicit, typed contract.
 - **Use `create_react_agent` with `context_schema=RetailContext`** — LangGraph wires the context into every tool call automatically.
 - Use `ChatDatabricks` as the LLM (Llama 3.3 70B or DBRX) instead of OpenAI
@@ -139,9 +139,9 @@ Create a Databricks Supervisor Agent (AgentBricks) that coordinates the two agen
 
 ### Phase 3: Neo4j KG Agent — ToolRuntime Refactor
 
-- [ ] Define `RetailContext` dataclass in `backend/tools/context.py`
-- [ ] Refactor all 14 tools from closure factories to `ToolRuntime[RetailContext]` injection (see R2)
-- [ ] Replace `create_tools(client)` factory with a flat `ALL_TOOLS` list — no factory needed
+- [ ] Define `RetailContext` dataclass in `dbx_agent/src/retail_context.py`
+- [ ] Implement all 14 tools using `ToolRuntime[RetailContext]` injection (see R2)
+- [ ] Export a flat `ALL_TOOLS` list — no factory needed
 - [ ] Replace `OpenAI`/`AzureOpenAI` LLM with `ChatDatabricks`
 - [ ] Store Neo4j credentials in Databricks secrets, load them at agent init
 - [ ] Build the LangGraph agent with `create_react_agent(model, ALL_TOOLS, context_schema=RetailContext)`
@@ -167,26 +167,20 @@ Create a Databricks Supervisor Agent (AgentBricks) that coordinates the two agen
 
 ### Why `ToolRuntime` Over Closure Factories
 
-The current codebase uses closure factories — `create_tools(client: MemoryClient)` returns `@tool` functions that close over the `MemoryClient`. This pattern has portability problems:
+LangGraph v1 introduced `ToolRuntime[Context]` with `context_schema` on `create_react_agent` for dependency injection. Tools declare what they need; the framework injects it at invocation time. The same tool objects run in any environment — only the context differs.
 
-- The `MemoryClient` is baked in at tool creation time. Running the same tools with a different client (local vs Databricks) means rebuilding every tool.
-- Closures cannot be serialized by MLflow. The Models-from-Code workaround re-executes the entire module, which works but forces tool construction into the module's top level.
-- Testing requires mocking at the factory call site rather than passing a test context directly.
-
-LangGraph v1 introduced `ToolRuntime[Context]` with `context_schema` on `create_react_agent` to solve this. Tools declare what they need; the framework injects it at invocation time. The same tool objects run in any environment — only the context differs.
-
-| | Closure Factory (current) | ToolRuntime (proposed) |
-|---|---|---|
-| Dependency binding | Implicit closure at creation time | Explicit injection at invocation time |
-| Environment portability | Rebuild tools per environment | Same tool objects everywhere |
-| Type safety | None — closure is untyped | `RetailContext` dataclass is typed and inspectable |
-| Testing | Mock the factory's arguments | Pass a test `RetailContext` directly |
-| MLflow serialization | Requires module-level reconstruction | Plain functions; Models-from-Code works cleanly |
+| | ToolRuntime |
+|---|---|
+| Dependency binding | Explicit injection at invocation time |
+| Environment portability | Same tool objects everywhere |
+| Type safety | `RetailContext` dataclass is typed and inspectable |
+| Testing | Pass a test `RetailContext` directly |
+| MLflow serialization | Plain functions; Models-from-Code works cleanly |
 
 ### Step 1: Define the Shared Context
 
 ```python
-# backend/tools/context.py
+# dbx_agent/src/retail_context.py
 from dataclasses import dataclass
 from neo4j_agent_memory import MemoryClient
 
@@ -195,34 +189,17 @@ class RetailContext:
     """All external dependencies for retail agent tools.
 
     Injected by LangGraph at invocation time via ToolRuntime.
-    Local FastAPI and Databricks Model Serving each construct
-    their own RetailContext — tool code is identical in both.
     """
     client: MemoryClient
     session_id: str | None = None
 ```
 
-### Step 2: Refactor Tools to Use `ToolRuntime`
-
-Before (closure factory):
+### Step 2: Tools Using `ToolRuntime`
 
 ```python
-# current: backend/tools/product_search.py
-def create_product_search_tools(client: MemoryClient) -> list[BaseTool]:
-    @tool(args_schema=SearchProductsInput)
-    async def search_products(query: str, ...) -> str:
-        embedding = await client._embedder.embed(query)       # closed over
-        result = await client.graph.execute_read(cypher, params)  # closed over
-        ...
-    return [search_products, ...]
-```
-
-After (`ToolRuntime` injection):
-
-```python
-# proposed: backend/tools/product_search.py
+# dbx_agent/src/product_tools.py
 from langchain_core.tools import tool, ToolRuntime
-from backend.tools.context import RetailContext
+from retail_context import RetailContext
 
 @tool(args_schema=SearchProductsInput)
 async def search_products(
@@ -245,19 +222,13 @@ The `runtime` parameter is reserved — LangGraph detects it by type hint and in
 ### Step 3: Flat Tool List (No Factory)
 
 ```python
-# proposed: backend/tools/__init__.py
-from backend.tools.product_search import search_products, get_product_details, get_related_products
-from backend.tools.recommendations import get_recommendations, get_bought_together, explain_product_connection
-from backend.tools.inventory import check_inventory, find_alternatives
-from backend.tools.cart import get_cart, add_to_cart, remove_from_cart, update_cart_item, clear_cart, apply_coupon
-from backend.tools.memory_tools import search_memory
+# dbx_agent/src/react_agent.py
+from product_tools import search_products, get_product_details, get_related_products
+from memory_tools import remember_message, recall_memory, search_memory
 
 ALL_TOOLS = [
     search_products, get_product_details, get_related_products,
-    get_recommendations, get_bought_together, explain_product_connection,
-    check_inventory, find_alternatives,
-    get_cart, add_to_cart, remove_from_cart, update_cart_item, clear_cart, apply_coupon,
-    search_memory,
+    remember_message, recall_memory, search_memory,
 ]
 ```
 
@@ -266,11 +237,10 @@ No factory function. No closures. Tools are plain module-level functions.
 ### Step 4: Build the Neo4j KG Agent
 
 ```python
-# backend/agent.py
+# dbx_agent/src/react_agent.py
 from databricks_langchain import ChatDatabricks
 from langgraph.prebuilt import create_react_agent
-from backend.tools import ALL_TOOLS
-from backend.tools.context import RetailContext
+from retail_context import RetailContext
 
 llm = ChatDatabricks(endpoint="databricks-meta-llama-3-3-70b-instruct")
 
@@ -289,27 +259,17 @@ neo4j_agent = create_react_agent(
 ### Step 5: Invocation — Same Agent, Different Context
 
 ```python
-# Local FastAPI
-from neo4j_agent_memory import MemoryClient
-local_client = MemoryClient(...)
-await local_client.connect()
-
-result = neo4j_agent.invoke(
-    {"messages": [{"role": "user", "content": "find running shoes"}]},
-    context=RetailContext(client=local_client, session_id=request.session_id),
-)
-
-# Databricks Model Serving — identical agent, different context
+# Databricks Model Serving
 from databricks.sdk import WorkspaceClient
 w = WorkspaceClient()
 neo4j_uri = w.dbutils.secrets.get("neo4j", "uri")
 neo4j_password = w.dbutils.secrets.get("neo4j", "password")
-databricks_client = MemoryClient(uri=neo4j_uri, password=neo4j_password, ...)
-await databricks_client.connect()
+client = MemoryClient(uri=neo4j_uri, password=neo4j_password, ...)
+await client.connect()
 
 result = neo4j_agent.invoke(
     {"messages": messages},
-    context=RetailContext(client=databricks_client, session_id=serving_input.session_id),
+    context=RetailContext(client=client, session_id=serving_input.session_id),
 )
 ```
 

@@ -14,11 +14,6 @@ dependencies = [
     # Neo4j Agent Memory — installed separately via uv pip install -e
     # See README for install instructions
 
-    # Web framework
-    "fastapi>=0.100.0",
-    "uvicorn[standard]>=0.23.0",
-    "sse-starlette>=1.6.0",
-
     # Databricks
     "databricks-sdk>=0.40.0",
 
@@ -27,9 +22,6 @@ dependencies = [
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
 ]
-
-[project.scripts]
-retail-assistant = "sample_agent.main:main"
 
 [dependency-groups]
 dev = [

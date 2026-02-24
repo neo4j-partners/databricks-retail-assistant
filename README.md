@@ -151,67 +151,6 @@ uv run python -m dbx_agent.scripts.lakehouse_tables --skip-tables
 
 *TODO*
 
-## Local LangChain Agent Example
-
-The `sample_agent/` directory contains a standalone FastAPI server that runs the same LangChain agent locally, useful for development and testing without a Databricks workspace.
-
-### Prerequisites
-
-- [uv](https://docs.astral.sh/uv/) (Python 3.13+ will be managed automatically)
-- A running Neo4j instance (local or [Aura](https://neo4j.com/cloud/aura/))
-- An OpenAI or Azure OpenAI API key
-
-### 1. Install dependencies
-
-This project depends on `neo4j-agent-memory` which is installed from a local checkout. Clone it first, then install both:
-
-```bash
-# Clone the agent-memory library (sibling directory)
-git clone -b maf https://github.com/neo4j-labs/agent-memory.git ../agent-memory
-
-# Install project dependencies
-uv sync
-
-# Install the local agent-memory checkout into the project venv
-uv pip install -e "../agent-memory[openai,langchain]"
-```
-
-### 2. Configure environment
-
-Copy the sample env file and fill in your values:
-
-```bash
-cp .env.sample .env
-```
-
-Edit `.env` with your Neo4j credentials and LLM API keys. See `.env.sample` for all available options.
-
-### 3. Load sample product data
-
-```bash
-uv run python -m sample_agent.scripts.load_products
-```
-
-### 4. Start the server
-
-```bash
-uv run python -m sample_agent.main
-```
-
-The API will be available at `http://localhost:8000`.
-
-### 5. Verify it works
-
-```bash
-uv run python -m sample_agent.scripts.test_api
-```
-
-### 6. Verify memory subsystem
-
-```bash
-uv run python -m sample_agent.scripts.verify_memory
-```
-
 ## Project Structure
 
 ```
@@ -235,47 +174,5 @@ dbx_agent/                         # Databricks agent (deployed to Model Serving
     ├── generate_transactions.py   # Generate lakehouse CSV data (500K orders)
     └── lakehouse_tables.py        # Upload CSVs & create Delta Lake tables
 
-sample_agent/                      # Local FastAPI LangGraph agent (demo/development)
-├── main.py                        # Entry point (uvicorn runner)
-├── app.py                         # FastAPI app factory and lifespan
-├── config.py                      # Pydantic settings from .env
-├── constants.py                   # Shared constants
-├── dependencies.py                # FastAPI dependency injection
-├── models/                        # Pydantic request/response models
-│   ├── chat.py
-│   ├── health.py
-│   ├── memory.py
-│   ├── products.py
-│   └── session.py
-├── routes/                        # API route handlers
-│   ├── chat.py                    # POST /chat, /chat/sync
-│   ├── health.py                  # GET /health
-│   ├── memory.py                  # GET /memory/*
-│   └── products.py                # GET /products/*
-├── tools/                         # LangGraph agent tools (local FastAPI)
-│   ├── cart.py
-│   ├── inventory.py
-│   ├── memory_tools.py
-│   ├── product_search.py
-│   └── recommendations.py
-└── scripts/
-    ├── product_catalog.py         # Product data constants (own copy)
-    ├── product_knowledge.py       # Knowledge articles, tickets, reviews (own copy)
-    ├── load_products.py           # Seed Neo4j with sample catalog
-    ├── test_api.py                # Integration test suite
-    └── verify_memory.py           # Memory subsystem check
 ```
 
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/health` | Health check |
-| `POST` | `/chat` | Chat with SSE streaming |
-| `POST` | `/chat/sync` | Chat (single response) |
-| `GET` | `/memory/context` | Retrieve memory context for a session |
-| `GET` | `/memory/graph` | Get knowledge graph for a session |
-| `GET` | `/memory/preferences` | Get learned preferences |
-| `GET` | `/products/search` | Search products by query |
-| `GET` | `/products/{id}` | Get product details |
-| `GET` | `/products/{id}/related` | Get related products |

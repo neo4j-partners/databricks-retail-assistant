@@ -90,7 +90,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nike-pegasus-40",
         document_type="Troubleshooting",
         title="Cushion Feels Flat After 300 Miles",
-        content="Symptom: The React foam midsole feels less responsive after 300+ miles. Solution: This is expected wear. Running shoes should be replaced every 300-500 miles. Check the outsole — if the tread pattern is worn smooth, it is time for a new pair.",
+        content="Symptom: The React foam midsole feels less responsive and flat after 300+ miles of use. This loss of cushion responsiveness is common across all foam midsole technologies — React (Nike), Boost (Adidas), FF Blast Plus (ASICS), DNA Loft (Brooks), and ENCAP (New Balance) each degrade at different rates depending on runner weight and running surface. Solution: Running shoes should be replaced every 300-500 miles regardless of brand. Check the outsole tread pattern — if worn smooth, it is time for a new pair. Rotating between two pairs of daily trainers extends the life of both by allowing the foam cells to recover between runs.",
     ),
     KnowledgeArticle(
         article_id="KA-004",
@@ -120,14 +120,14 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="adidas-ultraboost-24",
         document_type="Troubleshooting",
         title="Boost Midsole Turning Yellow",
-        content="Symptom: The white Boost foam has yellowed over time. Solution: This is cosmetic oxidation and does not affect performance. To clean, apply a paste of baking soda and hydrogen peroxide, scrub gently, and leave in indirect sunlight for 2-3 hours.",
+        content="Symptom: The white Boost foam has yellowed over time. Yellowing from UV exposure and oxidation is a common cosmetic issue across shoes with white foam midsoles, including the Nike Air Max 90, Adidas Stan Smith, and New Balance 574. It does not affect performance. Solution: Apply a paste of baking soda and hydrogen peroxide, scrub gently, and leave in indirect sunlight for 2-3 hours. This same cleaning method works on any yellowed foam or rubber midsole. Prevent yellowing by storing shoes away from direct sunlight and applying a UV-protectant spray.",
     ),
     KnowledgeArticle(
         article_id="KA-008",
         product_id="adidas-ultraboost-24",
         document_type="Troubleshooting",
         title="Continental Outsole Peeling",
-        content="Symptom: The Continental rubber outsole is separating from the Boost midsole at the toe. Solution: If within 6 months of purchase, contact Adidas for warranty replacement. For minor separation, a shoe-specific adhesive (e.g., Shoe Goo) can provide a temporary fix.",
+        content="Symptom: The Continental rubber outsole is separating from the Boost midsole at the toe. Outsole separation is one of the most commonly reported issues across running and lifestyle shoes — it has been reported on models from Nike, ASICS, and Brooks as well, though it is most frequent on the Ultraboost due to the flexible Boost foam. Solution: If within 6 months of purchase, contact Adidas for warranty replacement. For minor separation, a shoe-specific adhesive (e.g., Shoe Goo) can provide a temporary fix. Avoid leaving shoes in hot cars, as heat weakens the adhesive bond between the outsole and midsole.",
     ),
 
     # ── nb-990v6 ──────────────────────────────────────────────────────────
@@ -150,14 +150,14 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nb-990v6",
         document_type="Troubleshooting",
         title="Suede Staining and Water Marks",
-        content="Symptom: Water spots or stains on the pigskin suede panels. Solution: Apply a suede protector spray before first wear. For existing stains, use a suede eraser or brush to restore the nap. Avoid wearing in heavy rain — the suede is not treated for water resistance.",
+        content="Symptom: Water spots or stains on the pigskin suede panels. Water damage to suede is one of the most common complaints across suede shoes, including the New Balance 574 and any suede-paneled sneaker. Unlike leather (which can be conditioned for water resistance) or synthetic mesh (which dries quickly), suede stains permanently if not treated. Solution: Apply a suede protector spray before first wear — this applies to any suede shoe. For existing stains, use a suede eraser or brush to restore the nap. Let shoes dry naturally at room temperature; never use heat, which can shrink and harden the suede.",
     ),
     KnowledgeArticle(
         article_id="KA-012",
         product_id="nb-990v6",
         document_type="Troubleshooting",
         title="ENCAP Midsole Feels Firm",
-        content="Symptom: New 990v6 feels stiff compared to softer foam shoes. Solution: The dual-density ENCAP midsole is designed for stability, not maximum cushion. Allow 20-30 miles of break-in. If you prefer a softer ride, consider the FuelCell-based 990v6 SE variant.",
+        content="Symptom: New 990v6 feels stiff compared to softer foam shoes like the Nike Pegasus (React foam) or Adidas Ultraboost (Boost). Many customers switching from soft-foam running shoes find the ENCAP midsole unexpectedly firm. Solution: The dual-density ENCAP midsole is designed for stability, not maximum cushion — similar to how the Adidas Stan Smith leather requires break-in. Allow 20-30 miles of break-in for the foam to soften. If you prefer a softer ride, consider the FuelCell-based 990v6 SE variant, or pair with a cushioned insole.",
     ),
 
     # ── asics-gel-nimbus-26 ───────────────────────────────────────────────
@@ -180,7 +180,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="asics-gel-nimbus-26",
         document_type="Troubleshooting",
         title="PureGEL Insert Feels Uneven",
-        content="Symptom: A hard lump or uneven surface under the heel. Solution: The PureGEL technology is a lightweight silicone-based cushion embedded in the midsole. If it feels uneven, remove the insole and check for debris underneath. If the midsole itself is deformed, this is a manufacturing defect — contact ASICS for replacement.",
+        content="Symptom: A hard lump or uneven surface under the heel. Insole and midsole comfort issues are common across running shoes — the Brooks Ghost 16 can develop squeaking from insole friction, and the New Balance 574 insole can slide out of position. With the Nimbus 26, the issue is specific to the PureGEL insert. Solution: The PureGEL technology is a lightweight silicone-based cushion embedded in the midsole. If it feels uneven, remove the OrthoLite X-55 insole and check for debris underneath. If the midsole itself is deformed, this is a manufacturing defect — contact ASICS for replacement.",
     ),
     KnowledgeArticle(
         article_id="KA-016",
@@ -217,7 +217,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="brooks-ghost-16",
         document_type="Troubleshooting",
         title="Outsole Wear on Outer Edge",
-        content="Symptom: Excessive wear on the lateral (outer) edge of the outsole. Solution: This wear pattern indicates supination (underpronation). The Ghost 16 is a neutral shoe, which is correct for supinators, but the midsole may compress unevenly over time. Replace every 300-400 miles.",
+        content="Symptom: Excessive wear on the lateral (outer) edge of the outsole, with visible outsole separation beginning at the heel. Outsole wear and separation are among the most reported issues across running shoes — the Adidas Ultraboost Continental outsole and Nike Pegasus outsole have similar reports. With the Ghost 16, the wear pattern specifically indicates supination (underpronation). Solution: The Ghost 16 is a neutral shoe, which is correct for supinators, but the DNA Loft v2 midsole may compress unevenly over time. Replace every 300-400 miles. For outsole separation, Shoe Goo adhesive provides a temporary fix. If significant delamination occurs within 90 days, contact Brooks for warranty assessment.",
     ),
 
     # ── nike-air-max-90 ──────────────────────────────────────────────────
@@ -247,7 +247,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nike-air-max-90",
         document_type="Troubleshooting",
         title="Yellowing of the White Midsole",
-        content="Symptom: The white midsole and Air unit have yellowed. Solution: This is caused by UV exposure and oxidation. Clean with a mix of baking soda and white vinegar, then apply a thin coat of salon-grade hydrogen peroxide cream and wrap in plastic wrap. Place in sunlight for 3-4 hours.",
+        content="Symptom: The white midsole and Air unit have yellowed. Yellowing from UV exposure and oxidation affects any shoe with white foam or rubber — the Adidas Ultraboost Boost midsole, Adidas Stan Smith rubber outsole, and New Balance 574 ENCAP midsole all experience the same cosmetic issue. Solution: Clean with a paste of baking soda and hydrogen peroxide (this same method works across all yellowed midsoles). For the Air Max 90 specifically, apply a thin coat of salon-grade hydrogen peroxide cream, wrap in plastic wrap, and place in sunlight for 3-4 hours. Prevent yellowing by storing shoes away from direct sunlight.",
     ),
 
     # ── adidas-stan-smith ────────────────────────────────────────────────
@@ -263,14 +263,14 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="adidas-stan-smith",
         document_type="FAQ",
         title="Stan Smith Break-In Period",
-        content="Q: Do the Stan Smiths need breaking in? A: Yes, the leather upper is stiff initially. Wear them for short periods (1-2 hours) for the first week. The leather will soften and conform to your foot shape. Wearing thick socks during break-in can speed up the process.",
+        content="Q: Do the Stan Smiths need breaking in? A: Yes, the full-grain leather upper is stiff initially — this is a different kind of break-in than running shoes like the New Balance 990v6 (which has a firm ENCAP midsole that needs 20-30 miles) or the Under Armour ColdGear compression base layer (which feels very tight at first). For leather shoes, wear them for short periods (1-2 hours) for the first week. The leather will soften and conform to your foot shape. Wearing thick socks during break-in can speed up the process.",
     ),
     KnowledgeArticle(
         article_id="KA-027",
         product_id="adidas-stan-smith",
         document_type="Troubleshooting",
         title="Leather Cracking and Creasing",
-        content="Symptom: Deep creases or cracks forming across the toe box. Solution: Creasing is normal for leather shoes, but cracking indicates dryness. Apply a leather conditioner immediately. For deep cracks, use a leather filler followed by white polish. Prevent with regular conditioning and shoe trees.",
+        content="Symptom: Deep creases or cracks forming across the toe box. The white rubber midsole may also yellow over time from UV exposure — the same oxidation issue that affects Adidas Ultraboost Boost foam and Nike Air Max 90 midsoles. Solution: For leather cracking, apply a leather conditioner immediately. Creasing is normal but cracking indicates dryness. For deep cracks, use a leather filler followed by white polish. Prevent with regular conditioning and cedar shoe trees. For midsole yellowing, use the baking soda and hydrogen peroxide paste method.",
     ),
     KnowledgeArticle(
         article_id="KA-028",
@@ -300,14 +300,14 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nb-574",
         document_type="Troubleshooting",
         title="Suede Panels Staining from Rain",
-        content="Symptom: Dark water marks on the suede panels after exposure to rain. Solution: Let the shoes dry naturally at room temperature (never use heat). Once dry, brush with a suede brush in one direction to restore the nap. For stubborn stains, use a suede eraser. Prevent with a waterproof suede spray.",
+        content="Symptom: Dark water marks on the suede panels after exposure to rain. This is the same water damage issue that affects the New Balance 990v6 pigskin suede — both shoes use untreated suede that stains permanently if not protected. Unlike synthetic mesh uppers (Nike Pegasus, ASICS Nimbus) that dry quickly without marks, suede requires preventive treatment. Solution: Let the shoes dry naturally at room temperature (never use heat, which shrinks and hardens suede). Once dry, brush with a suede brush in one direction to restore the nap. For stubborn stains, use a suede eraser. Prevent with a waterproof suede protector spray applied before first wear — this applies to any suede shoe.",
     ),
     KnowledgeArticle(
         article_id="KA-032",
         product_id="nb-574",
         document_type="Troubleshooting",
         title="Insole Sliding Out of Place",
-        content="Symptom: The removable insole bunches up or slides forward while walking. Solution: Remove the insole and apply a thin line of double-sided tape or fabric glue along the heel area. Press the insole back in firmly. Replace worn insoles with New Balance supportive inserts.",
+        content="Symptom: The removable insole bunches up or slides forward while walking. Insole movement is a common issue across shoes with removable insoles — the ASICS Gel-Nimbus 26 OrthoLite insole and Brooks Ghost 16 insole both experience similar bunching and squeaking problems. Solution: Remove the insole and apply a thin line of double-sided tape or fabric glue along the heel area. Press the insole back in firmly. For squeaking (common when the insole rubs against the midsole), sprinkle baby powder or cornstarch on the midsole surface before replacing the insole. Replace worn insoles with New Balance supportive inserts or aftermarket insoles like Superfeet Green.",
     ),
 
     # ── nike-drifit-tee ──────────────────────────────────────────────────
@@ -330,7 +330,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nike-drifit-tee",
         document_type="Troubleshooting",
         title="Dri-FIT No Longer Wicking Moisture",
-        content="Symptom: The shirt absorbs sweat and clings instead of wicking it away. Solution: Fabric softener or dryer sheets have coated the fibers. Wash the shirt in hot water with a cup of white vinegar (no detergent). Repeat if necessary. The wicking performance should restore after 1-2 vinegar washes.",
+        content="Symptom: The shirt absorbs sweat and clings instead of wicking it away. This wicking performance loss affects all synthetic moisture-management fabrics — Dri-FIT (Nike), AEROREADY (Adidas), and ColdGear (Under Armour) all use similar polyester-based fiber treatments that get coated and blocked by fabric softener or dryer sheets. Solution: Wash the garment in hot water with a cup of white vinegar (no detergent). Repeat if necessary. The wicking performance should restore after 1-2 vinegar washes. This same vinegar wash method works on any moisture-wicking apparel. Going forward, never use fabric softener or dryer sheets on any performance apparel.",
     ),
     KnowledgeArticle(
         article_id="KA-036",
@@ -346,7 +346,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="adidas-running-shorts",
         document_type="Manual",
         title="Adidas Running Shorts Care Guide",
-        content="Wash cold with similar colors. The AEROREADY fabric dries quickly — hang dry is recommended. The built-in brief liner should be washed after every use to prevent bacterial buildup. Do not use bleach or fabric softener.",
+        content="Wash cold with similar colors. The AEROREADY moisture-wicking fabric dries quickly — hang dry is recommended. Like Nike Dri-FIT and Under Armour ColdGear, the AEROREADY treatment is degraded by fabric softener and dryer sheets, which coat the synthetic fibers and block moisture transport. Never use fabric softener on any performance apparel. The built-in brief liner should be washed after every use to prevent bacterial buildup and odor retention — the same odor issue that affects Dri-FIT shirts. Do not use bleach.",
     ),
     KnowledgeArticle(
         article_id="KA-038",
@@ -376,7 +376,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="ua-coldgear",
         document_type="Manual",
         title="Under Armour ColdGear Layering Guide",
-        content="The ColdGear base layer is designed as a first layer against the skin. For temperatures below 40°F, pair with a mid-layer fleece and a windproof outer shell. The dual-layer fabric has a soft brushed interior that traps heat while the smooth exterior wicks moisture outward.",
+        content="The ColdGear base layer is designed as a first layer against the skin. Like Nike Dri-FIT and Adidas AEROREADY, the ColdGear fabric uses moisture-wicking synthetic fibers — but adds a dual-layer construction with a soft brushed interior that traps heat while the smooth exterior wicks moisture outward. For temperatures below 40°F, pair with a mid-layer fleece and a windproof outer shell. As with all moisture-wicking apparel, never use fabric softener or dryer sheets — they coat the fibers and destroy wicking performance. A white vinegar wash restores wicking if it has been compromised.",
     ),
     KnowledgeArticle(
         article_id="KA-042",
@@ -406,7 +406,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nike-running-socks",
         document_type="Manual",
         title="Nike Multiplier Running Socks Care",
-        content="Machine wash warm with like colors. Tumble dry on medium heat — the Dri-FIT yarn maintains its wicking ability through many wash cycles. Do not use fabric softener. Turn inside out before washing to protect the cushioned sole.",
+        content="Machine wash warm with like colors. Tumble dry on medium heat — the Dri-FIT yarn maintains its wicking ability through many wash cycles. As with all Dri-FIT apparel (shirts, shorts) and other moisture-wicking fabrics like Adidas AEROREADY and Under Armour ColdGear, do not use fabric softener — it coats the synthetic fibers and stops moisture wicking. If wicking degrades, a white vinegar wash restores it. Turn inside out before washing to protect the cushioned sole.",
     ),
     KnowledgeArticle(
         article_id="KA-046",
@@ -427,7 +427,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nike-running-socks",
         document_type="Troubleshooting",
         title="Elastic Losing Stretch",
-        content="Symptom: The arch band and cuff no longer grip the foot and ankle. Solution: Elastic degrades over time, especially with hot water washing and high-heat drying. Replace running socks every 6-12 months depending on usage. Extend life by washing in cold water.",
+        content="Symptom: The arch band and cuff no longer grip the foot and ankle. Elastic and material degradation over time is a common issue across products that rely on stretch materials — latex resistance bands degrade from UV and heat exposure, EVA foam on the TriggerPoint foam roller cracks with heavy use and sunlight, and silicone gaskets on hydration flask caps lose their seal. Solution: Elastic degrades faster with hot water washing and high-heat drying. Replace running socks every 6-12 months depending on usage. Extend life by washing in cold water and air drying. Inspect elastic components regularly, just as you would inspect resistance bands for tears before each use.",
     ),
 
     # ── hydration-belt ───────────────────────────────────────────────────
@@ -457,7 +457,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="hydration-belt",
         document_type="Troubleshooting",
         title="Mildew Smell in Flasks",
-        content="Symptom: A musty or sour smell coming from the flasks. Solution: Fill each flask with a solution of 1 tablespoon baking soda per 10oz of warm water. Let soak overnight. Rinse thoroughly and air dry with caps off. Clean flasks after every use to prevent recurrence.",
+        content="Symptom: A musty or sour smell coming from the flasks. Odor retention in synthetic materials is a widespread issue — Dri-FIT polyester shirts trap bacteria that cause persistent odor, Adidas AEROREADY shorts liners develop bacterial buildup, and EVA foam rollers can off-gas chemical smells. With hydration flasks, the smell comes from mildew growth in trapped moisture. Solution: Fill each flask with a solution of 1 tablespoon baking soda per 10oz of warm water. Let soak overnight. Rinse thoroughly and air dry with caps off. This baking soda soak method also works for any odor-retaining sports equipment. For synthetic apparel odor, a white vinegar soak is more effective. Clean flasks after every use to prevent recurrence.",
     ),
 
     # ── foam-roller ──────────────────────────────────────────────────────
@@ -480,7 +480,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="foam-roller",
         document_type="Troubleshooting",
         title="Foam Roller Surface Cracking",
-        content="Symptom: The EVA foam surface is developing cracks or dents. Solution: This occurs with heavy use or if the roller is stored in direct sunlight or extreme heat. The GRID's ABS plastic core should remain intact. If the outer foam is severely degraded, it is time for a replacement. Store in a cool, dry place.",
+        content="Symptom: The EVA foam surface is developing cracks or dents. Material degradation from UV exposure and heat affects many sports products — latex resistance bands become brittle and can snap, elastic in running socks loses stretch, and silicone gaskets on hydration flask caps crack and leak. With the GRID foam roller, EVA foam is particularly susceptible to UV damage. Solution: This occurs with heavy use or if the roller is stored in direct sunlight or extreme heat. The GRID's ABS plastic core should remain intact even if the outer EVA foam degrades. If the foam is severely cracked, it is time for a replacement. Store all sports equipment in a cool, dry place away from direct sunlight — this extends the life of foam, latex, elastic, and silicone components alike.",
     ),
     KnowledgeArticle(
         article_id="KA-056",
@@ -510,7 +510,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="resistance-bands",
         document_type="Troubleshooting",
         title="Resistance Band Snapped During Use",
-        content="Symptom: A band broke mid-exercise. Solution: Latex bands degrade over time, especially with exposure to sunlight, heat, or oils. Always inspect bands for small tears, discoloration, or thin spots before use. Replace bands that show any signs of wear. Store in a cool, dry place away from direct sunlight.",
+        content="Symptom: A band broke mid-exercise. Latex and rubber material degradation from UV, heat, and age is a safety concern across many products — EVA foam on the TriggerPoint foam roller cracks under the same conditions, elastic in Nike running socks loses stretch, and silicone gaskets on hydration flask caps fail. With resistance bands, the consequence of degradation is more immediate and dangerous. Solution: Always inspect bands for small tears, discoloration, or thin spots before each use. Replace bands that show any signs of wear. Store in a cool, dry place away from direct sunlight — the same storage advice applies to foam rollers, latex products, and any equipment with elastic or rubber components.",
     ),
     KnowledgeArticle(
         article_id="KA-060",
@@ -563,7 +563,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="rei-half-dome-tent",
         document_type="FAQ",
         title="Half Dome SL 2+ in Heavy Rain",
-        content="Q: How waterproof is the Half Dome? A: The rainfly uses a 1500mm polyurethane coating and factory-taped seams. The tub floor has a 3000mm rating. It handles heavy rain well for a 3-season tent. In prolonged downpours, avoid touching the inner tent body against the rainfly to prevent water transfer.",
+        content="Q: How waterproof is the Half Dome? A: The rainfly uses a 1500mm polyurethane coating and factory-taped seams. The tub floor has a 3000mm rating. It handles heavy rain well for a 3-season tent. Water resistance varies widely across outdoor and athletic products — the Kelty Cosmic sleeping bag uses a DriDown hydrophobic treatment that repels moisture but is not waterproof, while suede shoes like the New Balance 990v6 and 574 have no water resistance at all and stain permanently when wet. In prolonged downpours, avoid touching the inner tent body against the rainfly to prevent water transfer, and keep your sleeping bag in a dry bag inside the tent.",
     ),
     KnowledgeArticle(
         article_id="KA-067",
@@ -600,7 +600,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="nemo-disco-sleeping-bag",
         document_type="Troubleshooting",
         title="Synthetic Fill Losing Loft",
-        content="Symptom: The sleeping bag feels thinner and less warm than when new. Solution: Synthetic insulation loses loft over time, especially if stored compressed. Wash with technical cleaner and tumble dry low to restore some loft. If the bag has been stored in a stuff sack for months, it may not fully recover.",
+        content="Symptom: The sleeping bag feels thinner and less warm than when new. Insulation loft loss is common across sleeping bags — the Kelty Cosmic 20 down fill clumps when wet, and synthetic fill in the Disco 30 compresses permanently when stored in a stuff sack. This is similar to how foam midsoles in running shoes (React, Boost, DNA Loft, FF Blast Plus) lose their responsiveness and cushion over time from repeated compression. Solution: Wash with technical fabric cleaner and tumble dry on low with 2-3 clean tennis balls to restore some loft (the tennis ball method works for both synthetic and down bags). If the bag has been stored compressed in a stuff sack for months, the synthetic fill may not fully recover. Always store sleeping bags uncompressed in an oversized cotton storage sack.",
     ),
     KnowledgeArticle(
         article_id="KA-072",
@@ -653,7 +653,7 @@ KNOWLEDGE_ARTICLES: list[KnowledgeArticle] = [
         product_id="kelty-cosmic-sleeping-bag",
         document_type="FAQ",
         title="Cosmic 20 DriDown Explained",
-        content="Q: What is DriDown? A: DriDown is a hydrophobic treatment applied to each individual down cluster. It repels moisture and dries 33% faster than untreated down. This means the bag retains more warmth if exposed to humidity, but it is not waterproof — keep the bag in a dry bag during rain.",
+        content="Q: What is DriDown? A: DriDown is a hydrophobic treatment applied to each individual down cluster. It repels moisture and dries 33% faster than untreated down. This means the bag retains more warmth if exposed to humidity, but it is not waterproof — keep the bag in a dry bag inside your tent. Water resistance varies across product types: tent rainflies use polyurethane coatings (the REI Half Dome has a 1500mm rating), synthetic sleeping bags like the NEMO Disco handle moisture better than down, and suede shoes (New Balance 990v6, 574) have no water resistance at all. Always match your gear's water resistance level to the conditions.",
     ),
     KnowledgeArticle(
         article_id="KA-079",
@@ -712,8 +712,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-001",
         product_id="nike-pegasus-40",
         status="Closed",
-        issue_description="The cushion on my Pegasus 40 feels completely dead after 4 months of running.",
-        resolution_text="Customer had logged approximately 400 miles. Explained that running shoes should be replaced every 300-500 miles. Offered 15% discount on next purchase.",
+        issue_description="The cushion on my Pegasus 40 feels completely dead after 4 months of running. The React foam has no bounce left.",
+        resolution_text="Customer had logged approximately 400 miles. Explained that cushion responsiveness loss is expected across all foam midsole technologies (React, Boost, FF Blast Plus, DNA Loft) after 300-500 miles. Running shoes should be replaced at that interval. Rotating between two pairs extends midsole life. Offered 15% discount on next purchase.",
     ),
     SupportTicket(
         ticket_id="T-002",
@@ -733,7 +733,7 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-004",
         product_id="nike-pegasus-40",
         status="Open",
-        issue_description="The outsole is separating from the midsole on the left shoe after only 6 weeks of use.",
+        issue_description="The outsole is separating from the midsole on the left shoe after only 6 weeks of use. Looks like the glue is failing at the toe area.",
         resolution_text="",
     ),
 
@@ -742,15 +742,15 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-005",
         product_id="adidas-ultraboost-24",
         status="Closed",
-        issue_description="The Boost midsole has turned yellow and looks terrible.",
-        resolution_text="Explained this is cosmetic oxidation and does not affect performance. Provided cleaning instructions using baking soda and hydrogen peroxide paste.",
+        issue_description="The Boost midsole has turned yellow and looks terrible. I keep them indoors so I do not understand why this is happening.",
+        resolution_text="Explained that yellowing from oxidation is cosmetic and does not affect performance. This same yellowing issue affects any white foam or rubber midsole — Nike Air Max 90, Adidas Stan Smith, and New Balance 574 owners report it too. Provided the baking soda and hydrogen peroxide paste cleaning method, which works across all yellowed midsoles. Recommended storing shoes away from sunlight to slow oxidation.",
     ),
     SupportTicket(
         ticket_id="T-006",
         product_id="adidas-ultraboost-24",
         status="Closed",
-        issue_description="The Continental rubber outsole is peeling off at the toe area.",
-        resolution_text="Confirmed shoe was within 6-month warranty. Processed replacement pair.",
+        issue_description="The Continental rubber outsole is peeling off at the toe area. The outsole is separating from the Boost midsole.",
+        resolution_text="Outsole separation is a known issue on the Ultraboost, particularly at the toe where flex stress is highest. This outsole delamination issue has also been reported on the Nike Pegasus and Brooks Ghost, though less frequently. Confirmed shoe was within 6-month warranty. Processed replacement pair. For future reference, Shoe Goo adhesive can provide a temporary fix for minor separation. Advised against leaving shoes in hot environments (car trunk, direct sunlight) as heat weakens the adhesive bond.",
     ),
     SupportTicket(
         ticket_id="T-007",
@@ -772,15 +772,15 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-009",
         product_id="nb-990v6",
         status="Closed",
-        issue_description="Water stains on the suede panels after wearing in light rain.",
-        resolution_text="Provided suede cleaning instructions. Recommended suede protector spray for future prevention. Sent complimentary suede care kit.",
+        issue_description="Water stains on the suede panels after wearing in light rain. Dark blotchy marks on the pigskin suede that won't come out.",
+        resolution_text="Water damage to suede is one of the most common complaints across suede shoes — the New Balance 574 has the same issue with its suede panels. Unlike synthetic mesh uppers that dry without marks, untreated suede stains permanently. Provided suede cleaning instructions: let dry naturally at room temperature, brush with suede brush in one direction, use suede eraser for stubborn stains. Recommended suede protector spray for future prevention — this applies to any suede shoe. Sent complimentary suede care kit.",
     ),
     SupportTicket(
         ticket_id="T-010",
         product_id="nb-990v6",
         status="Closed",
-        issue_description="The shoes feel very stiff and uncomfortable compared to my old 990v5.",
-        resolution_text="Explained the ENCAP midsole requires 20-30 miles of break-in. The v6 uses a firmer compound than the v5 for improved durability. Customer reported improved comfort after 2 weeks.",
+        issue_description="The shoes feel very stiff and uncomfortable compared to my old 990v5. The ENCAP midsole has no give at all.",
+        resolution_text="Break-in stiffness is common across products with firm materials — the Adidas Stan Smith leather upper requires about a week of short-wear break-in, and the Under Armour ColdGear compression fit feels too tight initially. The 990v6 ENCAP midsole uses a firmer compound than the v5 for improved durability. Allow 20-30 miles of break-in. Customer reported improved comfort after 2 weeks.",
     ),
     SupportTicket(
         ticket_id="T-011",
@@ -823,7 +823,7 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-016",
         product_id="asics-gel-nimbus-26",
         status="Open",
-        issue_description="The insole keeps sliding out of position during runs, bunching up under the arch.",
+        issue_description="The OrthoLite X-55 insole keeps sliding out of position during runs, bunching up under the arch. Same issue I had with my New Balance 574.",
         resolution_text="",
     ),
 
@@ -839,8 +839,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-018",
         product_id="brooks-ghost-16",
         status="Closed",
-        issue_description="The outer edge of the sole is worn down way more than the rest after just 200 miles.",
-        resolution_text="Explained this is a supination (underpronation) wear pattern. The Ghost 16 is appropriate for this gait, but the midsole will compress unevenly. Recommended replacement every 300-400 miles.",
+        issue_description="The outer edge of the sole is worn down way more than the rest after just 200 miles. The outsole is also starting to separate from the DNA Loft v2 midsole at the heel.",
+        resolution_text="Explained this is a supination (underpronation) wear pattern. Outsole separation at the heel is related to the uneven compression from supination — a similar outsole delamination issue is commonly reported on the Adidas Ultraboost Continental outsole and Nike Pegasus. For the Ghost 16, the DNA Loft v2 midsole will compress unevenly over time. Shoe Goo adhesive can temporarily fix minor outsole separation. Recommended replacement every 300-400 miles.",
     ),
     SupportTicket(
         ticket_id="T-019",
@@ -869,8 +869,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-022",
         product_id="nike-air-max-90",
         status="Closed",
-        issue_description="The white midsole has turned yellow. I have only owned them for 6 months.",
-        resolution_text="Explained yellowing is caused by UV exposure and oxidation. Provided cleaning method using baking soda, hydrogen peroxide cream, and plastic wrap in sunlight.",
+        issue_description="The white midsole has turned yellow. I have only owned them for 6 months. The Air unit also looks discolored.",
+        resolution_text="Yellowing from UV exposure and oxidation is the most common cosmetic complaint across shoes with white midsoles — Adidas Ultraboost Boost foam, Adidas Stan Smith rubber midsole, and New Balance 574 ENCAP midsole all experience the same issue. Provided the baking soda and hydrogen peroxide paste cleaning method, which works across all yellowed midsoles. For the Air Max 90 specifically, the salon-grade hydrogen peroxide cream with plastic wrap in sunlight for 3-4 hours gives the best results. Advised storing shoes away from direct sunlight to prevent recurrence.",
     ),
     SupportTicket(
         ticket_id="T-023",
@@ -899,8 +899,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-026",
         product_id="adidas-stan-smith",
         status="Closed",
-        issue_description="The shoes are extremely stiff and painful to wear.",
-        resolution_text="Explained leather requires a break-in period of about one week. Suggested wearing thick socks for short periods to accelerate the process.",
+        issue_description="The shoes are extremely stiff and painful to wear. The leather has no flex at all.",
+        resolution_text="Break-in discomfort is common across products with rigid materials. The Stan Smith full-grain leather takes about a week of short-period wear. By comparison, the New Balance 990v6 ENCAP midsole needs 20-30 miles of break-in, and the Under Armour ColdGear compression fit feels too tight initially. Suggested wearing thick socks for short periods (1-2 hours) to accelerate the leather softening process. The leather will conform to the foot shape within a week.",
     ),
     SupportTicket(
         ticket_id="T-027",
@@ -922,15 +922,15 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-029",
         product_id="nb-574",
         status="Closed",
-        issue_description="Got caught in the rain and now there are dark water marks all over the suede.",
-        resolution_text="Advised letting shoes dry naturally, then brushing with suede brush. Sent a suede protector spray for future use.",
+        issue_description="Got caught in the rain and now there are dark water marks all over the suede panels. Same thing happened to my 990v6 last year.",
+        resolution_text="Water damage to suede is the most common complaint across the New Balance suede lineup — both the 574 and the 990v6 pigskin suede are affected. Unlike weather-treated products like the Kelty Cosmic DriDown sleeping bag or tent rainfly coatings, suede has no inherent water resistance. Advised letting shoes dry naturally at room temperature (never use heat), then brushing with suede brush in one direction. Sent a suede protector spray — this should be applied before first wear on any suede shoe to prevent staining.",
     ),
     SupportTicket(
         ticket_id="T-030",
         product_id="nb-574",
         status="Closed",
-        issue_description="The insole keeps bunching up under my foot while walking.",
-        resolution_text="Suggested applying double-sided tape to the heel area of the insole. Also recommended upgrading to New Balance supportive insoles for better fit.",
+        issue_description="The insole keeps bunching up under my foot while walking. It slides forward and bunches under the arch.",
+        resolution_text="Insole slippage is a common issue across shoes with removable insoles — the ASICS Gel-Nimbus 26 OrthoLite insole has the same bunching problem, and the Brooks Ghost 16 insole creates friction squeaking against the midsole. Suggested applying double-sided tape or fabric glue to the heel area of the insole. For squeaking, baby powder or cornstarch between the insole and midsole eliminates friction. Also recommended upgrading to aftermarket insoles like Superfeet Green or New Balance supportive inserts for better fit and arch support.",
     ),
     SupportTicket(
         ticket_id="T-031",
@@ -959,8 +959,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-034",
         product_id="nike-drifit-tee",
         status="Closed",
-        issue_description="The Dri-FIT is not wicking moisture anymore. My shirt gets soaked during runs.",
-        resolution_text="Customer had been using fabric softener. Advised washing in hot water with a cup of white vinegar (no detergent) to strip the coating. Wicking restored after two washes.",
+        issue_description="The Dri-FIT is not wicking moisture anymore. My shirt gets soaked during runs instead of staying dry.",
+        resolution_text="Customer had been using fabric softener, which coats synthetic fibers and blocks moisture transport. This wicking performance loss affects all moisture-wicking fabrics — Dri-FIT (Nike), AEROREADY (Adidas), and ColdGear (Under Armour) are all degraded by fabric softener and dryer sheets. Advised washing in hot water with a cup of white vinegar (no detergent) to strip the coating. This vinegar wash method works on any moisture-wicking apparel. Wicking restored after two washes. Advised never using fabric softener on any performance apparel going forward.",
     ),
     SupportTicket(
         ticket_id="T-035",
@@ -996,8 +996,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-039",
         product_id="adidas-running-shorts",
         status="Closed",
-        issue_description="The AEROREADY fabric is not drying quickly like it used to.",
-        resolution_text="Customer was using fabric softener. Explained that fabric softener coats moisture-wicking fibers. Advised vinegar wash to restore performance.",
+        issue_description="The AEROREADY fabric is not drying quickly like it used to. The shorts stay damp and heavy during runs.",
+        resolution_text="Customer was using fabric softener, which coats and blocks moisture-wicking synthetic fibers. This is the exact same issue that affects Nike Dri-FIT shirts and Under Armour ColdGear base layers — all moisture-wicking fabrics are degraded by fabric softener and dryer sheets. Advised washing in hot water with white vinegar (no detergent) to strip the coating. This vinegar wash restores wicking on any moisture-management apparel. Wicking performance returned after two washes.",
     ),
     SupportTicket(
         ticket_id="T-040",
@@ -1026,14 +1026,14 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-043",
         product_id="ua-coldgear",
         status="Closed",
-        issue_description="I bought the compression fit thinking it was like a regular base layer. It is way too tight.",
-        resolution_text="Explained the difference between ColdGear Compression (skin-tight, performance) and ColdGear Fitted (close but comfortable). Exchanged for Fitted version.",
+        issue_description="I bought the compression fit thinking it was like a regular base layer. It is way too tight and uncomfortable. Similar to how stiff my Stan Smiths felt out of the box.",
+        resolution_text="Break-in and fit adjustment is common across athletic products — the Adidas Stan Smith leather needs about a week to soften, the New Balance 990v6 ENCAP midsole requires 20-30 miles, and ColdGear Compression is intentionally skin-tight for muscle support. Explained the difference between ColdGear Compression (skin-tight, performance) and ColdGear Fitted (close but comfortable). Exchanged for Fitted version, which provides the same dual-layer moisture-wicking fabric without the compression.",
     ),
     SupportTicket(
         ticket_id="T-044",
         product_id="ua-coldgear",
         status="Open",
-        issue_description="The brushed interior is pilling badly after only a few wears. Feels rough against my skin now.",
+        issue_description="The brushed interior is pilling badly after only a few wears. Feels rough against my skin now. My Nike Dri-FIT shirts have the same pilling problem.",
         resolution_text="",
     ),
 
@@ -1049,8 +1049,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-046",
         product_id="nike-running-socks",
         status="Closed",
-        issue_description="The elastic in the arch band is completely gone after 4 months.",
-        resolution_text="Explained that hot water and high-heat drying degrade elastic. Advised cold washing and low-heat drying. Provided a replacement pack as a courtesy.",
+        issue_description="The elastic in the arch band is completely gone after 4 months. The Dri-FIT wicking still works but the socks won't stay up.",
+        resolution_text="Elastic and stretch material degradation from heat is a common issue across products — latex resistance bands become brittle from UV and heat, EVA foam on foam rollers cracks, and silicone gaskets on hydration flask caps lose their seal. With socks, hot water washing and high-heat drying accelerate elastic breakdown. Advised cold washing and low-heat or air drying to extend elastic life. Running socks should be replaced every 6-12 months. Provided a replacement pack as a courtesy.",
     ),
     SupportTicket(
         ticket_id="T-047",
@@ -1079,8 +1079,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-050",
         product_id="hydration-belt",
         status="Closed",
-        issue_description="The flasks have a horrible mildew smell that I cannot get rid of.",
-        resolution_text="Advised soaking flasks in baking soda solution (1 tbsp per 10oz warm water) overnight. Reminded customer to rinse and air-dry flasks with caps off after every use.",
+        issue_description="The flasks have a horrible mildew smell that I cannot get rid of. I have tried rinsing with hot water but the odor comes back.",
+        resolution_text="Odor retention in synthetic materials is a widespread issue — Dri-FIT polyester shirts trap bacteria that cause persistent odor, AEROREADY shorts liners develop bacterial buildup, and EVA foam rollers can off-gas chemical smells. With hydration flasks, the mildew smell comes from trapped moisture. Advised soaking in baking soda solution (1 tbsp per 10oz warm water) overnight — this baking soda method works for any odor-retaining sports equipment. For synthetic apparel odor, white vinegar soaking is more effective. Reminded customer to rinse and air-dry flasks with caps off after every single use to prevent mildew recurrence.",
     ),
     SupportTicket(
         ticket_id="T-051",
@@ -1102,8 +1102,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-053",
         product_id="foam-roller",
         status="Closed",
-        issue_description="The EVA foam surface is cracking and flaking after 6 months of daily use.",
-        resolution_text="Explained that EVA foam degrades with heavy daily use and sun/heat exposure. The ABS core is still functional with a reduced-texture surface. Recommended storing indoors away from heat. Offered 20% discount on replacement.",
+        issue_description="The EVA foam surface is cracking and flaking after 6 months of daily use. I keep it near a window.",
+        resolution_text="Material degradation from UV exposure and heat affects many sports products — latex resistance bands become brittle and snap, elastic in running socks loses stretch, and silicone gaskets on hydration flask caps crack. EVA foam is particularly susceptible to UV damage when stored near windows or in direct sunlight. The ABS plastic core is still functional even with degraded foam. Recommended storing all sports equipment in a cool, dry place away from sunlight. Offered 20% discount on replacement.",
     ),
     SupportTicket(
         ticket_id="T-054",
@@ -1132,8 +1132,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-057",
         product_id="resistance-bands",
         status="Closed",
-        issue_description="The blue (heavy) resistance band snapped during a squat exercise and hit my leg.",
-        resolution_text="Confirmed the band had visible wear marks that should have prompted replacement. Sent free replacement set and safety guidelines. Emphasized always inspecting bands before use.",
+        issue_description="The blue (heavy) resistance band snapped during a squat exercise and hit my leg. I keep the bands in my garage near a window.",
+        resolution_text="Latex degrades from UV exposure, heat, and age — the same material degradation that causes EVA foam roller surfaces to crack, running sock elastic to lose stretch, and hydration flask gaskets to fail. Bands stored near windows or in garages with temperature swings degrade much faster. Confirmed the band had visible wear marks that should have prompted replacement. Sent free replacement set and safety guidelines. Emphasized always inspecting bands for tears, discoloration, or thin spots before each use. Store all latex and rubber equipment in a cool, dry place away from direct sunlight.",
     ),
     SupportTicket(
         ticket_id="T-058",
@@ -1192,8 +1192,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-065",
         product_id="rei-half-dome-tent",
         status="Closed",
-        issue_description="Inside of the tent was soaking wet in the morning but it did not rain overnight.",
-        resolution_text="Explained this is condensation from breathing, not a leak. Advised opening both vestibule doors partially and the ceiling vent for airflow.",
+        issue_description="Inside of the tent was soaking wet in the morning but it did not rain overnight. My sleeping bag also felt damp.",
+        resolution_text="This is condensation from breathing, not a leak — the rainfly's 1500mm polyurethane coating and factory-taped seams are intact. Condensation can make sleeping bags damp, which is particularly problematic for the Kelty Cosmic down fill (down clumps when wet, even with DriDown treatment). The NEMO Disco synthetic fill handles moisture better than down. Advised opening both vestibule doors partially and the ceiling vent for airflow. Keep sleeping bags in a waterproof stuff sack or dry bag inside the tent as an extra precaution.",
     ),
     SupportTicket(
         ticket_id="T-066",
@@ -1282,8 +1282,8 @@ SUPPORT_TICKETS: list[SupportTicket] = [
         ticket_id="T-077",
         product_id="kelty-cosmic-sleeping-bag",
         status="Closed",
-        issue_description="The down fill has clumped into balls after the bag got wet during a storm.",
-        resolution_text="Advised tumble drying on low with 2-3 clean tennis balls for 60-90 minutes. Tennis balls break apart clumps. Cautioned against air-drying down bags due to mildew risk.",
+        issue_description="The down fill has clumped into balls after the bag got wet during a storm. The DriDown treatment did not seem to help at all — the 550-fill down collapsed immediately.",
+        resolution_text="DriDown is a hydrophobic treatment that helps in light humidity but is not waterproof. In a full soaking, down fill clumps regardless. This insulation loft loss from moisture is similar to how the NEMO Disco synthetic fill loses loft when stored compressed — both require the same tennis ball dryer method to restore. Advised tumble drying on low with 2-3 clean tennis balls for 60-90 minutes — the tennis balls break apart clumps and redistribute fill. Do not air-dry down bags as the slow drying risks mildew. For future trips, keep the bag in a waterproof dry bag inside the tent. The REI Half Dome tent's rainfly is rated at 1500mm but condensation can still dampen gear inside.",
     ),
     SupportTicket(
         ticket_id="T-078",
@@ -1347,29 +1347,29 @@ REVIEWS: list[Review] = [
     # ── nike-pegasus-40 ───────────────────────────────────────────────────
     Review(review_id="R-001", product_id="nike-pegasus-40", rating=5, date="2024-03-15", raw_text="Best daily trainer I have ever owned. The React foam is incredibly responsive and I can run in these every day without my legs feeling beat up."),
     Review(review_id="R-002", product_id="nike-pegasus-40", rating=4, date="2024-04-20", raw_text="Great shoe overall but runs a bit narrow in the midfoot. Had to go with the wide version. Once I did, they are perfect for my 30-mile weeks."),
-    Review(review_id="R-003", product_id="nike-pegasus-40", rating=2, date="2024-05-10", raw_text="Cushion went flat after only 250 miles. My previous Pegasus 39 lasted much longer. Disappointed in the durability."),
+    Review(review_id="R-003", product_id="nike-pegasus-40", rating=2, date="2024-05-10", raw_text="The React foam cushion went flat after only 250 miles. My previous Pegasus 39 lasted much longer. I switched to the Adidas Ultraboost and its Boost midsole seems to hold up better, though it is heavier."),
     Review(review_id="R-004", product_id="nike-pegasus-40", rating=3, date="2024-06-01", raw_text="Decent shoe but I got heel blisters for the first two weeks. After switching my lacing technique it got better. Not ideal out of the box."),
 
     # ── adidas-ultraboost-24 ──────────────────────────────────────────────
     Review(review_id="R-005", product_id="adidas-ultraboost-24", rating=5, date="2024-03-22", raw_text="The Boost midsole is unreal. Like running on clouds with energy return. Worth every penny of the $190 price tag."),
-    Review(review_id="R-006", product_id="adidas-ultraboost-24", rating=3, date="2024-05-05", raw_text="Great cushion but the Boost foam yellowed within two months. Looks terrible for a premium shoe."),
-    Review(review_id="R-007", product_id="adidas-ultraboost-24", rating=1, date="2024-06-18", raw_text="The Continental outsole started peeling from the midsole after just 3 months. For $190 I expected better quality."),
+    Review(review_id="R-006", product_id="adidas-ultraboost-24", rating=3, date="2024-05-05", raw_text="Great cushion but the Boost foam yellowed within two months. Same yellowing issue I had with my Air Max 90 midsole. The baking soda and hydrogen peroxide paste fix works on both but I should not have to clean premium shoes constantly."),
+    Review(review_id="R-007", product_id="adidas-ultraboost-24", rating=1, date="2024-06-18", raw_text="The Continental rubber outsole started peeling from the Boost midsole after just 3 months. Outsole separation is a deal breaker. My friend had the same delamination issue on his Nike Pegasus. For $190 I expected better adhesive quality."),
     Review(review_id="R-008", product_id="adidas-ultraboost-24", rating=4, date="2024-07-10", raw_text="Heavy for a running shoe at 310g but the comfort makes up for it. I use these for easy recovery runs."),
 
     # ── nb-990v6 ──────────────────────────────────────────────────────────
     Review(review_id="R-009", product_id="nb-990v6", rating=5, date="2024-04-01", raw_text="Made in USA quality you can feel. The pigskin suede and mesh upper is beautiful. Worth every cent of $200."),
-    Review(review_id="R-010", product_id="nb-990v6", rating=4, date="2024-05-15", raw_text="Classic look and solid construction. Takes a while to break in — the ENCAP midsole is firm at first. After 30 miles it feels great."),
-    Review(review_id="R-011", product_id="nb-990v6", rating=2, date="2024-06-20", raw_text="Got caught in rain once and the suede is permanently water-stained. For $200 I expected more weather resistance."),
+    Review(review_id="R-010", product_id="nb-990v6", rating=4, date="2024-05-15", raw_text="Classic look and solid construction. Takes a while to break in — the ENCAP midsole is firm at first, much stiffer than the React foam in my Pegasus or the Boost in my Ultraboost. After 30 miles it feels great. Similar break-in to the Stan Smith leather."),
+    Review(review_id="R-011", product_id="nb-990v6", rating=2, date="2024-06-20", raw_text="Got caught in rain once and the pigskin suede is permanently water-stained. Same thing happened to my 574s. Unlike the DriDown treatment on my Kelty sleeping bag, there is zero water resistance on these suede panels. For $200 I expected at least a suede protector spray included in the box."),
     Review(review_id="R-012", product_id="nb-990v6", rating=3, date="2024-07-08", raw_text="Good shoe but noticeably heavier than other running shoes at 340g. More of a lifestyle shoe that happens to run okay."),
 
     # ── asics-gel-nimbus-26 ───────────────────────────────────────────────
-    Review(review_id="R-013", product_id="asics-gel-nimbus-26", rating=5, date="2024-04-10", raw_text="Maximum cushion heaven. The FF Blast Plus is the most comfortable midsole I have ever run in. My knees thank me."),
+    Review(review_id="R-013", product_id="asics-gel-nimbus-26", rating=5, date="2024-04-10", raw_text="Maximum cushion heaven. The FF Blast Plus midsole is softer than both the Nike Pegasus React foam and the Adidas Ultraboost Boost. My knees thank me. Rotating between these and the Brooks Ghost 16 with DNA Loft v2 for daily training."),
     Review(review_id="R-014", product_id="asics-gel-nimbus-26", rating=4, date="2024-05-25", raw_text="Super plush ride but it is a neutral shoe — no pronation support. Make sure you know your gait before buying."),
     Review(review_id="R-015", product_id="asics-gel-nimbus-26", rating=2, date="2024-07-02", raw_text="The mesh tore at the toe box after 2 months. I think my toenails caused it but still, it should be more durable."),
     Review(review_id="R-016", product_id="asics-gel-nimbus-26", rating=1, date="2024-08-15", raw_text="Felt a hard lump under my heel from day one. The PureGEL insert was deformed. Had to return."),
 
     # ── brooks-ghost-16 ──────────────────────────────────────────────────
-    Review(review_id="R-017", product_id="brooks-ghost-16", rating=5, date="2024-03-30", raw_text="The smoothest ride in a neutral shoe. DNA Loft v2 is soft without being mushy. My go-to daily trainer."),
+    Review(review_id="R-017", product_id="brooks-ghost-16", rating=5, date="2024-03-30", raw_text="The smoothest ride in a neutral shoe. The DNA Loft v2 midsole is soft without being mushy — softer than the New Balance ENCAP but firmer than the ASICS FF Blast Plus. My go-to daily trainer. Rotating with the Nike Pegasus for variety."),
     Review(review_id="R-018", product_id="brooks-ghost-16", rating=4, date="2024-05-20", raw_text="Reliable and comfortable but nothing flashy. Does everything well. The outsole wears evenly and lasts a long time."),
     Review(review_id="R-019", product_id="brooks-ghost-16", rating=2, date="2024-06-30", raw_text="Annoying squeaking noise from the insole. Had to put baby powder in the shoe to stop it. Should not happen with a $140 shoe."),
     Review(review_id="R-020", product_id="brooks-ghost-16", rating=3, date="2024-08-05", raw_text="Good shoe but not enough arch support for my flat feet. I need something with a medial post. Switching to the Adrenaline."),
@@ -1378,24 +1378,24 @@ REVIEWS: list[Review] = [
     Review(review_id="R-021", product_id="nike-air-max-90", rating=5, date="2024-04-15", raw_text="A timeless classic. The visible Air unit is iconic. I get compliments every time I wear these."),
     Review(review_id="R-022", product_id="nike-air-max-90", rating=4, date="2024-06-10", raw_text="Great lifestyle shoe. Just do not try to run in them — they are heavy and the Air unit is not designed for it."),
     Review(review_id="R-023", product_id="nike-air-max-90", rating=2, date="2024-07-25", raw_text="The Air bubble deflated on one shoe after a year. Shoe looks lopsided now. Nike says it is out of warranty."),
-    Review(review_id="R-024", product_id="nike-air-max-90", rating=3, date="2024-09-01", raw_text="Love the design but the white midsole yellows fast. Have to clean them constantly to keep them looking fresh."),
+    Review(review_id="R-024", product_id="nike-air-max-90", rating=3, date="2024-09-01", raw_text="Love the design but the white midsole yellows fast — same oxidation problem as my Ultraboost Boost foam. The baking soda and hydrogen peroxide paste works on both but I should not have to clean shoes every month. Even my Stan Smiths are starting to yellow at the rubber midsole."),
 
     # ── adidas-stan-smith ────────────────────────────────────────────────
     Review(review_id="R-025", product_id="adidas-stan-smith", rating=5, date="2024-03-20", raw_text="Minimalist perfection. Goes with everything. The leather ages beautifully if you take care of it."),
-    Review(review_id="R-026", product_id="adidas-stan-smith", rating=3, date="2024-05-12", raw_text="Very stiff out of the box. Took a full week of painful break-in before they were comfortable."),
+    Review(review_id="R-026", product_id="adidas-stan-smith", rating=3, date="2024-05-12", raw_text="The full-grain leather is very stiff out of the box. Took a full week of painful break-in before they were comfortable. Reminds me of the break-in on my 990v6 ENCAP midsole, which needed about 30 miles. Different materials but the same patience required."),
     Review(review_id="R-027", product_id="adidas-stan-smith", rating=2, date="2024-07-15", raw_text="The leather started cracking badly across the toe after 4 months. Should have conditioned it sooner I guess."),
     Review(review_id="R-028", product_id="adidas-stan-smith", rating=4, date="2024-08-20", raw_text="Classic shoe that never goes out of style. The green heel tab is a nice touch. Just remember to condition the leather."),
 
     # ── nb-574 ────────────────────────────────────────────────────────────
     Review(review_id="R-029", product_id="nb-574", rating=5, date="2024-04-05", raw_text="The perfect retro sneaker. Suede and mesh combo looks great. ENCAP cushion is comfortable for all-day wear."),
     Review(review_id="R-030", product_id="nb-574", rating=4, date="2024-06-15", raw_text="Great shoe but wish it came in wider options by default. Had to order the 2E width. Once I did, perfect fit."),
-    Review(review_id="R-031", product_id="nb-574", rating=2, date="2024-07-28", raw_text="The suede panels stain so easily. Got caught in rain once and now they look terrible. Not practical for everyday wear."),
-    Review(review_id="R-032", product_id="nb-574", rating=3, date="2024-09-10", raw_text="Good casual shoe but the insole slides around inside. Had to glue it down. Minor annoyance for an otherwise solid sneaker."),
+    Review(review_id="R-031", product_id="nb-574", rating=2, date="2024-07-28", raw_text="The suede panels stain so easily from water. Got caught in rain once and now they look terrible. My 990v6 pigskin suede had the same water damage problem. Neither shoe has any water resistance — unlike my Kelty sleeping bag DriDown or my tent rainfly. A suede protector spray is essential but should come included at this price."),
+    Review(review_id="R-032", product_id="nb-574", rating=3, date="2024-09-10", raw_text="Good casual shoe but the insole slides around and bunches up under the arch. Had to use double-sided tape to keep it in place — same fix I used on my ASICS Nimbus 26 OrthoLite insole. Seems like removable insoles are problematic across brands. My Brooks Ghost 16 insole squeaks too."),
 
     # ── nike-drifit-tee ──────────────────────────────────────────────────
     Review(review_id="R-033", product_id="nike-drifit-tee", rating=5, date="2024-04-12", raw_text="Dri-FIT technology really works. Even on hot summer runs the shirt keeps me dry. Lightweight and breathable."),
-    Review(review_id="R-034", product_id="nike-drifit-tee", rating=3, date="2024-06-22", raw_text="The moisture wicking stopped working after a few months. Turns out fabric softener kills it. Vinegar wash fixed it."),
-    Review(review_id="R-035", product_id="nike-drifit-tee", rating=2, date="2024-08-01", raw_text="Pills like crazy after just 5 washes. Looks worn out already. For $35 I expected better fabric quality."),
+    Review(review_id="R-034", product_id="nike-drifit-tee", rating=3, date="2024-06-22", raw_text="The Dri-FIT moisture wicking stopped working after a few months. Turns out fabric softener kills it — same thing happened to my Adidas AEROREADY running shorts. A white vinegar wash restored the wicking on both. Never use fabric softener on any moisture-wicking apparel."),
+    Review(review_id="R-035", product_id="nike-drifit-tee", rating=2, date="2024-08-01", raw_text="The Dri-FIT shirt pills like crazy after just 5 washes. The synthetic polyester fabric also retains odor even after washing — same odor problem I noticed with my AEROREADY shorts liner. For $35 I expected better fabric quality. At least a vinegar soak helps with the smell."),
     Review(review_id="R-036", product_id="nike-drifit-tee", rating=4, date="2024-09-15", raw_text="Great performance shirt. Just do not use fabric softener and wash it inside out. Holds up well when you follow the care instructions."),
 
     # ── adidas-running-shorts ────────────────────────────────────────────
@@ -1406,32 +1406,32 @@ REVIEWS: list[Review] = [
 
     # ── ua-coldgear ──────────────────────────────────────────────────────
     Review(review_id="R-041", product_id="ua-coldgear", rating=5, date="2024-01-15", raw_text="Game changer for winter running. The brushed interior is incredibly warm without any bulk. Best base layer I have owned."),
-    Review(review_id="R-042", product_id="ua-coldgear", rating=4, date="2024-02-20", raw_text="Keeps me warm down to about 30°F with a wind layer on top. The compression fit takes getting used to but it works."),
+    Review(review_id="R-042", product_id="ua-coldgear", rating=4, date="2024-02-20", raw_text="Keeps me warm down to about 30°F with a wind layer on top. The ColdGear compression fit takes getting used to — similar to the break-in stiffness on my Stan Smiths, just a different kind of discomfort. The moisture wicking works great as long as you never use fabric softener, same as Dri-FIT and AEROREADY."),
     Review(review_id="R-043", product_id="ua-coldgear", rating=2, date="2024-03-10", raw_text="Shrunk a full size after one wash. I followed the care label. Very frustrating. Had to buy a new one in a size up."),
     Review(review_id="R-044", product_id="ua-coldgear", rating=3, date="2024-11-05", raw_text="Good warmth but the shoulder seam started coming apart after 3 months. Warranty replaced it but still concerning quality."),
 
     # ── nike-running-socks ───────────────────────────────────────────────
     Review(review_id="R-045", product_id="nike-running-socks", rating=5, date="2024-04-18", raw_text="Cushioning is perfect. The arch band provides great support and Dri-FIT keeps my feet dry. Best running socks at this price."),
     Review(review_id="R-046", product_id="nike-running-socks", rating=4, date="2024-06-05", raw_text="Good quality 2-pack. Love that they are left and right specific. Just make sure you get the right size — they run slightly large."),
-    Review(review_id="R-047", product_id="nike-running-socks", rating=2, date="2024-08-15", raw_text="The elastic arch band stretched out after 4 months. The socks slide around in my shoes now. Not durable enough."),
+    Review(review_id="R-047", product_id="nike-running-socks", rating=2, date="2024-08-15", raw_text="The elastic arch band stretched out after 4 months. The Dri-FIT wicking still works but the socks slide around in my shoes now. Elastic degradation seems to be a problem with lots of sports gear — my resistance bands lost their stretch too, and the gasket on my hydration flask cap cracked. Wash cold to extend elastic life."),
     Review(review_id="R-048", product_id="nike-running-socks", rating=3, date="2024-09-30", raw_text="Decent socks but the toe seam is slightly raised and I can feel it when running. Causes minor irritation on long runs."),
 
     # ── hydration-belt ───────────────────────────────────────────────────
     Review(review_id="R-049", product_id="hydration-belt", rating=5, date="2024-05-10", raw_text="Perfect for long runs. Two 10oz flasks is enough for up to 15 miles. The zippered pocket holds my phone securely."),
     Review(review_id="R-050", product_id="hydration-belt", rating=3, date="2024-07-20", raw_text="Belt works well but one flask cap leaked from day one. Had to tighten it really hard to stop the dripping."),
     Review(review_id="R-051", product_id="hydration-belt", rating=2, date="2024-08-25", raw_text="Bounces way too much when running. Could not find a good position on my hips. Switched to a handheld bottle instead."),
-    Review(review_id="R-052", product_id="hydration-belt", rating=1, date="2024-09-12", raw_text="Flasks developed a mildew smell within a month even though I rinse them. Disgusting. Switched to a vest system."),
+    Review(review_id="R-052", product_id="hydration-belt", rating=1, date="2024-09-12", raw_text="Flasks developed a mildew smell within a month even though I rinse them. Odor retention seems to plague all my synthetic gear — my Dri-FIT shirts hold smell too, and my AEROREADY shorts liner. Baking soda soak helps the flasks but vinegar works better on apparel. Switched to a vest system."),
 
     # ── foam-roller ──────────────────────────────────────────────────────
     Review(review_id="R-053", product_id="foam-roller", rating=5, date="2024-03-25", raw_text="The GRID surface is genius. Different density zones target different muscle groups. Essential recovery tool after hard runs."),
     Review(review_id="R-054", product_id="foam-roller", rating=4, date="2024-05-30", raw_text="Solid construction with the ABS core. More durable than cheaper foam rollers. The 13-inch length is portable too."),
-    Review(review_id="R-055", product_id="foam-roller", rating=3, date="2024-07-15", raw_text="Works well but the EVA foam surface started cracking after 6 months of daily use. Expected more longevity."),
+    Review(review_id="R-055", product_id="foam-roller", rating=3, date="2024-07-15", raw_text="Works well but the EVA foam surface started cracking after 6 months of daily use. I kept it near a sunny window which probably accelerated the degradation. Same UV damage issue that killed my resistance bands and wore out the elastic in my running socks faster. Store all this stuff away from sunlight."),
     Review(review_id="R-056", product_id="foam-roller", rating=2, date="2024-09-05", raw_text="Strong chemical smell out of the box. Had to leave it outside for a week before I could use it indoors."),
 
     # ── resistance-bands ─────────────────────────────────────────────────
     Review(review_id="R-057", product_id="resistance-bands", rating=5, date="2024-04-08", raw_text="Great set of 5 progressive resistance levels. Perfect for physical therapy exercises and warm-ups before runs."),
     Review(review_id="R-058", product_id="resistance-bands", rating=4, date="2024-06-12", raw_text="Good quality latex bands. The color coding makes it easy to progress through resistance levels. Store them away from heat."),
-    Review(review_id="R-059", product_id="resistance-bands", rating=2, date="2024-08-20", raw_text="The heavy blue band snapped during a squat and left a welt on my leg. Always check for wear before using."),
+    Review(review_id="R-059", product_id="resistance-bands", rating=2, date="2024-08-20", raw_text="The heavy blue latex band snapped during a squat and left a welt on my leg. I stored the bands in my garage near a window — UV and heat degrade latex just like they crack EVA foam on my foam roller and wear out the elastic in my running socks. Always inspect bands for tears, thin spots, or discoloration before each use. Store in a cool dark place."),
     Review(review_id="R-060", product_id="resistance-bands", rating=3, date="2024-10-01", raw_text="The flat bands keep rolling up into a tube during leg exercises. Annoying. Fabric bands would be better for lower body."),
 
     # ── garmin-forerunner-265 ────────────────────────────────────────────
@@ -1443,13 +1443,13 @@ REVIEWS: list[Review] = [
     # ── rei-half-dome-tent ───────────────────────────────────────────────
     Review(review_id="R-065", product_id="rei-half-dome-tent", rating=5, date="2024-05-15", raw_text="Held up perfectly in heavy rain on the Appalachian Trail. Color-coded poles made setup easy even in fading light."),
     Review(review_id="R-066", product_id="rei-half-dome-tent", rating=4, date="2024-07-01", raw_text="Roomy for two people with gear. A bit heavy for ultralight backpacking at 1.64kg but the livability is worth it."),
-    Review(review_id="R-067", product_id="rei-half-dome-tent", rating=2, date="2024-08-18", raw_text="Tons of condensation on the walls every morning. Had to wipe it down with a bandana. Opens vents help but do not eliminate it."),
+    Review(review_id="R-067", product_id="rei-half-dome-tent", rating=2, date="2024-08-18", raw_text="Tons of condensation on the inner tent walls every morning even with the 1500mm PU rainfly coating keeping rain out. My Kelty Cosmic down sleeping bag got damp from the condensation and the DriDown fill clumped. Opening vents helps but does not eliminate it. Keep your sleeping bag in a waterproof dry bag inside the tent."),
     Review(review_id="R-068", product_id="rei-half-dome-tent", rating=3, date="2024-09-25", raw_text="Good tent overall but the pole sleeve ripped on my second trip. Tenacious Tape fixed it but should not happen on a new tent."),
 
     # ── nemo-disco-sleeping-bag ──────────────────────────────────────────
     Review(review_id="R-069", product_id="nemo-disco-sleeping-bag", rating=5, date="2024-04-20", raw_text="The spoon shape is a game changer for side sleepers. Finally a bag where my knees and elbows are not constricted. So comfortable."),
     Review(review_id="R-070", product_id="nemo-disco-sleeping-bag", rating=4, date="2024-06-10", raw_text="Warm and comfortable but heavier than down alternatives at 1.13kg. Worth the trade-off for synthetic since it handles moisture better."),
-    Review(review_id="R-071", product_id="nemo-disco-sleeping-bag", rating=2, date="2024-08-05", raw_text="The 30-degree rating is optimistic. I was freezing at 38°F. Need a much warmer bag or at minimum a liner."),
+    Review(review_id="R-071", product_id="nemo-disco-sleeping-bag", rating=2, date="2024-08-05", raw_text="The 30-degree rating is optimistic. I was freezing at 38°F even with the Therm-a-Rest NeoAir XTherm pad underneath (R-value 6.9). The synthetic insulation loses loft faster than the Kelty Cosmic down fill. Need a much warmer bag or at minimum a liner."),
     Review(review_id="R-072", product_id="nemo-disco-sleeping-bag", rating=3, date="2024-09-15", raw_text="Good bag but the zipper catches on the draft tube every single time. Very frustrating when you are trying to get in and out at night."),
 
     # ── msr-hubba-hubba-tent ─────────────────────────────────────────────
@@ -1461,7 +1461,7 @@ REVIEWS: list[Review] = [
     # ── kelty-cosmic-sleeping-bag ────────────────────────────────────────
     Review(review_id="R-077", product_id="kelty-cosmic-sleeping-bag", rating=5, date="2024-04-25", raw_text="Best value down sleeping bag on the market. DriDown treatment and 550-fill for only $130. Warm and comfortable to 25°F."),
     Review(review_id="R-078", product_id="kelty-cosmic-sleeping-bag", rating=4, date="2024-06-20", raw_text="Great budget option. Slightly heavier than premium down bags at 1.36kg but the warmth-to-price ratio is unbeatable."),
-    Review(review_id="R-079", product_id="kelty-cosmic-sleeping-bag", rating=2, date="2024-08-10", raw_text="Got it wet and the down clumped badly. DriDown is supposed to repel moisture but it clearly has limits. Took hours in the dryer to fix."),
+    Review(review_id="R-079", product_id="kelty-cosmic-sleeping-bag", rating=2, date="2024-08-10", raw_text="Got the 550-fill DriDown wet from tent condensation and the down clumped badly. DriDown is supposed to repel moisture but it clearly has limits — unlike the REI Half Dome tent rainfly which has real waterproof coating. Tennis balls in the dryer on low heat fixed the clumping but it took hours. The NEMO Disco synthetic fill handles moisture much better than down."),
     Review(review_id="R-080", product_id="kelty-cosmic-sleeping-bag", rating=3, date="2024-09-30", raw_text="Feathers keep poking through the shell fabric. Not a huge deal for warmth but it is annoying and feels cheap."),
 
     # ── therm-a-rest-sleeping-pad ────────────────────────────────────────

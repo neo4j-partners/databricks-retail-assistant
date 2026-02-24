@@ -76,7 +76,7 @@ The local backend has 15 tools. The deployed agent has 7 (plus echo). The missin
 - **Inventory** — `check_inventory`, `find_alternatives`
 - **Cart** — `get_cart`, `add_to_cart`, `remove_from_cart`, `update_cart_item`, `clear_cart`, `apply_coupon`
 
-These need to be migrated from `backend/tools/` to `dbx_agent/` using the same `ToolRuntime[RetailContext]` pattern already established.
+These need to be added to `dbx_agent/` using the same `ToolRuntime[RetailContext]` pattern already established.
 
 ## Genie Space and Genie Agent (AGENTS.md R1)
 
@@ -100,7 +100,7 @@ No evaluation suite exists. No test questions have been curated and no baseline 
 
 ### Step 1: Migrate Remaining Tools
 
-Port the recommendations, inventory, and cart tools from `backend/tools/` to `dbx_agent/`. Follow the established pattern: replace closure over `client` with `ToolRuntime[RetailContext]`, export a flat tool list from each module, and add them to `ALL_TOOLS` in `agent.py`. Redeploy and verify with `check_endpoint.py`.
+Add the recommendations, inventory, and cart tools to `dbx_agent/`. Follow the established pattern: use `ToolRuntime[RetailContext]`, export a flat tool list from each module, and add them to `ALL_TOOLS` in `react_agent.py`. Redeploy and verify with `check_endpoint.py`.
 
 ### Step 2: Create the Genie Space
 

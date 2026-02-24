@@ -69,7 +69,7 @@ cp ../agent-memory/dist/neo4j_agent_memory-0.0.1-py3-none-any.whl dist/
 Use the included upload script, passing your Databricks CLI profile name:
 
 ```bash
-./backend/scripts/upload_wheel.sh <databricks-profile>
+./scripts/upload_wheel.sh <databricks-profile>
 ```
 
 This uploads the wheel to `/Volumes/retail_assistant/retail/retail_volume/libs/`.
