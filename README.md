@@ -43,6 +43,29 @@ When a conversation starts, the assistant loads relevant context from all three 
 
 During a conversation, the agent also has access to a `search_memory` tool that it can call at any time. If a user asks something like "what did I say I was training for?", the agent can search across past messages, stored preferences, and entity records to find the answer.
 
+## Create a Databricks Cluster
+
+Create a cluster with the Neo4j Spark Connector for running the import/export notebooks.
+
+1. **Create a new cluster**:
+   - Navigate to **Compute** → **Create Compute**
+   - **Cluster name**: `Neo4j-Demo-Cluster`
+   - **Access mode**: **Dedicated** (required for Neo4j Spark Connector)
+   - **Databricks Runtime**: 13.3 LTS or higher
+   - **Workers**: 2-4 (adjust based on data volume)
+
+2. **Install the Neo4j Spark Connector**:
+   - Click on your cluster → **Libraries** tab
+   - Click **Install New** → Select **Maven**
+   - Enter coordinates: `org.neo4j:neo4j-connector-apache-spark_2.12:5.3.1_for_spark_3`
+   - Click **Install**
+
+3. **Verify installation**:
+   - Library should show status "Installed"
+   - Restart the cluster if needed
+
+**Important**: Access mode MUST be "Dedicated" - the Neo4j Spark Connector does not work in Shared mode.
+
 ## Lakehouse Data Generation
 
 Generate synthetic retail transaction data for Databricks Delta Lake integration. This produces CSV files that can be uploaded to a Databricks Unity Catalog Volume and converted to Delta Lake tables.
