@@ -1,6 +1,8 @@
 # Databricks Retail Assistant
 
-A two-agent supervisor system deployed on Databricks using Genie, AgentBricks, and the Mosaic AI Agent Framework. A supervisor classifies user intent and routes analytics questions to a Genie Lakehouse Agent and product/recommendation questions to a Neo4j Knowledge Graph Agent. The KG agent is a LangGraph ReAct agent with persistent memory, deployed to Databricks Model Serving via MLflow.
+Autonomous commerce requires agents that do more than generate text. An agent handling product recommendations needs to traverse category and brand relationships, recall a buyer's past preferences, and remember which retrieval strategy worked for similar questions last week. Those are three distinct capabilities, and they map to three technologies that converge on Neo4j: knowledge graphs for relational structure, GraphRAG for grounded retrieval, and persistent agent memory for learning from experience. For a deeper look at how these patterns compose, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md).
+
+This repository implements those patterns as a two-agent supervisor system on Databricks using Genie, AgentBricks, and the Mosaic AI Agent Framework. A supervisor classifies user intent and routes analytics questions to a Genie Lakehouse Agent, product and recommendation questions to a Neo4j Knowledge Graph Agent. The KG agent is a LangGraph ReAct agent with persistent memory, deployed to Databricks Model Serving via MLflow.
 
 ## Architecture Overview
 
@@ -25,9 +27,7 @@ A two-agent supervisor system deployed on Databricks using Genie, AgentBricks an
 
 ## Neo4j Agentic Libraries
 
-This project demonstrates the patterns of agentic commerce — autonomous agents that traverse supplier and product relationships, recall user preferences across sessions, and learn from past reasoning to handle commercial tasks end-to-end. Knowledge graphs provide the relational structure, GraphRAG grounds retrieval in graph context, and persistent agent memory lets the agent accumulate operational intelligence over time. All three converge on a single Neo4j instance. For a deeper look at how these patterns compose, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/NEO4J_AGENTIC_COMMERCE.md).
-
-The assistant combines two Neo4j open-source libraries. For a detailed developer guide to the GraphRAG integration on Databricks, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
+The assistant combines two Neo4j open-source libraries that both operate against the same Neo4j instance. For a detailed developer guide to the GraphRAG integration on Databricks, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
 
 - **[neo4j-agent-memory](https://github.com/neo4j-labs/agent-memory)** — Persistent, structured agent memory with short-term, long-term, and reasoning layers backed by a Neo4j graph.
 - **[neo4j-graphrag](https://github.com/neo4j-labs/neo4j-graphrag-python)** — Full-pipeline GraphRAG: chunking, embedding, LLM entity extraction, and retriever classes that combine vector search with graph traversal.
