@@ -79,23 +79,29 @@ The current `load_products.py` creates the structured graph: Product, Category, 
 
 ### Stage 1 — Chunk the existing documents
 
-Pull the text content from the 252 existing document nodes: `content` from KnowledgeArticle, `issue_description` concatenated with `resolution_text` from SupportTicket, and `raw_text` from Review. Each document is already short (1-3 paragraphs), so most will produce one or two chunks. For knowledge articles that have distinct "Symptom" and "Solution" sections, split at section boundaries rather than by fixed character count. For reviews, each review is already one chunk.
+The 252 documents are all short — the longest knowledge article is ~200 tokens, the longest ticket is ~210 tokens combined, and the longest review is ~90 tokens. No size-based splitting is needed; everything fits well within the 512-token embedding model limit.
 
-Create Chunk nodes with a chunk ID, the text, the source type (article, ticket, or review), and a position index. Connect them to their source documents:
+**Chunking rules:**
+
+- **Knowledge articles** (84): One chunk per article. No splitting — even the enriched articles are well under 200 tokens.
+- **Support tickets** (84): Two chunks per ticket — `issue_description` and `resolution_text` as separate chunks. This preserves the semantic distinction between problem and fix, producing cleaner entity extraction (issue chunks yield Symptoms, resolution chunks yield Solutions).
+- **Reviews** (84): One chunk per review.
+
+This produces approximately **336 chunks** (84 + 168 + 84).
+
+Create Chunk nodes with a chunk ID, the text, and the source type. Chunk IDs follow the format `{source_type}-{doc_id}-{position}` (e.g., `ka-003-0`, `t-004-0`, `t-004-1`, `r-007-0`). Connect them to their source documents:
 
 - KnowledgeArticle -[HAS_CHUNK]-> Chunk
 - SupportTicket -[HAS_CHUNK]-> Chunk
 - Review -[HAS_CHUNK]-> Chunk
-- Chunk -[NEXT_CHUNK]-> Chunk (for multi-chunk documents, preserving reading order)
-
-This parallels the Document → Chunk → NEXT_CHUNK pattern from the aircraft lab's Notebook 03.
+- Chunk -[NEXT_CHUNK]-> Chunk (for ticket chunks only, linking issue to resolution)
 
 ### Stage 2 — Embed chunks
 
-Generate vector embeddings for each chunk using the same Databricks Foundation Model API already used for product embeddings (databricks-bge-large-en, 1024 dimensions). Store embeddings on Chunk nodes. Create two indexes:
+Generate vector embeddings for each chunk sequentially using the same Databricks Foundation Model API already used for product embeddings (databricks-bge-large-en, 1024 dimensions). Store embeddings on Chunk nodes. Create two indexes:
 
 - A vector index (`chunk_embedding`) for semantic similarity search
-- A fulltext index (`chunkText`) for keyword search
+- A fulltext index (`chunkText`) on the chunk text field, using an English analyzer for stemming
 
 This enables both vector and hybrid retriever patterns. The retail project now has two vector indexes in the same Neo4j database — one on Products for product search, one on Chunks for document search — demonstrating that Neo4j serves as both the vector store and the knowledge graph with no separate vector database needed.
 
@@ -107,29 +113,27 @@ For each chunk, call a Databricks-hosted LLM (Meta Llama 3.3 70B via the Foundat
 - **Symptoms**: Problems, complaints, or issues described (cushion feels flat, outsole peeling, fabric pilling, GPS takes too long to lock)
 - **Solutions**: Fixes, recommendations, or resolutions given (replace every 300-500 miles, use heel-lock lacing, wash with vinegar, apply suede protector)
 
-The prompt instructs the LLM to return structured JSON with a short canonical name for each entity and the exact text mention from the source. Parse the response and create or merge entity nodes in the graph.
+The prompt instructs the LLM to return structured JSON with just a short canonical name for each entity (no verbatim mention needed — keeps it simple). The prompt includes 2-3 few-shot examples covering one Feature, one Symptom, and one Solution to drive consistent canonical naming. The taxonomy is a guide, not a strict constraint — if the LLM is unsure whether something is a Feature or a Symptom, that's fine; the graph traversals work either way. One entity per conceptual item (e.g., "baking soda and peroxide paste" is one Solution, not split into sub-steps).
 
-With approximately 252 chunks (most documents produce one chunk), this requires about 252 LLM calls. At typical latency for a Databricks Foundation Model endpoint, the full extraction takes roughly 5-10 minutes.
+Parse the JSON response. On malformed JSON, log a warning and skip the chunk — at 336 calls, a few failures don't affect the demo.
+
+With approximately 336 chunks, this requires about 336 LLM calls. At typical latency for a Databricks Foundation Model endpoint, the full extraction takes roughly 5-10 minutes.
+
+**No entity resolution / dedup stage.** The enriched data in Section 1 was written with intentionally consistent entity terminology across clusters, and the extraction prompt uses few-shot examples to steer toward canonical names. If a few near-duplicates slip through, they don't break the demo. This avoids the complexity of embedding-based pairwise similarity, threshold tuning, and merge logic.
 
 ### Stage 4 — Link entities to chunks and products
 
-Connect extracted entities to their source chunks:
+Connect extracted entities to their source chunks (no properties on the relationships — keep it simple):
 
 - Chunk -[MENTIONS_FEATURE]-> Feature
 - Chunk -[REPORTS_SYMPTOM]-> Symptom
 - Chunk -[PROVIDES_SOLUTION]-> Solution
 
-Create cross-entity relationships when a chunk contains both a symptom and its solution:
+Connect entities to products by traversing through the source documents. This works through all three document types:
 
-- Symptom -[RESOLVED_BY]-> Solution
-
-Connect features to products by traversing through the source document:
-
-- Product -[HAS_FEATURE]-> Feature (derived from Product <-[COVERS]- KnowledgeArticle -[HAS_CHUNK]-> Chunk -[MENTIONS_FEATURE]-> Feature)
-
-### Stage 5 — Basic entity resolution
-
-The same symptom may be extracted with different names from different documents: "outsole peeling", "sole separating from midsole", "outsole detaching." The pipeline should demonstrate a simple deduplication step: embed all entity names, find pairs with cosine similarity above a threshold, and merge them into a single canonical node. This ensures that graph traversals work correctly across documents that describe the same issue in different words.
+- Product -[HAS_FEATURE]-> Feature (derived from Product ← COVERS/ABOUT/REVIEWS ← source document → HAS_CHUNK → Chunk → MENTIONS_FEATURE → Feature)
+- Product -[HAS_SYMPTOM]-> Symptom (same traversal through REPORTS_SYMPTOM)
+- Product -[HAS_SOLUTION]-> Solution (same traversal through PROVIDES_SOLUTION)
 
 ### Graph schema after this step
 
@@ -138,67 +142,15 @@ The graph now has four layers:
 1. **Structured product layer** (existing): Product, Category, Brand, Attribute with IN_CATEGORY, MADE_BY, SIMILAR_TO, BOUGHT_TOGETHER, HAS_ATTRIBUTE
 2. **Document layer** (existing): KnowledgeArticle, SupportTicket, Review with COVERS, ABOUT, REVIEWS
 3. **Chunk layer** (new): Chunk nodes with HAS_CHUNK and NEXT_CHUNK, plus vector and fulltext indexes
-4. **Entity layer** (new): Feature, Symptom, Solution with MENTIONS_FEATURE, REPORTS_SYMPTOM, PROVIDES_SOLUTION, RESOLVED_BY, HAS_FEATURE
+4. **Entity layer** (new): Feature, Symptom, Solution with MENTIONS_FEATURE, REPORTS_SYMPTOM, PROVIDES_SOLUTION, HAS_FEATURE, HAS_SYMPTOM, HAS_SOLUTION
 
 ---
 
-## Open Questions on Section 2
+### Implementation notes
 
-### Stage 1 — Chunking
-
-- **Chunking strategy for support tickets:** The proposal says to concatenate `issue_description` with `resolution_text` for tickets. Should these be kept as separate chunks instead? They represent different intent (problem vs. fix), and keeping them separate could produce cleaner entity extraction — one chunk yields Symptoms, the other yields Solutions. What's the rationale for combining them?
-
-
-**ANSWER** : Keep the separate 
-
-- **Section-boundary splitting for knowledge articles:** How are "Symptom" and "Solution" sections detected? Is there a consistent delimiter in the `content` field (e.g., "Symptom:" / "Solution:" prefixes), or does this require heuristic parsing? If the format varies across articles, what's the fallback?
-
-**ANSWER** : Are the knowldge articles even long enough to need splitting? I think they are pretty small?
-
-
-- **Chunk size bounds:** The proposal says most documents produce 1-2 chunks. Is there a max chunk size? Some enriched articles (after Section 1 edits) could get long enough that a single chunk exceeds the embedding model's token limit or dilutes the entity extraction quality. Should there be a character/token cap with overlap?
-
-**ANSWER** : section 1 has been implemented - see if max chunk size is still a concern 
-
-- **Chunk ID scheme:** What's the chunk ID format? Something like `{source_type}-{doc_id}-{position}` (e.g., `ka-003-0`, `ka-003-1`)? This matters for debugging and for the NEXT_CHUNK ordering.
-
-**ANSWER** : The proposed ID schema works great .
-
-### Stage 2 — Embedding
-
-- **Embedding model token limit:** `databricks-bge-large-en` has a 512-token input limit. After enrichment, some article chunks could exceed that. Should chunks be truncated, or should Stage 1 enforce a max size that fits within the embedding window?
-- **Batch embedding:** The current `load_products.py` embeds products one at a time. With ~252+ chunks, should the new script use batch embedding calls for throughput? Does the Databricks Foundation Model API support batch requests, or should we just parallelize single calls?
-- **Fulltext index configuration:** The proposal mentions a `chunkText` fulltext index. Which fields does it index — just the chunk text, or also the source document ID and source type? Should it use the default analyzer or a custom one (e.g., English stemming)?
-
-### Stage 3 — Entity Extraction
-
-- **Extraction prompt design:** This is the most critical piece and the proposal doesn't include it. What does the prompt look like? Specifically:
-  - Does it use few-shot examples? Given that entity naming consistency is critical for Stage 5, few-shot examples that demonstrate canonical naming could reduce dedup work.
-  - Does it ask the LLM to assign a canonical name *and* capture the verbatim mention, or just one of these?
-  - Does it enforce the Feature/Symptom/Solution taxonomy strictly, or allow the LLM to suggest a type?
-- **Entity naming consistency:** "React foam midsole" vs. "React foam" vs. "Nike React" — how much normalization does the prompt enforce? If the prompt doesn't tightly constrain naming, Stage 5 dedup has a much harder job. Should the prompt include a reference list of known entity names to steer toward?
-- **Structured output parsing:** The proposal says the LLM returns JSON. What happens on malformed JSON? Retry? Skip the chunk? Log and continue? At 252 calls, even a 5% failure rate means ~13 chunks with no entities.
-- **LLM cost and rate limits:** 252 calls to Llama 3.3 70B — is there a rate limit on the Databricks Foundation Model API endpoint that could cause throttling? Should the script include backoff/retry logic?
-- **Entity granularity:** Should "baking soda and hydrogen peroxide paste" be one Solution entity or two (the paste + the application method "scrub gently, leave in sunlight")? The proposal's examples suggest compound solutions. What's the guidance on granularity — one entity per distinct actionable step, or one per conceptual solution?
-
-### Stage 4 — Linking
-
-- **HAS_FEATURE derivation:** The proposal describes deriving Product -[HAS_FEATURE]-> Feature by traversing Product ← COVERS ← KnowledgeArticle → HAS_CHUNK → Chunk → MENTIONS_FEATURE → Feature. Should this also work through SupportTicket (ABOUT) and Review (REVIEWS) paths? A feature mentioned only in a review but not in a knowledge article would be missed otherwise.
-- **RESOLVED_BY creation logic:** "When a chunk contains both a symptom and its solution" — what if a chunk mentions Symptom A and Solution B, but they're unrelated (e.g., the article lists multiple issues)? Does the script assume all symptoms and solutions in the same chunk are related, or does the extraction prompt need to explicitly pair them?
-- **Relationship properties:** Should MENTIONS_FEATURE, REPORTS_SYMPTOM, etc. carry any properties — like the verbatim mention text, a confidence score from the LLM, or the chunk position? This could be useful for debugging and for weighted retrieval.
-
-### Stage 5 — Entity Resolution
-
-- **Similarity threshold:** What cosine similarity threshold triggers a merge? Too low and you get false merges ("outsole peeling" ≠ "insole slipping"); too high and you miss valid duplicates ("outsole peeling" ≈ "sole separating from midsole"). Is there a planned approach for tuning this — manual review of a sample, or a fixed threshold?
-- **Merge strategy:** When two entities merge, which name becomes canonical? The one that appears more frequently? The shorter one? The first one encountered? Does the merged node retain all original names as aliases?
-- **Cross-type dedup:** Can a Symptom and a Feature ever be the same entity extracted differently? E.g., "moisture wicking" could be extracted as a Feature in one chunk and as a Symptom ("wicking performance loss") in another. Is cross-type resolution in scope, or only within-type?
-- **Entity resolution at scale:** Embedding all entity names and computing pairwise similarity is O(n²). With ~50-100 entities this is trivial, but should the proposal note the approach and confirm the expected entity count to justify brute-force pairwise comparison?
-
-### General / Cross-Cutting
-
-- **Idempotency:** Can `load_graphrag.py` be run multiple times safely? If re-run after data enrichment, does it clear and rebuild the chunk/entity layers, or does it merge incrementally? The proposal says it "adds the semantic layer without touching existing nodes" — but what about re-runs?
-- **Error recovery:** If the script fails mid-way (e.g., after chunking but before entity extraction), can it resume from where it left off, or does it need to start over?
-- **Which package does this live in?** The proposal says `load_graphrag.py` but doesn't specify whether it goes in `sample_agent/scripts/` or `dbx_agent/` or somewhere else. Given the project structure, which agent does this belong to?
+- **Location:** `dbx_agent/load_graphrag.py` alongside the existing `load_products.py`
+- **Run command:** `uv run python -m dbx_agent.load_graphrag`
+- **No idempotency handling** — the script assumes a clean run after `load_products.py`
 
 ---
 
@@ -216,7 +168,7 @@ Each example follows the same format: state the user question, show what plain v
 
 A plain VectorRetriever finds the 3-5 chunks most semantically similar to the query. It likely returns chunks from the Nike Pegasus articles about React foam degradation — the closest semantic match. It misses the broader context.
 
-An entity-aware VectorCypherRetriever starts with the same vector search but then traverses from the matched chunks through their extracted entities. It follows Chunk → REPORTS_SYMPTOM → Symptom ("cushion responsiveness loss") → RESOLVED_BY → Solution to find the recommended fix. Then it follows Symptom ← REPORTS_SYMPTOM ← Chunk (other chunks) to find that this same symptom is reported across Ultraboost, Nimbus, and Ghost 16 documents with brand-specific solutions for each. The agent can now tell the customer: "This is normal midsole wear. All foam technologies degrade over 300-500 miles. Here's what to do for your specific shoe." No amount of vector similarity alone would reliably surface a Brooks Ghost review when the query matched a Nike Pegasus article.
+An entity-aware VectorCypherRetriever starts with the same vector search but then traverses from the matched chunks through their extracted entities. It follows Chunk → REPORTS_SYMPTOM → Symptom ("cushion responsiveness loss") ← REPORTS_SYMPTOM ← Chunk (other chunks) to find that this same symptom is reported across Ultraboost, Nimbus, and Ghost 16 documents. It also follows Chunk → PROVIDES_SOLUTION → Solution ← PROVIDES_SOLUTION ← Chunk to find brand-specific solutions for each. The agent can now tell the customer: "This is normal midsole wear. All foam technologies degrade over 300-500 miles. Here's what to do for your specific shoe." No amount of vector similarity alone would reliably surface a Brooks Ghost review when the query matched a Nike Pegasus article.
 
 **Example 2 — Cross-Document Entity Traversal: "Is the Continental outsole on the Ultraboost durable?"**
 
@@ -232,7 +184,7 @@ The retriever uses vector search to find chunks about outsole peeling, then trav
 
 **Example 5 — Solution Discovery via Feature Similarity: "How do I clean yellowed foam on my shoes?"**
 
-The retriever finds chunks about yellowing through vector search, then traverses Chunk → REPORTS_SYMPTOM → Symptom ("yellowing / oxidation") → RESOLVED_BY → Solution to find all known fixes. It also follows Solution ← PROVIDES_SOLUTION ← Chunk ← HAS_CHUNK ← (source) → Product to find which products each solution applies to. The result: "Yellowing affects both Ultraboost (Boost foam) and Air Max 90 (midsole and Air unit). The same cleaning method works for both: apply a paste of baking soda and hydrogen peroxide, scrub gently, and leave in indirect sunlight for 2-3 hours."
+The retriever finds chunks about yellowing through vector search, then traverses Chunk → REPORTS_SYMPTOM → Symptom ("yellowing / oxidation") ← REPORTS_SYMPTOM ← Chunk to find all chunks reporting this symptom. From those chunks it follows Chunk → PROVIDES_SOLUTION → Solution to find all known fixes, and traces back through the source documents to find which products each solution applies to. The result: "Yellowing affects both Ultraboost (Boost foam) and Air Max 90 (midsole and Air unit). The same cleaning method works for both: apply a paste of baking soda and hydrogen peroxide, scrub gently, and leave in indirect sunlight for 2-3 hours."
 
 ### How these examples demonstrate progressive capability
 
@@ -279,7 +231,7 @@ The expansion adds three concrete things to the retail assistant:
 
 1. **Richer sample data** — Strengthen cross-product entity references in the existing 252 documents so that entity extraction creates meaningful connections across products, brands, and categories.
 
-2. **A new loading script** (`load_graphrag.py`) — A 5-stage pipeline that chunks the existing documents, embeds the chunks, extracts Feature/Symptom/Solution entities using an LLM, links entities to chunks and products, and resolves duplicate entities. Runs after `load_products.py` and adds the semantic layer to the graph.
+2. **A new loading script** (`load_graphrag.py`) — A 4-stage pipeline that chunks the existing documents, embeds the chunks, extracts Feature/Symptom/Solution entities using an LLM, and links entities to chunks and products. Runs after `load_products.py` and adds the semantic layer to the graph.
 
 3. **Five retriever examples** — Progressive demonstrations from entity-aware vector search to pure graph-first retrieval, each showing what the entity layer adds that plain vector search cannot provide. Uses the same neo4j-graphrag retriever classes as the aircraft lab but with Cypher queries that traverse the entity layer.
 
