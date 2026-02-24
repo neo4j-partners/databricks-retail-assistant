@@ -11,7 +11,7 @@ import json
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
-from context import RetailContext
+from retail_context import RetailContext
 
 
 @tool
@@ -100,5 +100,5 @@ async def search_memory(
     })
 
 
-# Flat tool list for import by agent.py
+# Flat tool list for import by react_agent.py
 MEMORY_TOOLS = [remember_message, recall_memory, search_memory]

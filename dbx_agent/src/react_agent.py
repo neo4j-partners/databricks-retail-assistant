@@ -12,11 +12,11 @@ that ToolRuntime[RetailContext] parameters are injected automatically.
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
-from config import CONFIG
-from context import RetailContext
+from deploy_config import CONFIG
+from retail_context import RetailContext
 from diagnostics_tool import DIAGNOSTICS_TOOLS
-from memory_tool import MEMORY_TOOLS
-from product_search import PRODUCT_SEARCH_TOOLS
+from memory_tools import MEMORY_TOOLS
+from product_tools import PRODUCT_SEARCH_TOOLS
 
 
 @tool

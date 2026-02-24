@@ -21,8 +21,8 @@ import mlflow
 from mlflow.pyfunc import ChatAgent
 from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
 
-from agent import create_prototype_agent
-from context import RetailContext
+from react_agent import create_prototype_agent
+from retail_context import RetailContext
 
 
 def _create_background_loop() -> asyncio.AbstractEventLoop:
@@ -82,7 +82,7 @@ class PrototypeAgent(ChatAgent):
             )
             from pydantic import SecretStr
 
-            from embedder import DatabricksEmbedder
+            from databricks_embedder import DatabricksEmbedder
 
             mlflow.langchain.autolog()
 

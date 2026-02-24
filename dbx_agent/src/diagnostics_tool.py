@@ -7,7 +7,7 @@ check_endpoint.py can confirm the correct code is deployed.
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
-from context import RetailContext
+from retail_context import RetailContext
 
 
 @tool
@@ -47,7 +47,7 @@ def agent_diagnostics(
         import importlib
         import inspect
 
-        serving = importlib.import_module("serving")
+        serving = importlib.import_module("serving_adapter")
         source = inspect.getsource(serving.PrototypeAgent.predict)
         if "run_coroutine_threadsafe" in source:
             info["async_bridge"] = "persistent_loop"
@@ -60,7 +60,7 @@ def agent_diagnostics(
 
     # ---- Tool injection instrumentation ----
     try:
-        from agent import ALL_TOOLS
+        from react_agent import ALL_TOOLS
 
         # Per-tool: langchain-core's detected injectable params
         for t in ALL_TOOLS:

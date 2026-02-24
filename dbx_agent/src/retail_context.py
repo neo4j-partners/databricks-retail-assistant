@@ -16,7 +16,7 @@ class RetailContext:
     """All external dependencies for retail agent tools.
 
     Injected by LangGraph at invocation time via ToolRuntime.
-    Constructed by the Databricks Model Serving adapter (serving.py).
+    Constructed by the Databricks Model Serving adapter (serving_adapter.py).
     """
 
     client: MemoryClient

@@ -66,7 +66,7 @@ class CategoryDefinition(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Original product catalog (16 products)
+# Original product catalog (21 products)
 # ---------------------------------------------------------------------------
 
 PRODUCTS: list[Product] = [
@@ -378,6 +378,14 @@ BOUGHT_TOGETHER: list[tuple[str, str, int, float]] = [
     ("foam-roller", "resistance-bands", 55, 0.60),
     ("nike-air-max-90", "adidas-stan-smith", 20, 0.15),
     ("ua-coldgear", "nike-running-socks", 35, 0.38),
+    # Outdoor Equipment pairs
+    ("rei-half-dome-tent", "nemo-disco-sleeping-bag", 45, 0.52),
+    ("rei-half-dome-tent", "therm-a-rest-sleeping-pad", 40, 0.48),
+    ("msr-hubba-hubba-tent", "kelty-cosmic-sleeping-bag", 35, 0.40),
+    ("msr-hubba-hubba-tent", "therm-a-rest-sleeping-pad", 38, 0.45),
+    ("nemo-disco-sleeping-bag", "therm-a-rest-sleeping-pad", 50, 0.55),
+    ("kelty-cosmic-sleeping-bag", "therm-a-rest-sleeping-pad", 42, 0.50),
+    ("garmin-forerunner-265", "rei-half-dome-tent", 15, 0.12),
 ]
 
 # ---------------------------------------------------------------------------
@@ -392,6 +400,12 @@ SHARED_ATTRIBUTES: list[tuple[str, str]] = [
     ("Fit", "standard"),
     ("Fit", "compression"),
     ("Material", "polyester"),
+    # Outdoor Equipment attributes
+    ("Seasons", "3-season"),
+    ("Seasons", "4-season"),
+    ("Fill", "synthetic"),
+    ("Fill", "down"),
+    ("Setup", "freestanding"),
 ]
 
 

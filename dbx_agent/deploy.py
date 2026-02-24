@@ -21,11 +21,11 @@ import sys
 import time
 from pathlib import Path
 
-from dbx_agent.config import CONFIG, DeployConfig, RunMode
+from dbx_agent.src.deploy_config import CONFIG, DeployConfig, RunMode
 
 
-def _get_package_dir() -> Path:
-    """Resolve the dbx_agent/ directory.
+def _get_src_dir() -> Path:
+    """Resolve the dbx_agent/src/ directory.
 
     Uses __file__ when available (local CLI). On Databricks, Python
     files run through IPython where __file__ is not defined, so we
@@ -35,19 +35,19 @@ def _get_package_dir() -> Path:
     # Try __file__ first (works when running as `python -m dbx_agent.deploy`)
     this_file = globals().get("__file__")
     if this_file:
-        return Path(this_file).parent
+        return Path(this_file).parent / "src"
 
     # Databricks Workspace: the directly-executed file has no __file__,
-    # but imported modules do. config.py is a sibling, so use its path.
-    import dbx_agent.config as _cfg
+    # but imported modules do. deploy_config.py lives in src/.
+    import dbx_agent.src.deploy_config as _cfg
 
     cfg_file = getattr(_cfg, "__file__", None)
     if cfg_file:
         return Path(cfg_file).parent
 
     raise RuntimeError(
-        "Cannot determine package directory: neither __file__ nor "
-        "dbx_agent.config.__file__ is available."
+        "Cannot determine src directory: neither __file__ nor "
+        "dbx_agent.src.deploy_config.__file__ is available."
     )
 
 
@@ -82,22 +82,22 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     mlflow.set_experiment(experiment_name)
     print(f"Experiment: {experiment_name}")
 
-    # The serving.py file — MLflow loads this via Models from Code
-    model_file = _get_package_dir() / "serving.py"
+    # The serving_adapter.py file — MLflow loads this via Models from Code
+    model_file = _get_src_dir() / "serving_adapter.py"
     if not model_file.exists():
         raise FileNotFoundError(f"Model file not found: {model_file}")
     print(f"Model file: {model_file}")
 
-    # Code files imported by serving.py at runtime (via code_paths on sys.path)
-    pkg_dir = _get_package_dir()
+    # Code files imported by serving_adapter.py at runtime (via code_paths on sys.path)
+    src_dir = _get_src_dir()
     code_files = [
-        str(pkg_dir / "agent.py"),
-        str(pkg_dir / "config.py"),
-        str(pkg_dir / "context.py"),
-        str(pkg_dir / "diagnostics_tool.py"),
-        str(pkg_dir / "embedder.py"),
-        str(pkg_dir / "memory_tool.py"),
-        str(pkg_dir / "product_search.py"),
+        str(src_dir / "react_agent.py"),
+        str(src_dir / "deploy_config.py"),
+        str(src_dir / "retail_context.py"),
+        str(src_dir / "diagnostics_tool.py"),
+        str(src_dir / "databricks_embedder.py"),
+        str(src_dir / "memory_tools.py"),
+        str(src_dir / "product_tools.py"),
     ]
 
     # neo4j-agent-memory wheel
@@ -121,7 +121,7 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
 
     # Fallback: local relative paths (sibling repo)
     if not wheel_path:
-        project_root = _get_package_dir().parent.parent
+        project_root = _get_src_dir().parent.parent
         for candidate in [
             project_root / ".." / "agent-memory" / "dist" / wheel_name,
             project_root / ".." / ".." / "neo4j-labs" / "agent-memory" / "dist" / wheel_name,

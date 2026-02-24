@@ -1,14 +1,11 @@
 """Load sample product data into Neo4j for the retail assistant demo.
 
-Databricks-only version. Gets Neo4j credentials from Databricks secrets
-using the same scope and keys as the deployed agent (see config.py).
-
-Usage:
-    uv run python -m dbx_agent.load_products
+Databricks-only version. Runs in a Databricks notebook or job cluster.
+Gets Neo4j credentials from Databricks secrets via dbutils,
+using the same scope and keys as the deployed agent (see src/deploy_config.py).
 
 Prerequisites:
-    1. Databricks CLI configured (databricks auth login)
-    2. Databricks secrets set:
+    Databricks secrets set:
          databricks secrets put-secret retail-agent-secrets neo4j-uri
          databricks secrets put-secret retail-agent-secrets neo4j-password
 """
@@ -29,19 +26,15 @@ from backend.scripts.product_knowledge import (
     REVIEWS,
     SUPPORT_TICKETS,
 )
-from dbx_agent.config import CONFIG
+from dbx_agent.src.deploy_config import CONFIG
 
 
 def _get_neo4j_credentials() -> tuple[str, str]:
-    """Get Neo4j URI and password from Databricks secrets.
-
-    Tries dbutils (notebook), then WorkspaceClient (CLI/jobs).
-    """
+    """Get Neo4j URI and password from Databricks secrets via dbutils."""
     scope = CONFIG.secret_scope
     uri_key = CONFIG.neo4j_uri_secret
     password_key = CONFIG.neo4j_password_secret
 
-    # Method 1: dbutils (Databricks notebook)
     try:
         from pyspark.dbutils import DBUtils
         from pyspark.sql import SparkSession
@@ -52,21 +45,6 @@ def _get_neo4j_credentials() -> tuple[str, str]:
         password = dbutils.secrets.get(scope, password_key)
         if uri and password:
             print(f"  Credentials from dbutils secrets ({scope})")
-            return uri, password
-    except Exception:
-        pass
-
-    # Method 2: WorkspaceClient (CLI)
-    try:
-        import base64
-
-        from databricks.sdk import WorkspaceClient
-
-        w = WorkspaceClient()
-        uri = base64.b64decode(w.secrets.get_secret(scope, uri_key).value).decode("utf-8")
-        password = base64.b64decode(w.secrets.get_secret(scope, password_key).value).decode("utf-8")
-        if uri and password:
-            print(f"  Credentials from WorkspaceClient secrets ({scope})")
             return uri, password
     except Exception:
         pass

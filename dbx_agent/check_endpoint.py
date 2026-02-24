@@ -14,7 +14,7 @@ from uuid import uuid4
 
 import requests
 
-from dbx_agent.config import CONFIG
+from dbx_agent.src.deploy_config import CONFIG
 
 
 def _get_workspace_url_and_token() -> tuple[str, str]:

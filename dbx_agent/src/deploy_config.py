@@ -1,7 +1,7 @@
 """Deployment configuration for the retail agent prototype.
 
 Usage:
-    from dbx_agent.config import CONFIG, RunMode
+    from dbx_agent.src.deploy_config import CONFIG, RunMode
 """
 
 from dataclasses import dataclass, field

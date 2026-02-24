@@ -13,7 +13,7 @@ from typing import Any
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
-from context import RetailContext
+from retail_context import RetailContext
 
 logger = logging.getLogger(__name__)
 
@@ -191,5 +191,5 @@ async def get_related_products(
     return json.dumps({"source_product_id": product_id, "related_products": related})
 
 
-# Flat tool list for import by agent.py
+# Flat tool list for import by react_agent.py
 PRODUCT_SEARCH_TOOLS = [search_products, get_product_details, get_related_products]
