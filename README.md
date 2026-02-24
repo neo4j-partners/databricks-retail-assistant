@@ -23,11 +23,20 @@ A two-agent supervisor system deployed on Databricks using Genie, AgentBricks an
 - **Genie Lakehouse Agent.** Translates natural language to SQL over the retail Delta tables.
 - **Neo4j KG Agent.** A LangGraph ReAct agent (`create_react_agent` with `context_schema=RetailContext`) deployed to a Databricks Model Serving endpoint. Uses `ToolRuntime[RetailContext]` to inject a `MemoryClient` for product search, recommendations, memory, and inventory tools.
 
-## Agent Memory
+## Neo4j Agentic Libraries
 
-Most AI chatbots forget everything the moment a conversation ends. This assistant uses [neo4j-agent-memory](https://github.com/neo4j-labs/agent-memory) to give the agent persistent, structured memory backed by a Neo4j graph. Every conversation, preference, and learned fact is stored as nodes and relationships in the same Neo4j instance that holds the product catalog. Because memories are also embedded as vectors, the agent can semantically search its own past, finding relevant context even when the wording is completely different from the original conversation.
+The assistant combines two Neo4j open-source libraries to give the agent both persistent memory and structured knowledge retrieval over the product graph:
 
-### Three layers of memory
+- **[neo4j-agent-memory](https://github.com/neo4j-labs/agent-memory)** — Gives the agent short-term, long-term, and reasoning memory backed by a Neo4j graph. Conversations, preferences, and learned facts persist across sessions and are searchable via vector embeddings.
+- **[neo4j-graphrag](https://github.com/neo4j-labs/neo4j-graphrag-python)** — Builds a GraphRAG layer on top of the product knowledge graph with chunking, embedding, LLM entity extraction, and retriever classes that combine vector search with graph traversal.
+
+Both libraries operate against the same Neo4j instance, so the agent's memory graph and the product knowledge graph coexist and can be queried together.
+
+### Agent Memory
+
+Most AI chatbots forget everything the moment a conversation ends. This assistant uses neo4j-agent-memory to give the agent persistent, structured memory backed by a Neo4j graph. Every conversation, preference, and learned fact is stored as nodes and relationships in the same Neo4j instance that holds the product catalog. Because memories are also embedded as vectors, the agent can semantically search its own past, finding relevant context even when the wording is completely different from the original conversation.
+
+#### Three layers of memory
 
 The memory system organizes what the agent knows into three distinct layers:
 
@@ -37,11 +46,33 @@ The memory system organizes what the agent knows into three distinct layers:
 
 **Reasoning memory** records how the agent solved past problems. Each reasoning trace captures the steps taken, tools called, and outcomes reached during a task. When the agent encounters a similar request later, it can look up how it handled comparable situations before, leading to faster and more consistent responses.
 
-### How the assistant uses memory
+#### How the assistant uses memory
 
 When a conversation starts, the assistant loads relevant context from all three memory layers — recent chat history, known entities and preferences, and similar past reasoning traces. This assembled context is passed to the LLM alongside the user's message, so the agent has a rich understanding of who it's talking to and what they've discussed before.
 
 During a conversation, the agent also has access to a `search_memory` tool that it can call at any time. If a user asks something like "what did I say I was training for?", the agent can search across past messages, stored preferences, and entity records to find the answer.
+
+### GraphRAG
+
+The assistant uses neo4j-graphrag to build a retrieval layer on top of the product knowledge graph. Rather than relying on vector similarity alone, this approach combines embeddings with graph structure so the agent can traverse from a matched chunk through extracted entities to discover related products, shared symptoms, and cross-product solutions.
+
+#### Building the knowledge graph
+
+The GraphRAG pipeline (`step3_load_graphrag.py`) runs in four stages after the base product graph is loaded:
+
+1. **Chunk** — Knowledge articles, support tickets, and reviews are split into text chunks and stored as `Chunk` nodes, linked to their source documents via `HAS_CHUNK` relationships.
+2. **Embed** — Each chunk is embedded using a Databricks Foundation Model endpoint. A vector index (`chunk_embedding`) and a fulltext index (`chunkText`) are created for hybrid search.
+3. **Extract** — An LLM extracts `Feature`, `Symptom`, and `Solution` entities from each chunk (e.g., "react foam midsole", "outsole separation", "replace every 300-500 miles"). Entities are deduplicated via `MERGE`.
+4. **Link** — Extracted entities are linked back to `Product` nodes by traversing through the document graph, creating `HAS_FEATURE`, `HAS_SYMPTOM`, and `HAS_SOLUTION` relationships.
+
+#### Retriever patterns
+
+The entity-enriched graph supports four neo4j-graphrag retriever classes (`step5_demo_retrievers.py`), each progressively richer:
+
+- **VectorRetriever** — Baseline semantic search over chunk embeddings.
+- **VectorCypherRetriever** — Starts with vector search, then traverses entity relationships to surface related products and solutions that vector similarity alone would miss.
+- **HybridCypherRetriever** — Combines fulltext keyword matching with vector search, plus entity traversal. Useful when queries contain specific brand or product terms alongside general descriptions.
+- **Text2CypherRetriever** — Skips embeddings entirely. An LLM translates the natural language query into a Cypher query that aggregates directly over the entity graph, ideal for analytical questions like "what are the most common problems with running shoes?"
 
 ## Create a Databricks Cluster
 
