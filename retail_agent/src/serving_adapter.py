@@ -160,18 +160,21 @@ class PrototypeAgent(ChatAgent):
 
     async def _async_predict(self, messages, context, custom_inputs):
         """Async implementation — invokes agent with RetailContext."""
-        # Extract session_id from custom_inputs or generate one
+        # Extract session_id and user_id from custom_inputs
         session_id = None
+        user_id = None
         if custom_inputs and isinstance(custom_inputs, dict):
             session_id = custom_inputs.get("session_id")
+            user_id = custom_inputs.get("user_id")
         if not session_id:
             session_id = "serving-default"
 
-        # Build context with session_id for this request
+        # Build context for this request
         from retail_context import RetailContext
         retail_context = RetailContext(
             client=self._client,
             session_id=session_id,
+            user_id=user_id,
         )
 
         request = {"messages": [{"role": m.role, "content": m.content} for m in messages]}

@@ -3,12 +3,10 @@
 Ported from aircraft_analyst/src/graph_agent/deploy.py. Four-step
 pipeline: log model -> register to UC -> deploy -> wait for ready.
 
-Usage:
-    # Deploy:
-    uv run python -m retail_agent.step1_deploy_agent
+Runs on a Databricks cluster or as a Databricks Job.
 
-    # Delete:
-    RETAIL_AGENT_RUN_MODE=delete uv run python -m retail_agent.step1_deploy_agent
+    # Delete mode:
+    Set environment variable RETAIL_AGENT_RUN_MODE=delete before running.
 
 Prerequisites:
     1. Databricks CLI configured (databricks auth login)
@@ -368,7 +366,7 @@ def run_deploy(config: DeployConfig) -> int:
         print(f"Query endpoint: {deployment.query_endpoint}")
         print()
         print("To test:")
-        print("  uv run python -m retail_agent.step4_check_endpoint")
+        print("  Run step4_demo_agent.py on the cluster to verify.")
         print()
         return 0
 

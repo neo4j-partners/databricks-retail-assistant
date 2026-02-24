@@ -10,13 +10,15 @@ that ToolRuntime[RetailContext] parameters are injected automatically.
 """
 
 from langchain_core.tools import tool
-from langgraph.prebuilt import ToolRuntime
 
 from deploy_config import CONFIG
 from retail_context import RetailContext
+from commerce_tools import COMMERCE_TOOLS
 from diagnostics_tool import DIAGNOSTICS_TOOLS
+from knowledge_tools import KNOWLEDGE_TOOLS
 from memory_tools import MEMORY_TOOLS
 from product_tools import PRODUCT_SEARCH_TOOLS
+from reasoning_tools import REASONING_TOOLS
 
 
 @tool
@@ -26,18 +28,67 @@ def echo(message: str) -> str:
 
 
 SYSTEM_PROMPT = (
-    "You are a retail product assistant with access to a Neo4j knowledge graph. "
-    "You can search products, get product details, find related products, "
-    "and manage conversation memory.\n\n"
-    "Use your tools to help customers find products, learn about items, "
-    "and discover related products. When the user asks you to remember "
-    "something, use the remember_message tool. When the user asks what "
-    "you remember, use the recall_memory tool to retrieve the full conversation "
-    "history. When the user asks about something specific from past conversations, "
-    "use the search_memory tool for semantic similarity search."
+    "You are a retail product assistant with access to a Neo4j knowledge graph, "
+    "long-term user memory, and reasoning trace capabilities. You can search "
+    "products, diagnose issues, track user preferences, learn from past "
+    "interactions, and provide personalized recommendations.\n\n"
+
+    "SESSION START:\n"
+    "- If a user_id is present, call get_user_profile at the start of the "
+    "session to load stored preferences. Use this context to personalize all "
+    "subsequent responses.\n\n"
+
+    "TOOL SELECTION GUIDE:\n"
+    "- For browsing, pricing, and catalog queries (e.g. 'show me running shoes "
+    "under $150'), use search_products, get_product_details, get_related_products.\n"
+    "- For support questions, troubleshooting, 'how do I fix', and product issue "
+    "queries (e.g. 'my shoes feel flat', 'outsole peeling'), use knowledge_search "
+    "or hybrid_knowledge_search.\n"
+    "- When the query includes specific brand names or technical terms alongside a "
+    "general question, prefer hybrid_knowledge_search over knowledge_search.\n"
+    "- To find known issues and solutions for a specific product, use "
+    "diagnose_product_issue with the product ID.\n\n"
+
+    "PREFERENCES:\n"
+    "- When the user expresses a preference (brand, category, size, budget, "
+    "activity type, material, style), call track_preference to save it for "
+    "future sessions.\n"
+    "- Examples: 'I prefer Nike' -> track brand preference. 'My budget is "
+    "under $200' -> track price_range preference. 'I need waterproof' -> "
+    "track material preference.\n\n"
+
+    "PERSONALIZED RECOMMENDATIONS:\n"
+    "- When a user with stored preferences asks for recommendations, prefer "
+    "recommend_for_user over raw product search. It combines their preference "
+    "profile with knowledge graph traversal for better results.\n"
+    "- If the user has no stored preferences, recommend_for_user falls back to "
+    "standard knowledge search.\n\n"
+
+    "REASONING TRACES:\n"
+    "- When starting a multi-step task (product comparison, troubleshooting "
+    "workflow, purchase recommendation), first call recall_past_reasoning to "
+    "check if a similar task was handled before.\n"
+    "- After completing a multi-step task, call record_reasoning_trace to log "
+    "the approach, steps taken, and outcome for future learning.\n\n"
+
+    "MEMORY:\n"
+    "- Short-term memory (remember_message, recall_memory, search_memory) is "
+    "for the current conversation session.\n"
+    "- Long-term memory (track_preference, get_user_profile) persists across "
+    "sessions and is tied to the user, not the session.\n"
+    "- Reasoning traces (record_reasoning_trace, recall_past_reasoning) persist "
+    "across sessions and help the agent learn from experience."
 )
 
-ALL_TOOLS = [echo] + MEMORY_TOOLS + PRODUCT_SEARCH_TOOLS + DIAGNOSTICS_TOOLS
+ALL_TOOLS = (
+    [echo]
+    + MEMORY_TOOLS
+    + PRODUCT_SEARCH_TOOLS
+    + KNOWLEDGE_TOOLS
+    + REASONING_TOOLS
+    + COMMERCE_TOOLS
+    + DIAGNOSTICS_TOOLS
+)
 
 
 def create_prototype_agent(llm=None):

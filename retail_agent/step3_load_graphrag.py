@@ -6,8 +6,7 @@ entities to chunks and products.
 
 Databricks-only version. Gets Neo4j credentials from Databricks secrets.
 
-Usage:
-    uv run python -m retail_agent.step3_load_graphrag
+Runs on a Databricks cluster or as a Databricks Job.
 """
 
 import asyncio

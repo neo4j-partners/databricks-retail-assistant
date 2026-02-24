@@ -21,3 +21,4 @@ class RetailContext:
 
     client: MemoryClient
     session_id: str | None = None
+    user_id: str | None = None

@@ -212,15 +212,9 @@ Open each script as a notebook in the workspace (click the file to open it, atta
 | 1 | `step1_deploy_agent.py` | Logs model to MLflow, registers in Unity Catalog, deploys to Model Serving |
 | 2 | `step2_load_products.py` | Loads product catalog and knowledge graph into Neo4j |
 | 3 | `step3_load_graphrag.py` | Builds GraphRAG layer — chunks, embeddings, entity extraction |
-| 4 | `step4_check_endpoint.py` | Verifies the deployed endpoint and runs sample queries |
+| 4 | `step4_demo_agent.py` | Verifies the deployed endpoint and runs sample queries |
 | 5 | `step5_demo_retrievers.py` | Demonstrates GraphRAG retriever patterns (requires `neo4j-graphrag` on cluster) |
-
-Steps 1 and 4 can also be run locally with the Databricks CLI configured:
-
-```bash
-uv run python -m retail_agent.step1_deploy_agent
-uv run python -m retail_agent.step4_check_endpoint
-```
+| 6 | `step6_check_knowledge.py` | Exercises GraphRAG knowledge tools (knowledge search, hybrid search, diagnosis) |
 
 ## Project Structure
 
@@ -229,8 +223,9 @@ retail_agent/                         # Databricks agent (deployed to Model Serv
 ├── step1_deploy_agent.py          # Deploy: MLflow log → UC register → agents.deploy()
 ├── step2_load_products.py         # Load sample product data into Neo4j
 ├── step3_load_graphrag.py         # Build GraphRAG layer (chunks, embeddings, entities)
-├── step4_check_endpoint.py        # Verify deployed endpoint, run sample queries
+├── step4_demo_agent.py        # Verify deployed endpoint, run sample queries
 ├── step5_demo_retrievers.py       # Demo GraphRAG retriever patterns
+├── step6_check_knowledge.py       # Exercise GraphRAG knowledge tools
 ├── src/                           # Internal library (packaged flat via MLflow code_paths)
 │   ├── serving_adapter.py         # ChatAgent shim for Databricks Model Serving
 │   ├── react_agent.py             # LangGraph ReAct agent with context_schema
@@ -238,6 +233,8 @@ retail_agent/                         # Databricks agent (deployed to Model Serv
 │   ├── retail_context.py          # RetailContext dataclass (ToolRuntime injection)
 │   ├── memory_tools.py            # Memory tools (ToolRuntime[RetailContext])
 │   ├── product_tools.py           # Product search tools (ToolRuntime[RetailContext])
+│   ├── knowledge_tools.py         # GraphRAG knowledge search tools (ToolRuntime[RetailContext])
+│   ├── endpoint_client.py         # Shared endpoint client for check scripts
 │   ├── diagnostics_tool.py        # Agent environment diagnostics
 │   └── databricks_embedder.py     # Databricks Foundation Model embedder
 ├── data/                          # Product data definitions
