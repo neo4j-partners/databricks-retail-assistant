@@ -21,7 +21,7 @@ A two-agent supervisor system deployed on Databricks using Genie, AgentBricks an
 
 ![Agent Architecture](docs/images/agent-architecture.png)
 
-- **Supervisor.** A [Databricks multi-agent supervisor](https://docs.databricks.com/aws/en/generative-ai/agent-framework/multi-agent-systems) that classifies user intent and routes to the appropriate agent. Analytics questions go to Genie; product/recommendation questions go to the Neo4j KG Agent. Combined queries hit both agents and the supervisor synthesizes a unified response.
+- **Supervisor.** A Databricks multi-agent supervisor that classifies user intent and routes to the appropriate agent. Analytics questions go to Genie; product/recommendation questions go to the Neo4j KG Agent. Combined queries hit both agents and the supervisor synthesizes a unified response.
 - **Genie Lakehouse Agent.** Translates natural language to SQL over the retail Delta tables.
 - **Neo4j KG Agent.** A LangGraph ReAct agent (`create_react_agent` with `context_schema=RetailContext`) deployed to a Databricks Model Serving endpoint. Uses `ToolRuntime[RetailContext]` to inject a `MemoryClient` for product search, recommendations, memory, and inventory tools.
 
