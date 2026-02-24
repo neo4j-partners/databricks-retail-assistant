@@ -1479,20 +1479,23 @@ REVIEWS: list[Review] = [
 def _validate_product_refs() -> None:
     """Check all articles, tickets, and reviews reference valid product IDs."""
     for article in KNOWLEDGE_ARTICLES:
-        assert article.product_id in _VALID_PRODUCT_IDS, (
-            f"KnowledgeArticle {article.article_id} references unknown product "
-            f"{article.product_id!r}"
-        )
+        if article.product_id not in _VALID_PRODUCT_IDS:
+            raise ValueError(
+                f"KnowledgeArticle {article.article_id} references unknown product "
+                f"{article.product_id!r}"
+            )
     for ticket in SUPPORT_TICKETS:
-        assert ticket.product_id in _VALID_PRODUCT_IDS, (
-            f"SupportTicket {ticket.ticket_id} references unknown product "
-            f"{ticket.product_id!r}"
-        )
+        if ticket.product_id not in _VALID_PRODUCT_IDS:
+            raise ValueError(
+                f"SupportTicket {ticket.ticket_id} references unknown product "
+                f"{ticket.product_id!r}"
+            )
     for review in REVIEWS:
-        assert review.product_id in _VALID_PRODUCT_IDS, (
-            f"Review {review.review_id} references unknown product "
-            f"{review.product_id!r}"
-        )
+        if review.product_id not in _VALID_PRODUCT_IDS:
+            raise ValueError(
+                f"Review {review.review_id} references unknown product "
+                f"{review.product_id!r}"
+            )
 
 
 _validate_product_refs()

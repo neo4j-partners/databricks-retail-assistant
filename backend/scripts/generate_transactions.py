@@ -139,6 +139,7 @@ CATEGORY_WEIGHTS: dict[str, int] = {
     "Equipment": 8,
     "Nutrition": 10,
     "Outdoor": 10,
+    "Outdoor Equipment": 8,
 }
 
 # Customer segment definitions
@@ -195,6 +196,7 @@ RETURN_RATES: dict[str, float] = {
     "Equipment": 0.08,
     "Nutrition": 0.03,
     "Outdoor": 0.10,
+    "Outdoor Equipment": 0.10,
 }
 
 RETURN_REASONS: list[str] = ["wrong_size", "defective", "changed_mind", "not_as_described"]
