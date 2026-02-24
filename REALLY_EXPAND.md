@@ -144,13 +144,18 @@ The graph now has four layers:
 3. **Chunk layer** (new): Chunk nodes with HAS_CHUNK and NEXT_CHUNK, plus vector and fulltext indexes
 4. **Entity layer** (new): Feature, Symptom, Solution with MENTIONS_FEATURE, REPORTS_SYMPTOM, PROVIDES_SOLUTION, HAS_FEATURE, HAS_SYMPTOM, HAS_SOLUTION
 
----
+### Implementation Status — COMPLETE
 
-### Implementation notes
+Implemented in `dbx_agent/load_graphrag.py`. Run with `uv run python -m dbx_agent.load_graphrag` after `load_products.py`.
 
-- **Location:** `dbx_agent/load_graphrag.py` alongside the existing `load_products.py`
-- **Run command:** `uv run python -m dbx_agent.load_graphrag`
-- **No idempotency handling** — the script assumes a clean run after `load_products.py`
+| Stage | What it does | Details |
+|---|---|---|
+| 1. Chunk | Creates 336 Chunk nodes from 252 documents | KA: 1 chunk each (84). Tickets: 2 chunks each — issue + resolution (168). Reviews: 1 chunk each (84). IDs: `ka-001-0`, `t-001-0`/`t-001-1`, `r-001-0`. HAS_CHUNK + NEXT_CHUNK relationships. |
+| 2. Embed | Embeds chunks via Databricks Foundation Model API | Sequential embedding (batch_size=100 per API call). Vector index `chunk_embedding` (1024 dims, cosine). Fulltext index `chunkText` (English analyzer). |
+| 3. Extract | Extracts Feature/Symptom/Solution entities via Llama 3.3 70B | 3 few-shot examples. Canonical names only. MERGE entity nodes, CREATE chunk→entity relationships. Log and skip on malformed JSON. |
+| 4. Link | Derives Product-level entity relationships | Traverses Product ← doc → Chunk → Entity. Creates HAS_FEATURE, HAS_SYMPTOM, HAS_SOLUTION via MERGE. |
+
+**Decisions baked in:** No entity resolution/dedup (prompt consistency is sufficient). No RESOLVED_BY relationships. No relationship properties. No idempotency handling.
 
 ---
 
