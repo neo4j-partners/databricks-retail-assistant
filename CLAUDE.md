@@ -14,9 +14,11 @@ This package is designed to run on Databricks Model Serving. Entry-point scripts
 
 ### Layout
 
-- `deploy.py` — Step 1: Deploy agent to Databricks Model Serving
-- `load_products.py` — Step 3: Load sample product data into Neo4j
-- `check_endpoint.py` — Steps 2 & 4: Verify deployment / run sample queries
+- `step1_deploy_agent.py` — Deploy agent to Databricks Model Serving
+- `step2_load_products.py` — Load sample product data into Neo4j
+- `step3_load_graphrag.py` — Build GraphRAG layer on product knowledge graph
+- `step4_check_endpoint.py` — Verify deployment / run sample queries
+- `step5_demo_retrievers.py` — Demo GraphRAG retriever patterns
 - `src/` — Internal library (packaged flat via MLflow `code_paths`):
   - `serving_adapter.py` — MLflow ChatAgent adapter
   - `react_agent.py` — LangGraph ReAct agent definition
@@ -38,8 +40,8 @@ This package is designed to run on Databricks Model Serving. Entry-point scripts
 - **No `test_` prefixed files** — Databricks auto-discovers and runs them as pytest. Use names like `check_endpoint.py` instead. See `RETAIL_BEST_PRACTICES.md`.
 - **Relative imports in `src/`** — Files use `from retail_context import RetailContext` (not `from retail_agent.src.retail_context`), because MLflow packages them flat via `code_paths`.
 - **Async bridging** — Uses a persistent background event loop, never `asyncio.run()`. See `RETAIL_BEST_PRACTICES.md`.
-- **Deploy**: `uv run python -m retail_agent.deploy`
-- **Check**: `uv run python -m retail_agent.check_endpoint`
+- **Deploy**: `uv run python -m retail_agent.step1_deploy_agent`
+- **Check**: `uv run python -m retail_agent.step4_check_endpoint`
 
 ## Running Scripts
 
@@ -47,9 +49,11 @@ Use `uv run` — the project venv is not auto-activated:
 
 ```
 # Databricks agent
-uv run python -m retail_agent.deploy
-uv run python -m retail_agent.check_endpoint
-uv run python -m retail_agent.load_products
+uv run python -m retail_agent.step1_deploy_agent
+uv run python -m retail_agent.step2_load_products
+uv run python -m retail_agent.step3_load_graphrag
+uv run python -m retail_agent.step4_check_endpoint
+uv run python -m retail_agent.step5_demo_retrievers
 uv run python -m retail_agent.scripts.generate_transactions
 uv run python -m retail_agent.scripts.lakehouse_tables
 ```

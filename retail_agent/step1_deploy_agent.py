@@ -5,10 +5,10 @@ pipeline: log model -> register to UC -> deploy -> wait for ready.
 
 Usage:
     # Deploy:
-    uv run python -m retail_agent.deploy
+    uv run python -m retail_agent.step1_deploy_agent
 
     # Delete:
-    RETAIL_AGENT_RUN_MODE=delete uv run python -m retail_agent.deploy
+    RETAIL_AGENT_RUN_MODE=delete uv run python -m retail_agent.step1_deploy_agent
 
 Prerequisites:
     1. Databricks CLI configured (databricks auth login)
@@ -32,7 +32,7 @@ def _get_src_dir() -> Path:
     fall back to inspecting the config module's file location (which
     *is* set because it was imported normally, not executed directly).
     """
-    # Try __file__ first (works when running as `python -m retail_agent.deploy`)
+    # Try __file__ first (works when running as `python -m retail_agent.step1_deploy_agent`)
     this_file = globals().get("__file__")
     if this_file:
         return Path(this_file).parent / "src"
@@ -368,7 +368,7 @@ def run_deploy(config: DeployConfig) -> int:
         print(f"Query endpoint: {deployment.query_endpoint}")
         print()
         print("To test:")
-        print("  uv run python -m retail_agent.check_endpoint")
+        print("  uv run python -m retail_agent.step4_check_endpoint")
         print()
         return 0
 

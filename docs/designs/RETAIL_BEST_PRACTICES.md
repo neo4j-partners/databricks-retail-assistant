@@ -502,5 +502,5 @@ uri = base64.b64decode(w.secrets.get_secret(scope, uri_key).value).decode("utf-8
 To use a specific Databricks CLI profile, set the `DATABRICKS_CONFIG_PROFILE` environment variable. `WorkspaceClient()` picks it up automatically — no code changes needed:
 
 ```bash
-DATABRICKS_CONFIG_PROFILE=azure-rk-knight uv run python -m retail_agent.load_products
+DATABRICKS_CONFIG_PROFILE=azure-rk-knight uv run python -m retail_agent.step2_load_products
 ```

@@ -5,7 +5,7 @@ Uses raw REST calls (like aircraft_analyst) instead of the SDK's query() method,
 which can have issues deserializing ChatAgent responses.
 
 Usage:
-    uv run python -m retail_agent.check_endpoint
+    uv run python -m retail_agent.step4_check_endpoint
 """
 
 import os

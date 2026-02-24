@@ -53,7 +53,7 @@ The model name (`databricks-bge-large-en`) should be stored in `config.py` as a 
 
 ### 5. Update the Neo4j vector index in load_products.py
 
-The database is set up by running `uv run python -m retail_agent.load_products`. That script creates a product vector index and generates product embeddings. There are two separate vector concerns to address:
+The database is set up by running `uv run python -m retail_agent.step2_load_products`. That script creates a product vector index and generates product embeddings. There are two separate vector concerns to address:
 
 **Product embeddings** — The `_create_vector_index` function in `load_products.py` hardcodes 1536 dimensions for the `product_embedding` index on Product nodes. The `_generate_embeddings` function uses the OpenAI API to generate those embeddings. If we want the product search to also work on Databricks without requiring an OpenAI key, the script should be updated to support Databricks embeddings as an alternative. That means changing the hardcoded 1536 to a configurable dimension (1024 for Databricks BGE) and adding a Databricks embedding path alongside the existing OpenAI path in `_generate_embeddings`. The product search tool in `retail_agent/product_search.py` would also need to generate query embeddings using the same Databricks model to match.
 
@@ -85,4 +85,4 @@ The database is set up by running `uv run python -m retail_agent.load_products`.
 
 ## Verification
 
-After deploying, run `uv run python -m retail_agent.check_endpoint`. The memory exercise Turn 4 ("Search your memory for anything about my shoe preferences") should return results instead of empty, confirming that embeddings are being generated, stored, and searched successfully.
+After deploying, run `uv run python -m retail_agent.step4_check_endpoint`. The memory exercise Turn 4 ("Search your memory for anything about my shoe preferences") should return results instead of empty, confirming that embeddings are being generated, stored, and searched successfully.
