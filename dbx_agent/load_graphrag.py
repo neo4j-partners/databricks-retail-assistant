@@ -28,7 +28,7 @@ from dbx_agent.src.deploy_config import CONFIG
 # Entity extraction prompt
 # ---------------------------------------------------------------------------
 
-_ENTITY_EXTRACTION_PROMPT = """\
+_EXTRACTION_SYSTEM_PROMPT = """\
 You are an entity extractor for a retail product knowledge base.
 
 Given a text chunk, extract entities in these categories:
@@ -36,22 +36,19 @@ Given a text chunk, extract entities in these categories:
 - Symptom: A problem or issue (e.g., "outsole separation", "cushion responsiveness loss", "fabric pilling")
 - Solution: A fix or recommendation (e.g., "replace every 300-500 miles", "use heel-lock lacing", "wash with vinegar")
 
-Return ONLY a JSON object with three arrays. Use short canonical names (2-6 words). If a category has no entities, use an empty array.
+Return ONLY a JSON object with three arrays. Use short lowercase canonical names (2-6 words). If a category has no entities, use an empty array.
 
 Example 1:
 Text: "The React foam midsole feels less responsive after 300+ miles. This cushion responsiveness loss is common across all foam technologies. Solution: Replace shoes every 300-500 miles. Rotating between two pairs extends life."
-Output: {{"features": ["React foam midsole"], "symptoms": ["cushion responsiveness loss"], "solutions": ["replace every 300-500 miles", "rotate between two pairs"]}}
+Output: {"features": ["react foam midsole"], "symptoms": ["cushion responsiveness loss"], "solutions": ["replace every 300-500 miles", "rotate between two pairs"]}
 
 Example 2:
 Text: "Customer reports blisters on both heels after every run in these shoes."
-Output: {{"features": [], "symptoms": ["heel blisters"], "solutions": []}}
+Output: {"features": [], "symptoms": ["heel blisters"], "solutions": []}
 
 Example 3:
 Text: "Advised customer to use heel-lock lacing technique and thicker cushioned socks. Customer reported improvement after one week."
-Output: {{"features": ["heel-lock lacing"], "symptoms": [], "solutions": ["use heel-lock lacing technique", "wear thicker cushioned socks"]}}
-
-Text: "{text}"
-Output:"""
+Output: {"features": ["heel-lock lacing"], "symptoms": [], "solutions": ["use heel-lock lacing technique", "wear thicker cushioned socks"]}"""
 
 
 # ---------------------------------------------------------------------------
@@ -319,15 +316,14 @@ async def _extract_entities(session, chunks: list[dict]):
     skipped = 0
 
     for i, chunk in enumerate(chunks):
-        # Escape braces in chunk text for the prompt template
-        safe_text = chunk["text"].replace("{", "{{").replace("}", "}}")
-        prompt = _ENTITY_EXTRACTION_PROMPT.format(text=safe_text)
-
         try:
             response = client.predict(
                 endpoint=llm_endpoint,
                 inputs={
-                    "messages": [{"role": "user", "content": prompt}],
+                    "messages": [
+                        {"role": "system", "content": _EXTRACTION_SYSTEM_PROMPT},
+                        {"role": "user", "content": chunk["text"]},
+                    ],
                     "max_tokens": 300,
                     "temperature": 0.0,
                 },
@@ -346,7 +342,12 @@ async def _extract_entities(session, chunks: list[dict]):
 
         chunk_id = chunk["chunk_id"]
 
-        if entities["features"]:
+        # Lowercase all entity names for consistent MERGE dedup
+        features = [n.lower() for n in entities["features"]]
+        symptoms = [n.lower() for n in entities["symptoms"]]
+        solutions = [n.lower() for n in entities["solutions"]]
+
+        if features:
             await session.run(
                 """
                 UNWIND $names AS name
@@ -355,10 +356,10 @@ async def _extract_entities(session, chunks: list[dict]):
                 MATCH (ch:Chunk {chunk_id: $chunk_id})
                 CREATE (ch)-[:MENTIONS_FEATURE]->(f)
                 """,
-                {"names": entities["features"], "chunk_id": chunk_id},
+                {"names": features, "chunk_id": chunk_id},
             )
 
-        if entities["symptoms"]:
+        if symptoms:
             await session.run(
                 """
                 UNWIND $names AS name
@@ -367,10 +368,10 @@ async def _extract_entities(session, chunks: list[dict]):
                 MATCH (ch:Chunk {chunk_id: $chunk_id})
                 CREATE (ch)-[:REPORTS_SYMPTOM]->(s)
                 """,
-                {"names": entities["symptoms"], "chunk_id": chunk_id},
+                {"names": symptoms, "chunk_id": chunk_id},
             )
 
-        if entities["solutions"]:
+        if solutions:
             await session.run(
                 """
                 UNWIND $names AS name
@@ -379,11 +380,11 @@ async def _extract_entities(session, chunks: list[dict]):
                 MATCH (ch:Chunk {chunk_id: $chunk_id})
                 CREATE (ch)-[:PROVIDES_SOLUTION]->(sol)
                 """,
-                {"names": entities["solutions"], "chunk_id": chunk_id},
+                {"names": solutions, "chunk_id": chunk_id},
             )
 
         extracted += 1
-        if (i + 1) % 50 == 0:
+        if (i + 1) % 25 == 0 or (i + 1) == len(chunks):
             print(f"  Processed {i + 1}/{len(chunks)} chunks")
 
     print(f"  Entity extraction complete: {extracted} processed, {skipped} skipped")
