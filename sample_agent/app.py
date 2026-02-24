@@ -10,9 +10,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from neo4j_agent_memory import MemoryClient
 
-from backend import dependencies
-from backend.config import get_memory_settings, get_settings
-from backend.routes import api_router
+from sample_agent import dependencies
+from sample_agent.config import get_memory_settings, get_settings
+from sample_agent.routes import api_router
 
 logger = logging.getLogger(__name__)
 

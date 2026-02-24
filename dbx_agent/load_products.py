@@ -15,13 +15,13 @@ import sys
 
 from neo4j import AsyncGraphDatabase
 
-from backend.scripts.product_catalog import (
+from dbx_agent.data.product_catalog import (
     BOUGHT_TOGETHER,
     CATEGORIES,
     PRODUCTS,
     SHARED_ATTRIBUTES,
 )
-from backend.scripts.product_knowledge import (
+from dbx_agent.data.product_knowledge import (
     KNOWLEDGE_ARTICLES,
     REVIEWS,
     SUPPORT_TICKETS,

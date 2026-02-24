@@ -10,8 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from neo4j_agent_memory import MemoryClient
 from neo4j_agent_memory.integrations.langchain import Neo4jAgentMemory
 
-from backend.dependencies import get_client
-from backend.models.memory import (
+from sample_agent.dependencies import get_client
+from sample_agent.models.memory import (
     GraphNodeResponse,
     GraphRelationshipResponse,
     MemoryContextResponse,

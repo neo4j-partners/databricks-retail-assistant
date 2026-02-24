@@ -10,7 +10,7 @@ from fastapi import HTTPException
 
 from neo4j_agent_memory import MemoryClient
 
-from backend.models.session import Session
+from sample_agent.models.session import Session
 
 # Module-level state managed by the app lifespan.
 memory_client: MemoryClient | None = None

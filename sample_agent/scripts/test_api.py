@@ -4,8 +4,8 @@ Calls every endpoint over HTTP and validates responses against Pydantic models.
 No pytest or test frameworks required.
 
 Usage:
-    python -m backend.scripts.test_api
-    python -m backend.scripts.test_api --base-url http://localhost:9000
+    python -m sample_agent.scripts.test_api
+    python -m sample_agent.scripts.test_api --base-url http://localhost:9000
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from backend.models import (
+from sample_agent.models import (
     ChatResponse,
     GraphNodeResponse,
     GraphRelationshipResponse,

@@ -21,8 +21,6 @@ import mlflow
 from mlflow.pyfunc import ChatAgent
 from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
 
-from react_agent import create_prototype_agent
-from retail_context import RetailContext
 
 
 def _create_background_loop() -> asyncio.AbstractEventLoop:
@@ -124,6 +122,7 @@ class PrototypeAgent(ChatAgent):
             )
             future.result(timeout=30)
 
+            from react_agent import create_prototype_agent
             self._agent = create_prototype_agent()
             self._initialized = True
             self._init_error = None
@@ -169,6 +168,7 @@ class PrototypeAgent(ChatAgent):
             session_id = "serving-default"
 
         # Build context with session_id for this request
+        from retail_context import RetailContext
         retail_context = RetailContext(
             client=self._client,
             session_id=session_id,

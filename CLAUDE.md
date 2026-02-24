@@ -6,9 +6,28 @@
 
 ## Directory Structure
 
-- `backend/tools/` — LangChain tools for the **local FastAPI backend**. Uses closure factories (`create_tools(client)`) that close over a `MemoryClient`.
-- `dbx_agent/` — **Databricks-only** agent package (root-level). Uses `ToolRuntime[RetailContext]` dependency injection instead of closures. Deployed to Databricks Model Serving via MLflow and `agents.deploy()`. This code runs on Databricks, not locally.
-- `backend/scripts/` — Data loading and generation scripts (Neo4j loader, transaction generator, lakehouse tables).
+- `sample_agent/` — **Sample LangGraph FastAPI agent** (local demo). Uses closure factories (`create_tools(client)`) that close over a `MemoryClient`.
+- `dbx_agent/` — **Databricks-only** agent package. Uses `ToolRuntime[RetailContext]` dependency injection instead of closures. Deployed to Databricks Model Serving via MLflow and `agents.deploy()`. This code runs on Databricks, not locally.
+
+## sample_agent/ — Sample LangGraph Agent
+
+A standalone FastAPI-based LangGraph agent demo with its own product data, tools, and API routes.
+
+### Layout
+
+- `app.py`, `main.py` — FastAPI entry points
+- `config.py` — Settings (Neo4j creds, OpenAI keys, etc.)
+- `constants.py` — Shared constants
+- `dependencies.py` — Dependency injection
+- `models/` — Pydantic response models
+- `routes/` — API routes (chat, products, memory, health)
+- `tools/` — LangChain tools (product search, cart, recommendations, inventory, memory)
+- `scripts/` — Agent-specific utilities:
+  - `product_catalog.py` — Product data definitions (21 base products + expanded generation)
+  - `product_knowledge.py` — Knowledge articles, support tickets, reviews
+  - `load_products.py` — Neo4j data loader (uses `sample_agent.config`)
+  - `verify_memory.py` — Neo4j memory integration test
+  - `test_api.py` — HTTP API test suite
 
 ## dbx_agent/ — Databricks Agent
 
@@ -28,6 +47,12 @@ This package is designed to run on Databricks Model Serving. Entry-point scripts
   - `databricks_embedder.py` — Databricks Foundation Model embedder
   - `memory_tools.py` — Memory tools (remember, recall, search)
   - `product_tools.py` — Product search/lookup/related tools
+- `data/` — Product data definitions (own copy, independent of sample_agent):
+  - `product_catalog.py` — Product data definitions
+  - `product_knowledge.py` — Knowledge articles, support tickets, reviews
+- `scripts/` — Databricks data pipeline scripts:
+  - `generate_transactions.py` — Generate 500K transaction CSVs for Delta Lake
+  - `lakehouse_tables.py` — Upload CSVs to Databricks Unity Catalog
 
 ### Key constraints
 
@@ -42,7 +67,16 @@ This package is designed to run on Databricks Model Serving. Entry-point scripts
 Use `uv run` — the project venv is not auto-activated:
 
 ```
-uv run python -m backend.scripts.<name>
+# Sample agent
+uv run python -m sample_agent.main
+uv run python -m sample_agent.scripts.load_products
+uv run python -m sample_agent.scripts.verify_memory
+uv run python -m sample_agent.scripts.test_api
+
+# Databricks agent
 uv run python -m dbx_agent.deploy
 uv run python -m dbx_agent.check_endpoint
+uv run python -m dbx_agent.load_products
+uv run python -m dbx_agent.scripts.generate_transactions
+uv run python -m dbx_agent.scripts.lakehouse_tables
 ```

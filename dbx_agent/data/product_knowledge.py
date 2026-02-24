@@ -11,7 +11,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from backend.scripts.product_catalog import PRODUCTS
+from dbx_agent.data.product_catalog import PRODUCTS
 
 __all__ = [
     "KnowledgeArticle",

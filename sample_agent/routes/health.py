@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from backend import dependencies
-from backend.models.health import HealthResponse
+from sample_agent import dependencies
+from sample_agent.models.health import HealthResponse
 
 router = APIRouter(tags=["health"])
 

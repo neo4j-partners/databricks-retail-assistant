@@ -4,7 +4,7 @@ Proves that save_context, load_memory_variables, and Neo4jMemoryRetriever
 all work against a live Neo4j instance before building anything on top.
 
 Usage:
-    python -m backend.scripts.verify_memory
+    python -m sample_agent.scripts.verify_memory
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from backend.config import get_memory_settings
+from sample_agent.config import get_memory_settings
 
 from neo4j_agent_memory import MemoryClient
 from neo4j_agent_memory.integrations.langchain import Neo4jAgentMemory, Neo4jMemoryRetriever

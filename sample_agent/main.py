@@ -4,8 +4,8 @@ import logging
 
 import uvicorn
 
-from backend.app import create_app
-from backend.config import get_settings
+from sample_agent.app import create_app
+from sample_agent.config import get_settings
 
 logging.basicConfig(level=logging.INFO)
 

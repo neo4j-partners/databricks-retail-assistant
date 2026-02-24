@@ -9,11 +9,11 @@ from __future__ import annotations
 from langchain_core.tools import BaseTool
 from neo4j_agent_memory import MemoryClient
 
-from backend.tools.cart import create_cart_tools
-from backend.tools.inventory import create_inventory_tools
-from backend.tools.memory_tools import create_memory_tools
-from backend.tools.product_search import create_product_search_tools
-from backend.tools.recommendations import create_recommendation_tools
+from sample_agent.tools.cart import create_cart_tools
+from sample_agent.tools.inventory import create_inventory_tools
+from sample_agent.tools.memory_tools import create_memory_tools
+from sample_agent.tools.product_search import create_product_search_tools
+from sample_agent.tools.recommendations import create_recommendation_tools
 
 __all__ = ["create_tools"]
 

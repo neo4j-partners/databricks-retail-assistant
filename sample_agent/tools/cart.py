@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
 
-from backend.constants import TAX_RATE
+from sample_agent.constants import TAX_RATE
 
 logger = logging.getLogger(__name__)
 

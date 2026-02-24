@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from neo4j_agent_memory import MemoryClient
 
-from backend.constants import ALLOWED_RELATIONSHIP_TYPES
+from sample_agent.constants import ALLOWED_RELATIONSHIP_TYPES
 
 logger = logging.getLogger(__name__)
 

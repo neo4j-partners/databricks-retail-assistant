@@ -7,9 +7,9 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from backend.constants import ALLOWED_RELATIONSHIP_TYPES
-from backend.dependencies import get_db, get_embedder
-from backend.models.products import (
+from sample_agent.constants import ALLOWED_RELATIONSHIP_TYPES
+from sample_agent.dependencies import get_db, get_embedder
+from sample_agent.models.products import (
     ProductDetailResponse,
     ProductItem,
     ProductSearchResponse,

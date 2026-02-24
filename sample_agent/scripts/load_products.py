@@ -4,9 +4,9 @@ import asyncio
 
 from neo4j import AsyncGraphDatabase
 
-from backend.config import get_settings
-from backend.scripts.product_catalog import BOUGHT_TOGETHER, CATEGORIES, PRODUCTS, SHARED_ATTRIBUTES
-from backend.scripts.product_knowledge import KNOWLEDGE_ARTICLES, REVIEWS, SUPPORT_TICKETS
+from sample_agent.config import get_settings
+from sample_agent.scripts.product_catalog import BOUGHT_TOGETHER, CATEGORIES, PRODUCTS, SHARED_ATTRIBUTES
+from sample_agent.scripts.product_knowledge import KNOWLEDGE_ARTICLES, REVIEWS, SUPPORT_TICKETS
 
 
 async def load_sample_data():

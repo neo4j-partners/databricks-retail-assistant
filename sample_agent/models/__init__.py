@@ -1,8 +1,8 @@
 """Pydantic request/response models for the retail assistant API."""
 
-from backend.models.chat import ChatRequest, ChatResponse
-from backend.models.health import HealthResponse
-from backend.models.memory import (
+from sample_agent.models.chat import ChatRequest, ChatResponse
+from sample_agent.models.health import HealthResponse
+from sample_agent.models.memory import (
     GraphNodeResponse,
     GraphRelationshipResponse,
     MemoryContextResponse,
@@ -10,7 +10,7 @@ from backend.models.memory import (
     PreferenceItem,
     PreferencesResponse,
 )
-from backend.models.products import (
+from sample_agent.models.products import (
     ProductBase,
     ProductDetailResponse,
     ProductItem,
@@ -18,7 +18,7 @@ from backend.models.products import (
     RelatedProductItem,
     RelatedProductsResponse,
 )
-from backend.models.session import Session
+from sample_agent.models.session import Session
 
 __all__ = [
     "ChatRequest",

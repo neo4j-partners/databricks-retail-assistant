@@ -7,8 +7,8 @@ import json
 from fastapi import APIRouter, Depends
 from sse_starlette.sse import EventSourceResponse
 
-from backend.dependencies import get_or_create_session
-from backend.models.chat import ChatRequest, ChatResponse
+from sample_agent.dependencies import get_or_create_session
+from sample_agent.models.chat import ChatRequest, ChatResponse
 
 router = APIRouter(tags=["chat"])
 
