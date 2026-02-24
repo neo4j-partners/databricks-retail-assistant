@@ -29,7 +29,7 @@ from neo4j_graphrag.retrievers import (
 from neo4j_graphrag.types import LLMMessage
 from pydantic import BaseModel
 
-from dbx_agent.src.deploy_config import CONFIG
+from retail_agent.src.deploy_config import CONFIG
 
 
 # ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 """Deployment configuration for the retail agent prototype.
 
 Usage:
-    from dbx_agent.src.deploy_config import CONFIG, RunMode
+    from retail_agent.src.deploy_config import CONFIG, RunMode
 """
 
 from dataclasses import dataclass, field
@@ -27,7 +27,7 @@ class DeployConfig:
     # Unity Catalog — matches existing lakehouse_tables.py naming
     catalog: str = "retail_assistant"
     schema: str = "retail"
-    model_name: str = "dbx_agent_prototype"
+    model_name: str = "retail_agent_prototype"
 
     # Endpoint name (auto-generated if empty)
     endpoint_name: str = ""
@@ -35,7 +35,7 @@ class DeployConfig:
     # MLflow
     experiment_name_pattern: str = "/Users/{user}/retail_agent_prototype"
     run_name: str = "retail_agent_prototype"
-    artifact_path: str = "dbx_agent_prototype"
+    artifact_path: str = "retail_agent_prototype"
 
     # Databricks secrets (used in Step 3, not Step 2)
     secret_scope: str = "retail-agent-secrets"

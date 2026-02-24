@@ -5,10 +5,10 @@ pipeline: log model -> register to UC -> deploy -> wait for ready.
 
 Usage:
     # Deploy:
-    uv run python -m dbx_agent.deploy
+    uv run python -m retail_agent.deploy
 
     # Delete:
-    RETAIL_AGENT_RUN_MODE=delete uv run python -m dbx_agent.deploy
+    RETAIL_AGENT_RUN_MODE=delete uv run python -m retail_agent.deploy
 
 Prerequisites:
     1. Databricks CLI configured (databricks auth login)
@@ -21,25 +21,25 @@ import sys
 import time
 from pathlib import Path
 
-from dbx_agent.src.deploy_config import CONFIG, DeployConfig, RunMode
+from retail_agent.src.deploy_config import CONFIG, DeployConfig, RunMode
 
 
 def _get_src_dir() -> Path:
-    """Resolve the dbx_agent/src/ directory.
+    """Resolve the retail_agent/src/ directory.
 
     Uses __file__ when available (local CLI). On Databricks, Python
     files run through IPython where __file__ is not defined, so we
     fall back to inspecting the config module's file location (which
     *is* set because it was imported normally, not executed directly).
     """
-    # Try __file__ first (works when running as `python -m dbx_agent.deploy`)
+    # Try __file__ first (works when running as `python -m retail_agent.deploy`)
     this_file = globals().get("__file__")
     if this_file:
         return Path(this_file).parent / "src"
 
     # Databricks Workspace: the directly-executed file has no __file__,
     # but imported modules do. deploy_config.py lives in src/.
-    import dbx_agent.src.deploy_config as _cfg
+    import retail_agent.src.deploy_config as _cfg
 
     cfg_file = getattr(_cfg, "__file__", None)
     if cfg_file:
@@ -47,7 +47,7 @@ def _get_src_dir() -> Path:
 
     raise RuntimeError(
         "Cannot determine src directory: neither __file__ nor "
-        "dbx_agent.src.deploy_config.__file__ is available."
+        "retail_agent.src.deploy_config.__file__ is available."
     )
 
 
@@ -368,7 +368,7 @@ def run_deploy(config: DeployConfig) -> int:
         print(f"Query endpoint: {deployment.query_endpoint}")
         print()
         print("To test:")
-        print("  uv run python -m dbx_agent.check_endpoint")
+        print("  uv run python -m retail_agent.check_endpoint")
         print()
         return 0
 

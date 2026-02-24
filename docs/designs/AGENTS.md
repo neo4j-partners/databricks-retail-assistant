@@ -139,7 +139,7 @@ Create a Databricks Supervisor Agent (AgentBricks) that coordinates the two agen
 
 ### Phase 3: Neo4j KG Agent — ToolRuntime Refactor
 
-- [ ] Define `RetailContext` dataclass in `dbx_agent/src/retail_context.py`
+- [ ] Define `RetailContext` dataclass in `retail_agent/src/retail_context.py`
 - [ ] Implement all 14 tools using `ToolRuntime[RetailContext]` injection (see R2)
 - [ ] Export a flat `ALL_TOOLS` list — no factory needed
 - [ ] Replace `OpenAI`/`AzureOpenAI` LLM with `ChatDatabricks`
@@ -180,7 +180,7 @@ LangGraph v1 introduced `ToolRuntime[Context]` with `context_schema` on `create_
 ### Step 1: Define the Shared Context
 
 ```python
-# dbx_agent/src/retail_context.py
+# retail_agent/src/retail_context.py
 from dataclasses import dataclass
 from neo4j_agent_memory import MemoryClient
 
@@ -197,7 +197,7 @@ class RetailContext:
 ### Step 2: Tools Using `ToolRuntime`
 
 ```python
-# dbx_agent/src/product_tools.py
+# retail_agent/src/product_tools.py
 from langchain_core.tools import tool, ToolRuntime
 from retail_context import RetailContext
 
@@ -222,7 +222,7 @@ The `runtime` parameter is reserved — LangGraph detects it by type hint and in
 ### Step 3: Flat Tool List (No Factory)
 
 ```python
-# dbx_agent/src/react_agent.py
+# retail_agent/src/react_agent.py
 from product_tools import search_products, get_product_details, get_related_products
 from memory_tools import remember_message, recall_memory, search_memory
 
@@ -237,7 +237,7 @@ No factory function. No closures. Tools are plain module-level functions.
 ### Step 4: Build the Neo4j KG Agent
 
 ```python
-# dbx_agent/src/react_agent.py
+# retail_agent/src/react_agent.py
 from databricks_langchain import ChatDatabricks
 from langgraph.prebuilt import create_react_agent
 from retail_context import RetailContext

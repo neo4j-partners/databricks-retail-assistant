@@ -7,7 +7,7 @@ entities to chunks and products.
 Databricks-only version. Gets Neo4j credentials from Databricks secrets.
 
 Usage:
-    uv run python -m dbx_agent.load_graphrag
+    uv run python -m retail_agent.load_graphrag
 """
 
 import asyncio
@@ -16,12 +16,12 @@ import sys
 
 from neo4j import AsyncGraphDatabase
 
-from dbx_agent.data.product_knowledge import (
+from retail_agent.data.product_knowledge import (
     KNOWLEDGE_ARTICLES,
     REVIEWS,
     SUPPORT_TICKETS,
 )
-from dbx_agent.src.deploy_config import CONFIG
+from retail_agent.src.deploy_config import CONFIG
 
 
 # ---------------------------------------------------------------------------

@@ -12,17 +12,17 @@
 
 ### The Problem
 
-Adding a new file to `dbx_agent/` (e.g., `diagnostics_tool.py`) and importing it from `agent.py` caused the deploy to fail with: *"Model server failed to load the model."* No useful error details were shown in the UI.
+Adding a new file to `retail_agent/` (e.g., `diagnostics_tool.py`) and importing it from `agent.py` caused the deploy to fail with: *"Model server failed to load the model."* No useful error details were shown in the UI.
 
 ### Root Cause
 
 MLflow packages the agent using `code_paths` in `deploy.py`. Files listed in `code_paths` are copied into the model artifact and added to `sys.path` at serving time. If a file is imported by `agent.py` but **not listed in `code_files`**, the import fails with `ModuleNotFoundError` during model loading.
 
-Because `dbx_agent/` uses **relative imports** (e.g., `from diagnostics_tool import ...`) for MLflow's flat packaging, there's no automatic discovery — every imported module must be explicitly listed.
+Because `retail_agent/` uses **relative imports** (e.g., `from diagnostics_tool import ...`) for MLflow's flat packaging, there's no automatic discovery — every imported module must be explicitly listed.
 
 ### The Fix
 
-When adding a new `.py` file to `dbx_agent/` that is imported at runtime, add it to the `code_files` list in `deploy.py`:
+When adding a new `.py` file to `retail_agent/` that is imported at runtime, add it to the `code_files` list in `deploy.py`:
 
 ```python
 code_files = [
@@ -36,7 +36,7 @@ code_files = [
 
 ### Checklist
 
-When adding a new module to `dbx_agent/`:
+When adding a new module to `retail_agent/`:
 
 1. Create the file with relative imports (e.g., `from context import RetailContext`)
 2. Import it from `agent.py` or another packaged file
@@ -502,5 +502,5 @@ uri = base64.b64decode(w.secrets.get_secret(scope, uri_key).value).decode("utf-8
 To use a specific Databricks CLI profile, set the `DATABRICKS_CONFIG_PROFILE` environment variable. `WorkspaceClient()` picks it up automatically — no code changes needed:
 
 ```bash
-DATABRICKS_CONFIG_PROFILE=azure-rk-knight uv run python -m dbx_agent.load_products
+DATABRICKS_CONFIG_PROFILE=azure-rk-knight uv run python -m retail_agent.load_products
 ```

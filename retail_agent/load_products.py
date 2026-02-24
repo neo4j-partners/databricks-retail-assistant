@@ -15,18 +15,18 @@ import sys
 
 from neo4j import AsyncGraphDatabase
 
-from dbx_agent.data.product_catalog import (
+from retail_agent.data.product_catalog import (
     BOUGHT_TOGETHER,
     CATEGORIES,
     PRODUCTS,
     SHARED_ATTRIBUTES,
 )
-from dbx_agent.data.product_knowledge import (
+from retail_agent.data.product_knowledge import (
     KNOWLEDGE_ARTICLES,
     REVIEWS,
     SUPPORT_TICKETS,
 )
-from dbx_agent.src.deploy_config import CONFIG
+from retail_agent.src.deploy_config import CONFIG
 
 
 def _get_neo4j_credentials() -> tuple[str, str]:

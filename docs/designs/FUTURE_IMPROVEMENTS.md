@@ -8,7 +8,7 @@ The official Databricks docs (updated Feb 2026) explicitly label `ChatAgent` as 
 
 > "Databricks recommends migrating to the `ResponsesAgent` schema to author agents."
 
-The current codebase uses `PrototypeAgent(ChatAgent)` in `dbx_agent/src/serving_adapter.py` with a separate `create_prototype_agent()` factory in `dbx_agent/src/react_agent.py`. This matches the official LangGraph example notebook pattern but is now classified as legacy.
+The current codebase uses `PrototypeAgent(ChatAgent)` in `retail_agent/src/serving_adapter.py` with a separate `create_prototype_agent()` factory in `retail_agent/src/react_agent.py`. This matches the official LangGraph example notebook pattern but is now classified as legacy.
 
 ### 2. Two Deployment Paths Now Exist
 

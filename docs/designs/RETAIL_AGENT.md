@@ -1,8 +1,8 @@
-# dbx_agent/ — What's Been Built
+# retail_agent/ — What's Been Built
 
 ## Overview
 
-The `dbx_agent/` package is a Databricks-deployable Neo4j Knowledge Graph agent — the first of two sub-agents described in AGENTS.md. It runs as a Model Serving endpoint on Databricks, backed by the Llama 3.3 70B Instruct model and a Neo4j Aura knowledge graph. The package implements the `ToolRuntime[RetailContext]` dependency injection pattern from LANGCHAIN_AGENT.md, replacing the closure factories used in the local FastAPI backend.
+The `retail_agent/` package is a Databricks-deployable Neo4j Knowledge Graph agent — the first of two sub-agents described in AGENTS.md. It runs as a Model Serving endpoint on Databricks, backed by the Llama 3.3 70B Instruct model and a Neo4j Aura knowledge graph. The package implements the `ToolRuntime[RetailContext]` dependency injection pattern from LANGCHAIN_AGENT.md, replacing the closure factories used in the local FastAPI backend.
 
 ## Architecture
 
@@ -44,7 +44,7 @@ A `ChatAgent` subclass that bridges Databricks Model Serving (sync `predict()`) 
 
 ### Configuration (`config.py`)
 
-A `DeployConfig` dataclass with environment variable overrides (`RETAIL_AGENT_<SETTING>`). Covers Unity Catalog naming (`retail_assistant.retail.dbx_agent_prototype`), Databricks secret scope and key names, LLM endpoint, embedding model, scale-to-zero, and sample test queries.
+A `DeployConfig` dataclass with environment variable overrides (`RETAIL_AGENT_<SETTING>`). Covers Unity Catalog naming (`retail_assistant.retail.retail_agent_prototype`), Databricks secret scope and key names, LLM endpoint, embedding model, scale-to-zero, and sample test queries.
 
 ### Deployment (`deploy.py`)
 
@@ -76,7 +76,7 @@ The local backend has 15 tools. The deployed agent has 7 (plus echo). The missin
 - **Inventory** — `check_inventory`, `find_alternatives`
 - **Cart** — `get_cart`, `add_to_cart`, `remove_from_cart`, `update_cart_item`, `clear_cart`, `apply_coupon`
 
-These need to be added to `dbx_agent/` using the same `ToolRuntime[RetailContext]` pattern already established.
+These need to be added to `retail_agent/` using the same `ToolRuntime[RetailContext]` pattern already established.
 
 ## Genie Space and Genie Agent (AGENTS.md R1)
 
@@ -100,7 +100,7 @@ No evaluation suite exists. No test questions have been curated and no baseline 
 
 ### Step 1: Migrate Remaining Tools
 
-Add the recommendations, inventory, and cart tools to `dbx_agent/`. Follow the established pattern: use `ToolRuntime[RetailContext]`, export a flat tool list from each module, and add them to `ALL_TOOLS` in `react_agent.py`. Redeploy and verify with `check_endpoint.py`.
+Add the recommendations, inventory, and cart tools to `retail_agent/`. Follow the established pattern: use `ToolRuntime[RetailContext]`, export a flat tool list from each module, and add them to `ALL_TOOLS` in `react_agent.py`. Redeploy and verify with `check_endpoint.py`.
 
 ### Step 2: Create the Genie Space
 

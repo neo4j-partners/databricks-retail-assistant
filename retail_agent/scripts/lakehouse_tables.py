@@ -382,7 +382,7 @@ def main() -> None:
     missing = [f for f in CSV_FILES if not (DATA_DIR / f).exists()]
     if missing and not args.skip_upload:
         print(f"ERROR: Missing CSV files in {DATA_DIR}: {missing}")
-        print("Run: python -m dbx_agent.scripts.generate_transactions --expanded")
+        print("Run: python -m retail_agent.scripts.generate_transactions --expanded")
         return
 
     if not DATABRICKS_WAREHOUSE:

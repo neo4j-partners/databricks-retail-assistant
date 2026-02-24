@@ -15,13 +15,13 @@ from typing import NamedTuple, Sequence
 
 from pydantic import BaseModel, Field
 
-from dbx_agent.data.product_catalog import (
+from retail_agent.data.product_catalog import (
     CATEGORIES,
     PRODUCTS,
     Product,
     generate_expanded_catalog,
 )
-from dbx_agent.data.product_knowledge import (
+from retail_agent.data.product_knowledge import (
     KNOWLEDGE_ARTICLES,
     KnowledgeArticle,
     REVIEWS as PRODUCT_REVIEWS,
