@@ -169,10 +169,9 @@ The `retail_agent/` scripts run on Databricks, not locally. Get the code into yo
 ### Prerequisites
 
 1. **Cluster** — A running compute cluster (DBR 15.0+). Install these libraries on the cluster: `neo4j`, `nest-asyncio`, `neo4j-graphrag` (step 5 only).
-2. **Neo4j secrets** — Store Neo4j credentials in Databricks secrets:
+2. **Neo4j secrets** — Store Neo4j credentials in Databricks secrets. The setup script reads `NEO4J_URI` and `NEO4J_PASSWORD` from your `.env` file:
    ```bash
-   databricks secrets put-secret retail-agent-secrets neo4j-uri
-   databricks secrets put-secret retail-agent-secrets neo4j-password
+   ./retail_agent/scripts/setup_databricks_secrets.sh --profile <your-profile>
    ```
 3. **Unity Catalog** — The catalog `retail_assistant.retail` must exist (see [Upload to Databricks](#upload-to-databricks) above).
 
