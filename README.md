@@ -149,15 +149,61 @@ uv run python -m retail_agent.scripts.lakehouse_tables --skip-tables
 
 ## Running in Databricks
 
-*TODO*
+The `retail_agent/` scripts run on Databricks, not locally. Get the code into your workspace using either Git folders (recommended) or file upload, then run each step on a cluster.
+
+### Get the code into Databricks
+
+**Option A: Git folders (recommended)**
+
+1. In the Databricks sidebar, click **Workspace**, navigate to your user folder.
+2. Click **Create > Git folder**.
+3. Enter the repository URL and select **GitHub** as the provider. For private repos, add a Personal Access Token under **Settings > Linked accounts** first.
+4. Click **Create Git folder**. To pull updates later, click the branch name and select **Pull**.
+
+**Option B: Upload files**
+
+1. In the sidebar, click **Workspace**, navigate to your user folder.
+2. Click the kebab menu (three dots) and select **Import**.
+3. Drag and drop the `retail_agent/` directory (or a `.zip` of it) into the dialog and click **Import**.
+
+### Prerequisites
+
+1. **Cluster** — A running compute cluster (DBR 15.0+). Install these libraries on the cluster: `neo4j`, `nest-asyncio`, `neo4j-graphrag` (step 5 only).
+2. **Neo4j secrets** — Store Neo4j credentials in Databricks secrets:
+   ```bash
+   databricks secrets put-secret retail-agent-secrets neo4j-uri
+   databricks secrets put-secret retail-agent-secrets neo4j-password
+   ```
+3. **Unity Catalog** — The catalog `retail_assistant.retail` must exist (see [Upload to Databricks](#upload-to-databricks) above).
+
+### Run the steps
+
+Open each script as a notebook in the workspace (click the file to open it, attach your cluster, and run), or run as a Databricks Job with a **Python script** task. Execute in order:
+
+| Step | Script | What it does |
+|------|--------|--------------|
+| 1 | `step1_deploy_agent.py` | Logs model to MLflow, registers in Unity Catalog, deploys to Model Serving |
+| 2 | `step2_load_products.py` | Loads product catalog and knowledge graph into Neo4j |
+| 3 | `step3_load_graphrag.py` | Builds GraphRAG layer — chunks, embeddings, entity extraction |
+| 4 | `step4_check_endpoint.py` | Verifies the deployed endpoint and runs sample queries |
+| 5 | `step5_demo_retrievers.py` | Demonstrates GraphRAG retriever patterns (requires `neo4j-graphrag` on cluster) |
+
+Steps 1 and 4 can also be run locally with the Databricks CLI configured:
+
+```bash
+uv run python -m retail_agent.step1_deploy_agent
+uv run python -m retail_agent.step4_check_endpoint
+```
 
 ## Project Structure
 
 ```
 retail_agent/                         # Databricks agent (deployed to Model Serving)
-├── deploy.py                      # Step 1: MLflow log → UC register → agents.deploy()
-├── check_endpoint.py              # Steps 2 & 4: Verify deployed endpoint
-├── load_products.py               # Step 3: Load sample data into Neo4j
+├── step1_deploy_agent.py          # Deploy: MLflow log → UC register → agents.deploy()
+├── step2_load_products.py         # Load sample product data into Neo4j
+├── step3_load_graphrag.py         # Build GraphRAG layer (chunks, embeddings, entities)
+├── step4_check_endpoint.py        # Verify deployed endpoint, run sample queries
+├── step5_demo_retrievers.py       # Demo GraphRAG retriever patterns
 ├── src/                           # Internal library (packaged flat via MLflow code_paths)
 │   ├── serving_adapter.py         # ChatAgent shim for Databricks Model Serving
 │   ├── react_agent.py             # LangGraph ReAct agent with context_schema
