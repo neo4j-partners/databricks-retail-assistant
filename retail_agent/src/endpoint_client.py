@@ -11,7 +11,7 @@ import os
 
 import requests
 
-from deploy_config import CONFIG
+from retail_agent.src.deploy_config import CONFIG
 
 
 # ---------------------------------------------------------------------------
