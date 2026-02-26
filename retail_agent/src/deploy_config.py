@@ -58,8 +58,6 @@ class DeployConfig:
     sample_queries: list[str] = field(
         default_factory=lambda: [
             "Echo hello world",
-            "Remember that my favorite color is blue",
-            "What do you remember about me?",
             "Search for running shoes under $200",
             "Get details for product 'nike-pegasus-40'",
             "What products are related to 'brooks-ghost-16'?",

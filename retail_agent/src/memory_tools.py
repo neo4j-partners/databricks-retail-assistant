@@ -17,19 +17,27 @@ from retail_context import RetailContext
 @tool
 async def remember_message(
     content: str,
+    role: str = "user",
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Store a message in short-term memory and return the conversation history.
 
     Use this tool when the user asks you to remember something, or when you
-    want to save important information from the conversation.
+    want to save important information from the conversation. You can store
+    both user messages and your own assistant responses.
+
+    Args:
+        content: The message content to store.
+        role: Message role — 'user' for user messages, 'assistant' for your
+            own responses. Storing both sides gives richer conversation recall.
     """
     client = runtime.context.client
     session_id = runtime.context.session_id or "default"
 
     await client.short_term.add_message(
         session_id,
-        "user",
+        role,
         content,
         extract_entities=True,
         generate_embedding=True,
