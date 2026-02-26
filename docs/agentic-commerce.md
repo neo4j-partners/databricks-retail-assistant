@@ -12,6 +12,8 @@ With the request understood, the agent triggers a GraphRAG retrieval against the
 
 Every step in this process, each API call, logical deduction, and intermediate result, gets recorded as a reasoning trace. When the agent successfully negotiates a price or identifies a novel product pairing, that success is codified in the graph. Future transactions benefit directly, since the agent can query its own reasoning memory to recall structural precedents and apply proven strategies to comparable tasks. Graph retrieval grounds each decision in fact, memory updates capture what the agent learned, and reasoning traces preserve how it got there.
 
+Neo4j is what makes this convergence practical. Knowledge graph traversals, vector-similarity retrieval, and memory writes all execute against a single database, connected through native graph relationships rather than API calls between separate systems. A Cypher query can follow a path from a user's conversation history through the entities mentioned in that conversation to the product nodes, pricing tiers, and fulfillment data those entities reference. That path crosses all three capabilities in one traversal because the data lives in one graph. Two open-source libraries divide the work. neo4j-graphrag-python handles knowledge graph construction and retrieval, turning unstructured documents into queryable graph structures and getting the right context to the LLM. Agent-Memory handles the other side, giving the agent persistent short-term, long-term, and reasoning memory that accumulates across sessions. The sections that follow cover each library in detail.
+
 ---
 
 # [neo4j-graphrag-python](https://github.com/neo4j/neo4j-graphrag-python): Full-Pipeline GraphRAG in a Single Library
