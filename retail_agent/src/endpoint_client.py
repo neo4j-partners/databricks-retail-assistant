@@ -141,9 +141,20 @@ def send_message(
     query: str,
     custom_inputs: dict | None = None,
     timeout: int = 120,
+    history: list[dict] | None = None,
 ) -> str | None:
-    """Send a single message to the endpoint and return extracted text."""
-    payload: dict = {"messages": [{"role": "user", "content": query}]}
+    """Send a message to the endpoint and return extracted text.
+
+    Args:
+        history: Optional list of prior messages (user/assistant dicts).
+            When provided, the full conversation history is sent so the
+            agent has multi-turn context.
+    """
+    if history is not None:
+        messages = history + [{"role": "user", "content": query}]
+    else:
+        messages = [{"role": "user", "content": query}]
+    payload: dict = {"messages": messages}
     if custom_inputs:
         payload["custom_inputs"] = custom_inputs
     resp = requests.post(endpoint_url, headers=headers, json=payload, timeout=timeout)
@@ -162,6 +173,7 @@ def run_exercise(
     turns: list[tuple[str, str, list[str]]],
     custom_inputs: dict | None = None,
     response_limit: int = 400,
+    accumulate_history: bool = False,
 ) -> tuple[int, int]:
     """Run a keyword-validated exercise against the endpoint.
 
@@ -169,22 +181,35 @@ def run_exercise(
         turns: List of (query, concept_label, expected_keywords) tuples.
         custom_inputs: Optional dict passed to every message (e.g. session_id).
         response_limit: Max characters to print from each response.
+        accumulate_history: When True, each turn includes the full
+            conversation history from prior turns, giving the agent
+            multi-turn context (like a real chat session).
 
     Returns:
         (passed, failed) counts.
     """
     passed = 0
     failed = 0
+    history: list[dict] = []
 
     for i, (query, concept, expected_keywords) in enumerate(turns, 1):
         print(f"\n  [{i}/{len(turns)}] {concept}")
         print(f"  Q: {query}")
         try:
-            text = send_message(endpoint_url, headers, query, custom_inputs)
+            text = send_message(
+                endpoint_url, headers, query, custom_inputs,
+                history=history if accumulate_history else None,
+            )
             if text is None:
                 print("  FAIL — no response text")
                 failed += 1
+                if accumulate_history:
+                    history.append({"role": "user", "content": query})
                 continue
+
+            if accumulate_history:
+                history.append({"role": "user", "content": query})
+                history.append({"role": "assistant", "content": text})
 
             print(f"  A: {text[:response_limit]}")
 

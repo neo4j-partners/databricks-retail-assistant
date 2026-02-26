@@ -63,7 +63,10 @@ def _run_memory_exercise(endpoint_url: str, headers: dict) -> tuple[int, int]:
 
     print(f"  Session ID: {session_id}")
     print(f"  Turns: {len(turns)}")
-    return run_exercise(endpoint_url, headers, turns, custom_inputs, response_limit=300)
+    return run_exercise(
+        endpoint_url, headers, turns, custom_inputs,
+        response_limit=300, accumulate_history=True,
+    )
 
 
 def check_endpoint() -> int:

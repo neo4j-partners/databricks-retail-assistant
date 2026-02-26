@@ -83,7 +83,10 @@ async def search_memory(
     or when you need to find relevant context without retrieving the full history.
     """
     client = runtime.context.client
-    messages = await client.short_term.search_messages(query, limit=5, threshold=0.5)
+    session_id = runtime.context.session_id or "default"
+    messages = await client.short_term.search_messages(
+        query, session_id=session_id, limit=5, threshold=0.5
+    )
 
     results = []
     for msg in messages:
