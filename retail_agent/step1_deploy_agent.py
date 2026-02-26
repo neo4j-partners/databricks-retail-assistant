@@ -96,6 +96,11 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         str(src_dir / "databricks_embedder.py"),
         str(src_dir / "memory_tools.py"),
         str(src_dir / "product_tools.py"),
+        str(src_dir / "commerce_tools.py"),
+        str(src_dir / "knowledge_tools.py"),
+        str(src_dir / "preference_tools.py"),
+        str(src_dir / "reasoning_tools.py"),
+        str(src_dir / "memory_helpers.py"),
     ]
 
     # neo4j-agent-memory wheel
