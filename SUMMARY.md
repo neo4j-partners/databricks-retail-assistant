@@ -8,7 +8,11 @@ This repository is a production-ready retail shopping assistant that runs on Dat
 - **MLflow (Models from Code)** — the agent is logged as a Python source file rather than a serialized object, which avoids issues with async resources and gives full control over startup
 - **LangGraph** — provides the ReAct agent loop and tool runtime with dependency injection
 - **Claude Sonnet 4.6 on Databricks** — the LLM powering the agent, accessed through the Databricks Foundation Model API
-- **Neo4j** — stores the product knowledge graph (products, categories, brands, attributes, and their relationships) and the agent memory graph (conversation history, user preferences, reasoning traces)
+- **Neo4j** — stores the product knowledge graph (products, categories, brands, attributes, and their relationships) and the agent memory graph (conversation history, user preferences, reasoning traces). Three Neo4j libraries divide the work:
+  - **neo4j Python driver** — async and sync drivers for direct Cypher execution, used for graph queries in the deployed agent and DDL operations during data loading
+  - **neo4j-graphrag-python** — handles knowledge graph construction (chunking, embedding, entity extraction) and provides the retriever patterns (VectorCypher, HybridCypher, Text2Cypher) demonstrated in the retriever demo scripts
+  - **neo4j-agent-memory** — gives the agent persistent short-term, long-term, and reasoning memory backed by Neo4j, with built-in entity extraction and semantic search over past interactions
+  - **Neo4j Spark Connector** — two-way bridge between Databricks and Neo4j, used for bulk-loading product nodes and relationships from Spark DataFrames
 - **Databricks Delta Lake** — stores transactional and analytical data (1M+ transactions, customers, reviews, inventory) queried by the Genie agent via natural language to SQL
 - **Databricks BGE Embeddings** — a 1024-dimension embedding model used for vector similarity search across both product descriptions and knowledge articles
 
