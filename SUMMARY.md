@@ -2,6 +2,29 @@
 
 This repository is a production-ready retail shopping assistant that runs on Databricks. It combines a Neo4j knowledge graph with Databricks lakehouse tables to answer product questions, remember customer preferences, and make personalized recommendations. The assistant is built as a LangGraph ReAct agent, wrapped in an MLflow ChatAgent, and deployed to a Databricks Model Serving endpoint. A separate Genie lakehouse agent handles analytics queries over Delta Lake tables, while this agent handles everything that benefits from graph structure: product search, support diagnostics, and cross-session memory.
 
+## The Deployed Agent
+
+The retail agent is a conversational shopping assistant deployed as a single Databricks Model Serving endpoint. It receives chat messages from users, decides which tools to call using a ReAct reasoning loop, and returns natural language responses grounded in data from the Neo4j knowledge graph. It is designed to handle multiple users and sessions concurrently from one endpoint.
+
+**What it can do:**
+
+- **Search the product catalog** — find products by description, filter by category, brand, or price, and return structured details including name, price, and attributes
+- **Navigate product relationships** — traverse the knowledge graph to find related products by category, brand, shared attributes, or purchase patterns (frequently bought together, similar items)
+- **Answer support and troubleshooting questions** — search knowledge articles, support tickets, and reviews using GraphRAG retrieval to surface relevant symptoms, root causes, and documented solutions for product issues
+- **Diagnose specific product problems** — given a product and a symptom description, look up known issues and fixes linked to that product in the graph
+- **Remember the current conversation** — store messages and automatically extract entities (people, brands, products mentioned) so the agent can refer back to earlier parts of the session
+- **Learn user preferences over time** — track brand, category, size, budget, activity, and material preferences tied to a user ID that persist across sessions
+- **Give personalized recommendations** — combine a user's stored preference profile with knowledge graph traversal to suggest products tailored to their history and stated needs
+- **Learn from past problem-solving** — record how multi-step tasks were handled (which tools were called, what worked) and recall those approaches when facing similar tasks in future sessions
+
+**How it is packaged:**
+
+- The agent is a Python class (PrototypeAgent) that inherits from MLflow's ChatAgent interface
+- It is logged to MLflow as a source file using the Models from Code pattern, not as a serialized object
+- All library code from src/ is bundled alongside it via MLflow code_paths so the endpoint has everything it needs at runtime
+- Neo4j credentials are injected as Databricks secrets at deploy time and read from environment variables when the endpoint starts
+- The endpoint supports scale-to-zero and initializes lazily on the first request
+
 ## Key Technologies
 
 - **Databricks Model Serving** — hosts the agent as a serverless endpoint with scale-to-zero support
@@ -46,26 +69,3 @@ This repository is a production-ready retail shopping assistant that runs on Dat
 - How to combine vector search with graph traversal (GraphRAG) to get more relevant retrieval results than either approach alone
 - How to build a multi-agent system where a supervisor routes questions to specialized agents (graph agent vs. SQL agent) based on what each is good at
 - How to manage secrets, async resources, and multi-tenant state in a serverless serving environment
-
-## The Deployed Agent
-
-The retail agent is a conversational shopping assistant deployed as a single Databricks Model Serving endpoint. It receives chat messages from users, decides which tools to call using a ReAct reasoning loop, and returns natural language responses grounded in data from the Neo4j knowledge graph. It is designed to handle multiple users and sessions concurrently from one endpoint.
-
-**What it can do:**
-
-- **Search the product catalog** — find products by description, filter by category, brand, or price, and return structured details including name, price, and attributes
-- **Navigate product relationships** — traverse the knowledge graph to find related products by category, brand, shared attributes, or purchase patterns (frequently bought together, similar items)
-- **Answer support and troubleshooting questions** — search knowledge articles, support tickets, and reviews using GraphRAG retrieval to surface relevant symptoms, root causes, and documented solutions for product issues
-- **Diagnose specific product problems** — given a product and a symptom description, look up known issues and fixes linked to that product in the graph
-- **Remember the current conversation** — store messages and automatically extract entities (people, brands, products mentioned) so the agent can refer back to earlier parts of the session
-- **Learn user preferences over time** — track brand, category, size, budget, activity, and material preferences tied to a user ID that persist across sessions
-- **Give personalized recommendations** — combine a user's stored preference profile with knowledge graph traversal to suggest products tailored to their history and stated needs
-- **Learn from past problem-solving** — record how multi-step tasks were handled (which tools were called, what worked) and recall those approaches when facing similar tasks in future sessions
-
-**How it is packaged:**
-
-- The agent is a Python class (PrototypeAgent) that inherits from MLflow's ChatAgent interface
-- It is logged to MLflow as a source file using the Models from Code pattern, not as a serialized object
-- All library code from src/ is bundled alongside it via MLflow code_paths so the endpoint has everything it needs at runtime
-- Neo4j credentials are injected as Databricks secrets at deploy time and read from environment variables when the endpoint starts
-- The endpoint supports scale-to-zero and initializes lazily on the first request
