@@ -92,6 +92,8 @@ def _build_chunks() -> list[dict]:
     chunks = []
 
     for ka in KNOWLEDGE_ARTICLES:
+        if not ka.content.strip():
+            continue
         chunk_id = f"{ka.article_id.lower()}-0"
         chunks.append({
             "chunk_id": chunk_id,
@@ -103,22 +105,26 @@ def _build_chunks() -> list[dict]:
 
     for t in SUPPORT_TICKETS:
         tid = t.ticket_id.lower()
-        chunks.append({
-            "chunk_id": f"{tid}-0",
-            "text": t.issue_description,
-            "source_type": "SupportTicket",
-            "source_id": t.ticket_id,
-            "position": 0,
-        })
-        chunks.append({
-            "chunk_id": f"{tid}-1",
-            "text": t.resolution_text,
-            "source_type": "SupportTicket",
-            "source_id": t.ticket_id,
-            "position": 1,
-        })
+        if t.issue_description.strip():
+            chunks.append({
+                "chunk_id": f"{tid}-0",
+                "text": t.issue_description,
+                "source_type": "SupportTicket",
+                "source_id": t.ticket_id,
+                "position": 0,
+            })
+        if t.resolution_text.strip():
+            chunks.append({
+                "chunk_id": f"{tid}-1",
+                "text": t.resolution_text,
+                "source_type": "SupportTicket",
+                "source_id": t.ticket_id,
+                "position": 1,
+            })
 
     for r in REVIEWS:
+        if not r.raw_text.strip():
+            continue
         chunk_id = f"{r.review_id.lower()}-0"
         chunks.append({
             "chunk_id": chunk_id,
