@@ -1,11 +1,13 @@
-"""Deployment configuration for the retail agent prototype.
+"""Deployment configuration for the retail agent.
 
 Usage:
-    from retail_agent.src.deploy_config import CONFIG, RunMode
+    from retail_agent.src.deploy_config import CONFIG, AGENT_NAME, RunMode
 """
 
 from dataclasses import dataclass, field
 from enum import Enum
+
+AGENT_NAME = "retail_agent_v2"
 
 
 class RunMode(Enum):
@@ -27,15 +29,15 @@ class DeployConfig:
     # Unity Catalog — matches existing lakehouse_tables.py naming
     catalog: str = "retail_assistant"
     schema: str = "retail"
-    model_name: str = "retail_agent_prototype"
+    model_name: str = AGENT_NAME
 
     # Endpoint name (auto-generated if empty)
     endpoint_name: str = ""
 
     # MLflow
-    experiment_name_pattern: str = "/Users/{user}/retail_agent_prototype"
-    run_name: str = "retail_agent_prototype"
-    artifact_path: str = "retail_agent_prototype"
+    experiment_name_pattern: str = f"/Users/{{user}}/{AGENT_NAME}"
+    run_name: str = AGENT_NAME
+    artifact_path: str = AGENT_NAME
 
     # Databricks secrets (used in Step 3, not Step 2)
     secret_scope: str = "retail-agent-secrets"

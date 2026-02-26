@@ -14,6 +14,7 @@ from typing import Any
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 
+from memory_helpers import get_user_preferences
 from retail_context import RetailContext
 
 logger = logging.getLogger(__name__)
@@ -47,16 +48,8 @@ async def recommend_for_user(
     # Step 1: Load user preferences from long-term memory
     preference_parts = []
     if user_id:
-        try:
-            preferences = await client.long_term.search_preferences(
-                query="user preferences",
-                limit=20,
-                threshold=0.0,
-            )
-            for pref in preferences:
-                preference_parts.append(pref.preference)
-        except Exception as e:
-            logger.warning("Failed to load preferences for recommendations: %s", e)
+        user_prefs = await get_user_preferences(client, user_id)
+        preference_parts = [p["preference"] for p in user_prefs]
 
     # Step 2: Build composite search query from preferences + explicit query
     query_parts = []

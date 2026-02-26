@@ -14,7 +14,7 @@ Every step in this process, each API call, logical deduction, and intermediate r
 
 ---
 
-# neo4j-graphrag-python: Full-Pipeline GraphRAG in a Single Library
+# [neo4j-graphrag-python](https://github.com/neo4j/neo4j-graphrag-python): Full-Pipeline GraphRAG in a Single Library
 
 **Built on Neo4j | Open Source**
 
@@ -76,7 +76,7 @@ The library is open source and under active development. For teams already runni
 
 ---
 
-# Agent-Memory: A Three-Layer Memory Architecture for AI Agents
+# [Agent-Memory](https://github.com/neo4j-labs/agent-memory/): A Three-Layer Memory Architecture for AI Agents
 
 **Built on Neo4j | Neo4j Labs Project**
 
@@ -167,3 +167,7 @@ Supporting four graph backends (Neo4j, FalkorDB, Kuzu, Neptune) gives Graphiti b
 | Framework integrations | 6 (LangChain, Pydantic AI, CrewAI, LlamaIndex, OpenAI Agents, Microsoft Agent Framework) | LangChain, OpenAI Agents |
 
 *Agent-Memory is a Neo4j Labs project under active development.*
+
+---
+
+For a hands-on guide to building GraphRAG on Databricks using these libraries, see [The Developer's Guide to GraphRAG on Databricks](DevelopersGuideGraphRAG-Databricks.md).

@@ -1,8 +1,8 @@
 # Phase 2 Implementation Plan: Agentic Commerce — Memory and Learning
 
-## Status: COMPLETE
+## Status: COMPLETE (refactored)
 
-All steps implemented. Ready for deployment and verification.
+All steps implemented. Post-implementation review identified and fixed four issues: a missing import bug, a user-isolation gap in preferences, duplicated preference-fetching logic, and a structural split to separate short-term from long-term memory tools.
 
 ---
 
@@ -36,15 +36,17 @@ Flipped `extract_entities=False` to `extract_entities=True` in `remember_message
 
 ---
 
-## Step 4: Add preference tracking tools to memory_tools — DONE
+## Step 4: Add preference tracking tools — DONE (refactored)
 
-Added two new tools to `memory_tools.py`:
+Created `preference_tools.py` with two tools (originally in `memory_tools.py`, split out during review):
 
-**track_preference** — Takes `preference_type` (brand, category, size, price_range, activity, material, style) and `preference_value`. Stores in long-term memory via `client.long_term.add_preference()`. Requires `user_id` — returns error if missing. Added to `MEMORY_TOOLS` export.
+**track_preference** — Takes `preference_type` and `preference_value`. Stores in long-term memory via `store_user_preference()` helper which attaches `user_id` in metadata for isolation. Requires `user_id` — returns error if missing.
 
-**get_user_profile** — Queries `client.long_term.search_preferences()` for all stored preferences for the current user. Returns structured summary with category, preference text, context, and confidence. Added to `MEMORY_TOOLS` export.
+**get_user_profile** — Retrieves preferences via `get_user_preferences()` helper which filters by `user_id` in metadata. Returns structured summary with category, preference text, context, and confidence.
 
-**File**: `src/memory_tools.py`
+Exported as `PREFERENCE_TOOLS`.
+
+**File**: `src/preference_tools.py` (new)
 
 ---
 
@@ -62,12 +64,12 @@ Exported as `REASONING_TOOLS`.
 
 ---
 
-## Step 6: Create the personalized recommendation tool — DONE
+## Step 6: Create the personalized recommendation tool — DONE (refactored)
 
 Created `commerce_tools.py` with one tool:
 
 **recommend_for_user** — Capstone tool combining preferences with knowledge graph:
-1. Loads user preferences from `client.long_term.search_preferences()`
+1. Loads user preferences via shared `get_user_preferences()` helper (user-scoped)
 2. Builds composite query from preferences + explicit query
 3. Embeds composite query via `client._embedder.embed()`
 4. Runs VectorCypher search on `chunk_embedding` index, traversing through Chunk -> Product with features and known issues
@@ -80,12 +82,12 @@ Exported as `COMMERCE_TOOLS`.
 
 ---
 
-## Step 7: Register all new tools in the agent — DONE
+## Step 7: Register all new tools in the agent — DONE (refactored)
 
 Updated `react_agent.py`:
-- Added imports for `COMMERCE_TOOLS` and `REASONING_TOOLS`
-- `ALL_TOOLS` now includes: echo + MEMORY_TOOLS + PRODUCT_SEARCH_TOOLS + KNOWLEDGE_TOOLS + REASONING_TOOLS + COMMERCE_TOOLS + DIAGNOSTICS_TOOLS
-- Cleaned up unused imports (`ToolRuntime`, `RetailContext` no longer needed at module level)
+- Imports: `MEMORY_TOOLS`, `PREFERENCE_TOOLS`, `PRODUCT_SEARCH_TOOLS`, `KNOWLEDGE_TOOLS`, `REASONING_TOOLS`, `COMMERCE_TOOLS`, `DIAGNOSTICS_TOOLS`
+- `ALL_TOOLS`: echo + MEMORY_TOOLS + PREFERENCE_TOOLS + PRODUCT_SEARCH_TOOLS + KNOWLEDGE_TOOLS + REASONING_TOOLS + COMMERCE_TOOLS + DIAGNOSTICS_TOOLS
+- `RetailContext` import restored (needed for `context_schema`)
 
 **File**: `src/react_agent.py`
 
@@ -116,16 +118,45 @@ Not yet deployed or tested. Next steps:
 
 ---
 
+## Post-Implementation Review Fixes
+
+Four issues identified and fixed after initial implementation:
+
+### Fix 1: Missing RetailContext import (bug)
+`RetailContext` was removed from `react_agent.py` during an unused-import cleanup, but it is still needed on line 114 for `context_schema=RetailContext`. Restored the import.
+
+### Fix 2: User preference isolation (critical correctness)
+The agent-memory library's `add_preference()` and `search_preferences()` have no built-in user_id scoping — preferences are stored globally in Neo4j. Without metadata tagging, all users would share the same preference pool.
+
+**Solution**: Created `memory_helpers.py` with two functions:
+- `store_user_preference()` — passes `metadata={"user_id": user_id}` when storing
+- `get_user_preferences()` — fetches broadly then filters client-side by `user_id` in metadata
+
+Both `preference_tools.py` and `commerce_tools.py` now use these helpers.
+
+### Fix 3: Duplicated preference-fetching logic (DRY)
+The same `search_preferences(query="user preferences", limit=20, threshold=0.0)` + filter pattern appeared in both `get_user_profile` and `recommend_for_user`. Extracted to the shared `get_user_preferences()` helper in `memory_helpers.py`.
+
+### Fix 4: Structural split (modularity)
+`memory_tools.py` was mixing two concerns: session-scoped short-term memory (remember/recall/search) and user-scoped long-term preferences (track/profile). Split into:
+- `memory_tools.py` — short-term only (`MEMORY_TOOLS`: 3 tools)
+- `preference_tools.py` — long-term preferences (`PREFERENCE_TOOLS`: 2 tools)
+- `memory_helpers.py` — shared user-scoped preference helpers (no tools, just functions)
+
+---
+
 ## Files changed (summary)
 
 | File | Change | Status |
 |------|--------|--------|
 | `src/retail_context.py` | Add `user_id` field | DONE |
 | `src/serving_adapter.py` | Extract and pass `user_id` from `custom_inputs` | DONE |
-| `src/memory_tools.py` | Flip `extract_entities` to True, add `track_preference` and `get_user_profile` | DONE |
+| `src/memory_tools.py` | Flip `extract_entities` to True, remove preference tools (moved out) | DONE |
+| `src/memory_helpers.py` | New file — shared `store_user_preference`, `get_user_preferences` helpers | DONE |
+| `src/preference_tools.py` | New file — `track_preference`, `get_user_profile` (user-scoped) | DONE |
 | `src/reasoning_tools.py` | New file — `record_reasoning_trace`, `recall_past_reasoning` | DONE |
-| `src/commerce_tools.py` | New file — `recommend_for_user` | DONE |
-| `src/react_agent.py` | Import new tools, add to `ALL_TOOLS`, rewrite system prompt | DONE |
+| `src/commerce_tools.py` | New file — `recommend_for_user` (uses shared helpers) | DONE |
+| `src/react_agent.py` | Import all tool lists, add to `ALL_TOOLS`, rewrite system prompt | DONE |
 
 ## Files not changed
 
@@ -138,8 +169,8 @@ Not yet deployed or tested. Next steps:
 
 | API | Where Used |
 |-----|-----------|
-| `client.long_term.add_preference(category, preference, context, generate_embedding)` | `track_preference` |
-| `client.long_term.search_preferences(query, limit, threshold)` | `get_user_profile`, `recommend_for_user` |
+| `client.long_term.add_preference(category, preference, context, generate_embedding, metadata)` | `memory_helpers.store_user_preference` |
+| `client.long_term.search_preferences(query, limit, threshold)` | `memory_helpers.get_user_preferences` |
 | `client.reasoning.start_trace(session_id, task, generate_embedding)` | `record_reasoning_trace` |
 | `client.reasoning.add_step(trace_id, thought, action, observation, generate_embedding)` | `record_reasoning_trace` |
 | `client.reasoning.record_tool_call(step_id, tool_name, arguments, result, status, duration_ms)` | `record_reasoning_trace` |
@@ -147,3 +178,18 @@ Not yet deployed or tested. Next steps:
 | `client.reasoning.get_similar_traces(task, limit, success_only, threshold)` | `recall_past_reasoning` |
 | `client.reasoning.get_trace(trace_id)` | `recall_past_reasoning` |
 | `client.short_term.add_message(..., extract_entities=True)` | `remember_message` (changed from False) |
+
+## Tool architecture
+
+```
+react_agent.py (ALL_TOOLS)
+├── memory_tools.py        — MEMORY_TOOLS (3): remember, recall, search  [session-scoped]
+├── preference_tools.py    — PREFERENCE_TOOLS (2): track, profile        [user-scoped]
+│   └── memory_helpers.py  — store_user_preference, get_user_preferences [user isolation]
+├── product_tools.py       — PRODUCT_SEARCH_TOOLS (3): search, details, related
+├── knowledge_tools.py     — KNOWLEDGE_TOOLS (3): knowledge, hybrid, diagnose
+├── reasoning_tools.py     — REASONING_TOOLS (2): record, recall         [user-scoped]
+├── commerce_tools.py      — COMMERCE_TOOLS (1): recommend_for_user      [user-scoped]
+│   └── memory_helpers.py  — get_user_preferences                        [shared helper]
+└── diagnostics_tool.py    — DIAGNOSTICS_TOOLS
+```

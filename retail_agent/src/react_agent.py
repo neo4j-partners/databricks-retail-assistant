@@ -17,6 +17,7 @@ from commerce_tools import COMMERCE_TOOLS
 from diagnostics_tool import DIAGNOSTICS_TOOLS
 from knowledge_tools import KNOWLEDGE_TOOLS
 from memory_tools import MEMORY_TOOLS
+from preference_tools import PREFERENCE_TOOLS
 from product_tools import PRODUCT_SEARCH_TOOLS
 from reasoning_tools import REASONING_TOOLS
 
@@ -83,6 +84,7 @@ SYSTEM_PROMPT = (
 ALL_TOOLS = (
     [echo]
     + MEMORY_TOOLS
+    + PREFERENCE_TOOLS
     + PRODUCT_SEARCH_TOOLS
     + KNOWLEDGE_TOOLS
     + REASONING_TOOLS
