@@ -1,6 +1,6 @@
 """LangGraph agent with echo tool and neo4j-agent-memory integration.
 
-Step 3 prototype from PROTOTYPE.md. Builds on Step 2 by adding:
+Builds on the base agent by adding:
 - ToolRuntime[RetailContext] injection via context_schema
 - Async memory tools backed by neo4j-agent-memory short-term memory
 - The echo tool is retained for baseline validation
@@ -93,12 +93,12 @@ ALL_TOOLS = (
 )
 
 
-def create_prototype_agent(llm=None):
+def create_agent(llm=None):
     """Create a LangGraph ReAct agent with echo and memory tools.
 
     Args:
         llm: Optional LLM override. Defaults to ChatDatabricks with
-             databricks-meta-llama-3-3-70b-instruct.
+             the endpoint configured in CONFIG.llm_endpoint.
     """
     from langgraph.prebuilt import create_react_agent
 

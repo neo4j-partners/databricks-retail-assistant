@@ -1,4 +1,4 @@
-"""Deploy prototype agent to Databricks using agents.deploy().
+"""Deploy retail agent to Databricks using agents.deploy().
 
 Ported from aircraft_analyst/src/graph_agent/deploy.py. Four-step
 pipeline: log model -> register to UC -> deploy -> wait for ready.
@@ -401,7 +401,7 @@ def main() -> int:
     """Main entry point."""
     print()
     print("=" * 60)
-    print("RETAIL AGENT PROTOTYPE DEPLOYMENT")
+    print("RETAIL AGENT DEPLOYMENT")
     print("=" * 60)
     print()
 

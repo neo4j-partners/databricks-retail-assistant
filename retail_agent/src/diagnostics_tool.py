@@ -48,7 +48,7 @@ def agent_diagnostics(
         import inspect
 
         serving = importlib.import_module("serving_adapter")
-        source = inspect.getsource(serving.PrototypeAgent.predict)
+        source = inspect.getsource(serving.RetailAgent.predict)
         if "run_coroutine_threadsafe" in source:
             info["async_bridge"] = "persistent_loop"
         elif "asyncio.run" in source:

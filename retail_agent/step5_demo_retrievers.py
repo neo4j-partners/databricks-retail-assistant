@@ -88,7 +88,7 @@ class DatabricksLLM(LLMInterfaceV2):
     so it works with both GraphRAG and Text2CypherRetriever.
     """
 
-    def __init__(self, model_id: str = "databricks-meta-llama-3-3-70b-instruct"):
+    def __init__(self, model_id: str = CONFIG.llm_endpoint):
         super().__init__(model_name=model_id)
         self.model_id = model_id
         self._client = mlflow.deployments.get_deploy_client("databricks")

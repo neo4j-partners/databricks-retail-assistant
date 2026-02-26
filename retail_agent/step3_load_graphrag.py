@@ -309,7 +309,7 @@ async def _extract_entities(session, chunks: list[dict]):
         return
 
     client = mlflow.deployments.get_deploy_client("databricks")
-    llm_endpoint = "databricks-meta-llama-3-3-70b-instruct"
+    llm_endpoint = CONFIG.llm_endpoint
 
     extracted = 0
     skipped = 0

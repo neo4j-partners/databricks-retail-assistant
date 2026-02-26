@@ -19,7 +19,7 @@ class RunMode(Enum):
 
 @dataclass
 class DeployConfig:
-    """Configuration for deploying the prototype agent to Databricks."""
+    """Configuration for deploying the retail agent to Databricks."""
 
     # Run mode
     run_mode: RunMode = RunMode.DEPLOY

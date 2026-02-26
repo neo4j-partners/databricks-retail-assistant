@@ -1,6 +1,6 @@
 """Shared context for retail agent tools.
 
-Prototype version of the RetailContext from LANGCHAIN_AGENT.md Section 1.
+RetailContext for dependency injection via ToolRuntime.
 This dataclass is injected into tools via ToolRuntime[RetailContext] at
 invocation time. The MemoryClient and session_id are constructed by whoever
 invokes the agent — locally or via the Databricks serving adapter.

@@ -1,13 +1,13 @@
 """ChatAgent shim for Databricks Model Serving.
 
-Step 3 prototype from PROTOTYPE.md. Builds on Step 2 by adding:
+Builds on the base agent by adding:
 - Lazy MemoryClient init from secrets (NEO4J_URI, NEO4J_PASSWORD)
 - Persistent event loop in a background thread for async bridging
 - RetailContext injection into the LangGraph agent
 
 References:
     - LANGCHAIN_AGENT.md Section 6 (ChatAgent adapter pattern)
-    - PROTOTYPE.md Step 3 (neo4j-agent-memory integration)
+    - neo4j-agent-memory integration
     - neo4j-agent-memory integrations/base.py (run_sync pattern)
 """
 
@@ -43,7 +43,7 @@ def _create_background_loop() -> asyncio.AbstractEventLoop:
     return loop
 
 
-class PrototypeAgent(ChatAgent):
+class RetailAgent(ChatAgent):
     """ChatAgent wrapper with Neo4j memory integration."""
 
     def __init__(self):
@@ -122,8 +122,8 @@ class PrototypeAgent(ChatAgent):
             )
             future.result(timeout=30)
 
-            from react_agent import create_prototype_agent
-            self._agent = create_prototype_agent()
+            from react_agent import create_agent
+            self._agent = create_agent()
             self._initialized = True
             self._init_error = None
 
@@ -193,5 +193,5 @@ class PrototypeAgent(ChatAgent):
         return ChatAgentResponse(messages=ai_messages)
 
 
-AGENT = PrototypeAgent()
+AGENT = RetailAgent()
 mlflow.models.set_model(AGENT)
