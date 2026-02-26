@@ -7,7 +7,7 @@ Usage:
 from dataclasses import dataclass, field
 from enum import Enum
 
-AGENT_NAME = "retail_agent_v2"
+AGENT_NAME = "retail_agent_v3"
 
 
 class RunMode(Enum):
