@@ -136,26 +136,8 @@ def _fetch_documents(driver: neo4j.Driver) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 SCHEMA = {
-    "node_types": [
-        {
-            "label": "Feature",
-            "description": "product feature or capability, 2-6 words",
-        },
-        {
-            "label": "Symptom",
-            "description": "product issue, defect, or problem, 2-6 words",
-        },
-        {
-            "label": "Solution",
-            "description": "fix, workaround, or recommendation, 2-6 words",
-        },
-    ],
-    "relationship_types": [
-        {"label": "HAS_FEATURE"},
-        {"label": "HAS_SYMPTOM"},
-        {"label": "HAS_SOLUTION"},
-        {"label": "RELATED_TO"},
-    ],
+    "node_types": ["Feature", "Symptom", "Solution"],
+    "relationship_types": ["HAS_FEATURE", "HAS_SYMPTOM", "HAS_SOLUTION", "RELATED_TO"],
     "patterns": [
         ("Feature", "RELATED_TO", "Symptom"),
         ("Symptom", "HAS_SOLUTION", "Solution"),

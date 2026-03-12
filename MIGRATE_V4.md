@@ -97,24 +97,18 @@ Only `chunk_id_property` needs to be overridden from the default.
 
 ## GraphSchema Definition
 
-The schema tells the LLM what entity and relationship types to extract:
+The schema tells the LLM what entity and relationship types to extract. Node types and relationship types are passed as simple strings — the library auto-adds a `name` property and sets `additional_properties=True` for flexible extraction (see "Key Patterns Learned" above).
 
-```
-Node types:
-  - Feature (description: "product feature or capability, 2-6 words")
-  - Symptom (description: "product issue, defect, or problem, 2-6 words")
-  - Solution (description: "fix, workaround, or recommendation, 2-6 words")
-
-Relationship types:
-  - HAS_FEATURE
-  - HAS_SYMPTOM
-  - HAS_SOLUTION
-  - RELATED_TO
-
-Patterns (allowed connections between entity types):
-  - (Feature)-[RELATED_TO]->(Symptom)
-  - (Symptom)-[HAS_SOLUTION]->(Solution)
-  - (Feature)-[RELATED_TO]->(Solution)
+```python
+SCHEMA = {
+    "node_types": ["Feature", "Symptom", "Solution"],
+    "relationship_types": ["HAS_FEATURE", "HAS_SYMPTOM", "HAS_SOLUTION", "RELATED_TO"],
+    "patterns": [
+        ("Feature", "RELATED_TO", "Symptom"),
+        ("Symptom", "HAS_SOLUTION", "Solution"),
+        ("Feature", "RELATED_TO", "Solution"),
+    ],
+}
 ```
 
 These are entity-to-entity relationships extracted by the LLM, separate from the lexical graph relationships (`FROM_CHUNK`, `FROM_DOCUMENT`). The library creates the entity-to-chunk links automatically via `FROM_CHUNK`.
@@ -298,7 +292,7 @@ After:  (s:Symptom)-[:FROM_CHUNK]->(node)
 
 Phase 4 is split into two stages: prototype the pipeline in `dbx_rd/` first, then integrate into the main project later.
 
-### Phase 4a: Prototype in `dbx_rd/` -- IN PROGRESS
+### Phase 4a: Prototype in `dbx_rd/` -- COMPLETE
 
 Build a standalone `load_graphrag.py` in `dbx_rd/` that runs the full pipeline on the Databricks cluster using the existing upload/submit workflow. This proves the `SimpleKGPipeline` approach works end-to-end before touching any files in `retail_agent/`.
 
@@ -310,7 +304,7 @@ Created `dbx_rd/load_graphrag.py` — a standalone prototype that:
 2. Creates a sync `neo4j.GraphDatabase.driver()` connection (required by `SimpleKGPipeline`).
 3. Fetches document text directly from Neo4j nodes created by step2 (KnowledgeArticle, SupportTicket, Review) — avoids dependency on the `retail_agent` data package.
 4. Imports `DatabricksEmbedder` and `DatabricksLLM` from the Phase 2 adapters already in `dbx_rd/`.
-5. Defines a `GraphSchema` (dict format) with Feature, Symptom, Solution node types and HAS_FEATURE, HAS_SYMPTOM, HAS_SOLUTION, RELATED_TO relationship types.
+5. Defines a `GraphSchema` with Feature, Symptom, Solution node types (as strings) and HAS_FEATURE, HAS_SYMPTOM, HAS_SOLUTION, RELATED_TO relationship types (as strings).
 6. Configures `LexicalGraphConfig` with `chunk_id_property="chunk_id"`.
 7. Creates a `SimpleKGPipeline` with `from_pdf=False`, the LLM, driver, embedder, schema, and config.
 8. Loops over all documents, calling `pipeline.run_async(text=..., document_metadata={"source_type": ..., "source_id": ...})` for each.
@@ -321,29 +315,104 @@ Uses `nest_asyncio.apply()` for Databricks event loop compatibility. No graph cl
 
 For support tickets, concatenates `issue_description` and `resolution_text` with a separator, matching the strategy in the plan.
 
-**Step 2: Upload and run on Databricks**
+**Step 2: Upload and run on Databricks -- COMPLETE**
 
-Use the existing `upload.sh` / `submit.sh` workflow to run on the cluster. Verify:
-- All documents are processed without errors
-- Chunk nodes have embeddings
-- Entity nodes (Feature, Symptom, Solution) are created with correct labels
-- `FROM_CHUNK` relationships exist from entities to chunks
-- `HAS_CHUNK` relationships are created by post-pipeline Cypher
-- Product-level shortcuts (`HAS_FEATURE`, `HAS_SYMPTOM`, `HAS_SOLUTION`) are created
-- Vector and fulltext indexes are created
+Successfully ran on 2026-03-12 after fixing two issues (see "Issues Fixed" below).
+
+**Results:**
+
+| Node / Relationship | Count |
+|---------------------|-------|
+| Chunks | 252 |
+| Documents | 252 |
+| Features | 529 |
+| Symptoms | 422 |
+| Solutions | 507 |
+| FROM_CHUNK rels | 1,578 |
+| FROM_DOCUMENT rels | 252 |
+| HAS_CHUNK rels | 252 |
+| HAS_FEATURE rels | 557 |
+| HAS_SYMPTOM rels | 425 |
+| HAS_SOLUTION rels | 1,102 |
+| NEXT_CHUNK rels | 0 |
+
+All 252 documents processed, 0 failures. Two minor "LLM response has improper format" warnings (handled by `on_error="IGNORE"`). NEXT_CHUNK is 0 because each document produced a single chunk (texts are shorter than the 2000-char default split size).
+
+**Verification criteria — all met:**
+- All 252 documents processed without errors
+- Chunk nodes have embeddings (1,024 dims via `databricks-bge-large-en`)
+- Entity nodes created: 529 Features, 422 Symptoms, 507 Solutions
+- 1,578 `FROM_CHUNK` relationships from entities to chunks
+- 252 `HAS_CHUNK` relationships created by post-pipeline Cypher
+- Product-level shortcuts created: 557 `HAS_FEATURE`, 425 `HAS_SYMPTOM`, 1,102 `HAS_SOLUTION`
+- Vector index (`chunk_embedding`) and fulltext index (`chunkText`) created
+
+---
+
+### Issues Fixed During Step 2
+
+**Issue 1: LLMInterface V1 vs V2 incompatibility**
+
+`SimpleKGPipelineConfig` validates with `isinstance(llm, LLMInterface)`. Our `DatabricksLLM` originally extended `LLMInterfaceV2`, a completely separate class hierarchy — `LLMInterfaceV2` does NOT inherit from `LLMInterface`. Both extend `ABC` independently.
+
+The pipeline config's `LLMType` validator (`object_config.py:202`) accepts `Union[LLMInterface, LLMConfig]` — no `LLMInterfaceV2`. The entity extractor calls `await self.llm.ainvoke(prompt)` with a plain string (V1 signature).
+
+This is true in the latest release (1.13.1). `LLMInterface` is deprecated but remains the only interface accepted by the pipeline.
+
+**Fix:** Changed `DatabricksLLM` to extend `LLMInterface` (V1). Updated method signatures from `(input: Union[str, List[LLMMessage]], response_format, **kwargs)` to `(input: str, message_history, system_instruction)`. Added proper handling of `system_instruction` and `message_history` parameters. The `LLMInterface` constructor logs a deprecation warning — expected and harmless.
+
+Note: `LLMInterfaceV2` is still needed by retrievers (`VectorCypherRetriever`, `Text2CypherRetriever`, `GraphRAG`) used in `step5_demo_retrievers.py`. That file has its own inline `DatabricksLLM(LLMInterfaceV2)` class, so there's no conflict.
+
+**Issue 2: Schema node types require properties (1.13.x)**
+
+In neo4j-graphrag 1.13.x, `NodeType` has `properties: list[PropertyType] = Field(min_length=1)` — node types require at least 1 property. Our schema used dicts with `label` and `description` but no `properties`, causing a `ValidationError`.
+
+The library provides a string shorthand: passing `"Feature"` instead of `{"label": "Feature", ...}` triggers a model validator that auto-adds `{"name": "name", "type": "STRING"}` with `additional_properties=True`, allowing the LLM to freely extract properties beyond just `name`.
+
+**Fix:** Changed schema `node_types` and `relationship_types` from dicts to simple strings. This is the library's recommended pattern for flexible extraction (see `examples/build_graph/simple_kg_builder_from_text.py`).
+
+---
+
+### Key Patterns Learned
+
+1. **LLMInterface V1 for pipelines, V2 for retrievers** — The `SimpleKGPipeline` and its components (entity extractor, schema builder) use `LLMInterface` (V1) exclusively. `LLMInterfaceV2` is used by retrievers (`VectorCypherRetriever`, `Text2CypherRetriever`, `GraphRAG`). Custom LLM adapters may need both versions depending on usage.
+
+2. **Schema strings over dicts** — For node types, pass simple strings (e.g., `"Feature"`) unless you need explicit property constraints. The library auto-adds a `name` property and sets `additional_properties=True` for flexible LLM extraction. Dicts with `label`+`description` but no `properties` fail validation in 1.13.x.
+
+3. **Databricks `SystemExit: 0` is success** — Databricks treats `sys.exit(0)` as a failure (`INTERNAL_ERROR`). Check the logs, not the exit status.
+
+4. **`on_error="IGNORE"` is essential** — LLM extraction occasionally produces malformed responses. Without `on_error="IGNORE"`, a single bad response would fail the entire pipeline. With it, the pipeline logs a warning and continues.
+
+5. **Single-chunk documents** — With the default `FixedSizeSplitter` (2000 chars, 200 overlap), most retail documents produce exactly 1 chunk. This means `NEXT_CHUNK` relationships are not created (expected). For longer documents, the splitter would create multiple chunks with `NEXT_CHUNK` links automatically.
+
+6. **Entity resolution works** — `perform_entity_resolution=True` ran without issues. 252 documents produced ~1,500 entities, with product-level shortcuts creating slightly more relationships (e.g., 557 HAS_FEATURE for 529 Features) — indicating some entities span multiple products.
 
 ### Phase 4b: Integration (deferred)
 
-Once the prototype is validated, integrate into the main project. These steps are deferred:
+Once the prototype is validated (DONE), integrate into the main project. These steps are deferred:
 
-- Move adapter classes from `dbx_rd/` into `retail_agent/src/` (replaces existing embedder)
-- Rewrite `retail_agent/step3_load_graphrag.py` based on the proven prototype
-- Update Cypher queries in agent tools (`knowledge_tools.py`, `commerce_tools.py`) for `FROM_CHUNK` direction changes, including the cross-entity multi-hop subqueries (`related_products`, `products_with_same_solution`)
-- Update `step5_demo_retrievers.py` retriever queries and replace inline adapter classes with imports
-- Update documentation files (`EXPAND.md`, `docs/DevelopersGuideGraphRAG-Databricks.md`)
-- Add `neo4j-graphrag` to project dependencies
-- End-to-end validation of the full agent
-- Delete `dbx_rd/` prototyping directory
+1. **Move adapter classes from `dbx_rd/` into `retail_agent/src/`**
+   - `databricks_llm.py` (V1 interface) — used by pipeline
+   - `databricks_embedder.py` — used by pipeline
+   - Consider whether a V2 adapter is also needed for retrievers, or if the inline class in `step5_demo_retrievers.py` is sufficient
+   - Replaces existing embedder in `serving_adapter.py` (lines 83, 109)
+
+2. **Rewrite `retail_agent/step3_load_graphrag.py`** based on the proven `dbx_rd/load_graphrag.py` prototype. Key differences from the prototype:
+   - Import product data from `retail_agent.data` package instead of querying Neo4j
+   - Follow the existing step script patterns (error handling, logging)
+
+3. **Update Cypher queries in agent tools** for `FROM_CHUNK` direction changes:
+   - `knowledge_tools.py` — `knowledge_search`, `hybrid_knowledge_search`, `diagnose_product_issue` (see detailed Cypher changes above)
+   - `commerce_tools.py` — `recommend_for_user` (2 relationship changes)
+   - `step5_demo_retrievers.py` — `VECTOR_CYPHER_QUERY`, `HYBRID_CYPHER_QUERY`
+
+4. **Update documentation** — `EXPAND.md`, `docs/DevelopersGuideGraphRAG-Databricks.md`
+
+5. **Add `neo4j-graphrag>=1.13.1` to project dependencies**
+
+6. **End-to-end validation** — Deploy agent, run `step4_demo_agent.py` and `step6_check_knowledge.py` to verify all tools work with the new graph schema
+
+7. **Clean up** — Delete `dbx_rd/` prototyping directory
 
 ---
 
