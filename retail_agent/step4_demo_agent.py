@@ -1,12 +1,3 @@
-# Databricks notebook source
-
-# COMMAND ----------
-
-# MAGIC %pip install requests databricks-sdk
-# MAGIC dbutils.library.restartPython()
-
-# COMMAND ----------
-
 """Verify the deployed agent endpoint on Databricks.
 
 Checks the endpoint exists, sends sample queries from CONFIG, and prints responses.
