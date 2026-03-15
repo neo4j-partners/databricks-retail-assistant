@@ -31,9 +31,12 @@ fi
 REMOTE_PATH="$REMOTE_DIR/$SCRIPT_NAME"
 RUN_NAME="dbx_rd: $SCRIPT_NAME"
 
+# shellcheck source=cluster_utils.sh
+source "$SCRIPT_DIR/cluster_utils.sh"
+
 echo "Submitting job (profile: $PROFILE)"
 echo "  Script: $REMOTE_PATH"
-echo "  Cluster: $CLUSTER_ID"
+ensure_cluster_running "$PROFILE" "$CLUSTER_ID"
 echo "  Run name: $RUN_NAME"
 echo "---"
 
