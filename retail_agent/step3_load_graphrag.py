@@ -1,58 +1,42 @@
-"""Build GraphRAG layer on top of existing product knowledge graph.
+"""Build GraphRAG layer using neo4j-graphrag SimpleKGPipeline.
 
-Run AFTER load_products.py. Adds Chunk nodes with embeddings,
-extracts Feature/Symptom/Solution entities via LLM, and links
-entities to chunks and products.
-
-Databricks-only version. Gets Neo4j credentials from Databricks secrets.
+Run after step2_load_products.py. Reads KnowledgeArticle, SupportTicket, and
+Review nodes from Neo4j, chunks and embeds them, extracts Feature/Symptom/
+Solution entities, then links the new retrieval graph back to Product nodes.
 
 Runs on a Databricks cluster or as a Databricks Job.
 """
 
+from __future__ import annotations
+
 import asyncio
-import json
 import sys
 
-from neo4j import AsyncGraphDatabase
+import neo4j
+from neo4j_graphrag.experimental.components.types import LexicalGraphConfig
+from neo4j_graphrag.experimental.pipeline.kg_builder import SimpleKGPipeline
 
-from retail_agent.data.product_knowledge import (
-    KNOWLEDGE_ARTICLES,
-    REVIEWS,
-    SUPPORT_TICKETS,
-)
 from retail_agent.src.deploy_config import CONFIG
+from retail_agent.src.graphrag_adapters import (
+    DatabricksGraphRAGEmbedder,
+    DatabricksGraphRAGLLM,
+)
 
 
-# ---------------------------------------------------------------------------
-# Entity extraction prompt
-# ---------------------------------------------------------------------------
-
-_EXTRACTION_SYSTEM_PROMPT = """\
-You are an entity extractor for a retail product knowledge base.
-
-Given a text chunk, extract entities in these categories:
-- Feature: A product technology, material, or capability (e.g., "React foam midsole", "Continental rubber outsole", "Dri-FIT moisture wicking")
-- Symptom: A problem or issue (e.g., "outsole separation", "cushion responsiveness loss", "fabric pilling")
-- Solution: A fix or recommendation (e.g., "replace every 300-500 miles", "use heel-lock lacing", "wash with vinegar")
-
-Return ONLY a JSON object with three arrays. Use short lowercase canonical names (2-6 words). If a category has no entities, use an empty array.
-
-Example 1:
-Text: "The React foam midsole feels less responsive after 300+ miles. This cushion responsiveness loss is common across all foam technologies. Solution: Replace shoes every 300-500 miles. Rotating between two pairs extends life."
-Output: {"features": ["react foam midsole"], "symptoms": ["cushion responsiveness loss"], "solutions": ["replace every 300-500 miles", "rotate between two pairs"]}
-
-Example 2:
-Text: "Customer reports blisters on both heels after every run in these shoes."
-Output: {"features": [], "symptoms": ["heel blisters"], "solutions": []}
-
-Example 3:
-Text: "Advised customer to use heel-lock lacing technique and thicker cushioned socks. Customer reported improvement after one week."
-Output: {"features": ["heel-lock lacing"], "symptoms": [], "solutions": ["use heel-lock lacing technique", "wear thicker cushioned socks"]}"""
-
-
-# ---------------------------------------------------------------------------
-# Neo4j credentials (same pattern as load_products.py)
-# ---------------------------------------------------------------------------
+SCHEMA = {
+    "node_types": ["Feature", "Symptom", "Solution"],
+    "relationship_types": [
+        "HAS_FEATURE",
+        "HAS_SYMPTOM",
+        "HAS_SOLUTION",
+        "RELATED_TO",
+    ],
+    "patterns": [
+        ("Feature", "RELATED_TO", "Symptom"),
+        ("Symptom", "HAS_SOLUTION", "Solution"),
+        ("Feature", "RELATED_TO", "Solution"),
+    ],
+}
 
 
 def _get_neo4j_credentials() -> tuple[str, str]:
@@ -82,171 +66,133 @@ def _get_neo4j_credentials() -> tuple[str, str]:
     )
 
 
-# ---------------------------------------------------------------------------
-# Stage 1 — Chunk
-# ---------------------------------------------------------------------------
+def _fetch_documents(driver: neo4j.Driver) -> list[dict]:
+    """Fetch document texts from Neo4j nodes created by step2_load_products.py."""
+    documents: list[dict] = []
 
-
-def _build_chunks() -> list[dict]:
-    """Build chunk dicts from knowledge articles, tickets, and reviews."""
-    chunks = []
-
-    for ka in KNOWLEDGE_ARTICLES:
-        if not ka.content.strip():
-            continue
-        chunk_id = f"{ka.article_id.lower()}-0"
-        chunks.append({
-            "chunk_id": chunk_id,
-            "text": ka.content,
-            "source_type": "KnowledgeArticle",
-            "source_id": ka.article_id,
-            "position": 0,
-        })
-
-    for t in SUPPORT_TICKETS:
-        tid = t.ticket_id.lower()
-        if t.issue_description.strip():
-            chunks.append({
-                "chunk_id": f"{tid}-0",
-                "text": t.issue_description,
-                "source_type": "SupportTicket",
-                "source_id": t.ticket_id,
-                "position": 0,
+    records, _, _ = driver.execute_query(
+        "MATCH (ka:KnowledgeArticle) "
+        "RETURN ka.article_id AS id, ka.content AS text"
+    )
+    article_count = 0
+    for record in records:
+        text = record["text"]
+        if text and text.strip():
+            documents.append({
+                "text": text,
+                "metadata": {
+                    "source_type": "KnowledgeArticle",
+                    "source_id": record["id"],
+                },
             })
-        if t.resolution_text.strip():
-            chunks.append({
-                "chunk_id": f"{tid}-1",
-                "text": t.resolution_text,
-                "source_type": "SupportTicket",
-                "source_id": t.ticket_id,
-                "position": 1,
+            article_count += 1
+    print(f"  KnowledgeArticles: {article_count}")
+
+    records, _, _ = driver.execute_query(
+        "MATCH (st:SupportTicket) "
+        "RETURN st.ticket_id AS id, "
+        "st.issue_description AS issue, st.resolution_text AS resolution"
+    )
+    ticket_count = 0
+    for record in records:
+        parts = [
+            value
+            for value in (record["issue"], record["resolution"])
+            if value and value.strip()
+        ]
+        if parts:
+            documents.append({
+                "text": "\n\n---\n\n".join(parts),
+                "metadata": {
+                    "source_type": "SupportTicket",
+                    "source_id": record["id"],
+                },
             })
+            ticket_count += 1
+    print(f"  SupportTickets: {ticket_count}")
 
-    for r in REVIEWS:
-        if not r.raw_text.strip():
-            continue
-        chunk_id = f"{r.review_id.lower()}-0"
-        chunks.append({
-            "chunk_id": chunk_id,
-            "text": r.raw_text,
-            "source_type": "Review",
-            "source_id": r.review_id,
-            "position": 0,
-        })
-
-    return chunks
-
-
-async def _create_chunks(session, chunks: list[dict]):
-    """Create Chunk nodes and HAS_CHUNK / NEXT_CHUNK relationships."""
-    # Create all Chunk nodes
-    await session.run(
-        """
-        UNWIND $chunks AS c
-        CREATE (ch:Chunk {
-            chunk_id: c.chunk_id,
-            text: c.text,
-            source_type: c.source_type,
-            source_id: c.source_id,
-            position: c.position
-        })
-        """,
-        {"chunks": chunks},
+    records, _, _ = driver.execute_query(
+        "MATCH (r:Review) RETURN r.review_id AS id, r.raw_text AS text"
     )
-    print(f"  Created {len(chunks)} Chunk nodes")
+    review_count = 0
+    for record in records:
+        text = record["text"]
+        if text and text.strip():
+            documents.append({
+                "text": text,
+                "metadata": {
+                    "source_type": "Review",
+                    "source_id": record["id"],
+                },
+            })
+            review_count += 1
+    print(f"  Reviews: {review_count}")
 
-    # HAS_CHUNK from KnowledgeArticle
-    await session.run(
-        """
-        MATCH (ka:KnowledgeArticle), (ch:Chunk {source_type: 'KnowledgeArticle'})
-        WHERE ka.article_id = ch.source_id
-        CREATE (ka)-[:HAS_CHUNK]->(ch)
-        """
-    )
-
-    # HAS_CHUNK from SupportTicket
-    await session.run(
-        """
-        MATCH (st:SupportTicket), (ch:Chunk {source_type: 'SupportTicket'})
-        WHERE st.ticket_id = ch.source_id
-        CREATE (st)-[:HAS_CHUNK]->(ch)
-        """
-    )
-
-    # HAS_CHUNK from Review
-    await session.run(
-        """
-        MATCH (r:Review), (ch:Chunk {source_type: 'Review'})
-        WHERE r.review_id = ch.source_id
-        CREATE (r)-[:HAS_CHUNK]->(ch)
-        """
-    )
-
-    # NEXT_CHUNK for ticket chunk pairs (position 0 -> position 1)
-    await session.run(
-        """
-        MATCH (c0:Chunk {source_type: 'SupportTicket', position: 0})
-        MATCH (c1:Chunk {source_type: 'SupportTicket', position: 1})
-        WHERE c0.source_id = c1.source_id
-        CREATE (c0)-[:NEXT_CHUNK]->(c1)
-        """
-    )
-    print("  Created HAS_CHUNK and NEXT_CHUNK relationships")
+    return documents
 
 
-# ---------------------------------------------------------------------------
-# Stage 2 — Embed
-# ---------------------------------------------------------------------------
+def _link_chunks_to_documents(driver: neo4j.Driver) -> None:
+    """Create HAS_CHUNK relationships from existing document nodes to chunks."""
+    for source_type, label, id_property in [
+        ("KnowledgeArticle", "KnowledgeArticle", "article_id"),
+        ("SupportTicket", "SupportTicket", "ticket_id"),
+        ("Review", "Review", "review_id"),
+    ]:
+        print(f"  Linking chunks to {label} nodes...")
+        driver.execute_query(
+            f"""
+            MATCH (ch:Chunk)-[:FROM_DOCUMENT]->(d:Document {{source_type: $source_type}})
+            MATCH (doc:{label} {{{id_property}: d.source_id}})
+            MERGE (doc)-[:HAS_CHUNK]->(ch)
+            SET ch.source_type = $source_type,
+                ch.source_id = d.source_id,
+                ch.chunk_id = coalesce(ch.chunk_id, elementId(ch))
+            """,
+            source_type=source_type,
+        )
 
 
-async def _embed_chunks(session, chunks: list[dict]):
-    """Generate embeddings for chunks and create vector + fulltext indexes."""
-    try:
-        import mlflow.deployments
-    except ImportError:
-        print("  mlflow not available — skipping chunk embeddings.")
-        return
+def _create_compatibility_relationships(driver: neo4j.Driver) -> None:
+    """Create legacy chunk-to-entity relationships used by agent tools."""
+    for entity_label, relationship_type in [
+        ("Feature", "MENTIONS_FEATURE"),
+        ("Symptom", "REPORTS_SYMPTOM"),
+        ("Solution", "PROVIDES_SOLUTION"),
+    ]:
+        print(f"  Creating {relationship_type} compatibility relationships...")
+        driver.execute_query(
+            f"""
+            MATCH (entity:{entity_label})-[:FROM_CHUNK]->(ch:Chunk)
+            MERGE (ch)-[:{relationship_type}]->(entity)
+            """
+        )
 
-    model = CONFIG.embedding_model
+
+def _create_product_shortcuts(driver: neo4j.Driver) -> None:
+    """Create Product-level entity relationships by traversing source docs."""
+    for relationship_type, entity_label in [
+        ("HAS_FEATURE", "Feature"),
+        ("HAS_SYMPTOM", "Symptom"),
+        ("HAS_SOLUTION", "Solution"),
+    ]:
+        print(f"  Creating {relationship_type} shortcuts...")
+        driver.execute_query(
+            f"""
+            MATCH (p:Product)<-[:COVERS|ABOUT|REVIEWS]-(doc)-[:HAS_CHUNK]->(ch)
+                  <-[:FROM_CHUNK]-(entity:{entity_label})
+            MERGE (p)-[:{relationship_type}]->(entity)
+            """
+        )
+
+
+def _create_indexes(driver: neo4j.Driver) -> None:
+    """Create vector and fulltext indexes on Chunk nodes."""
     dims = CONFIG.embedding_dimensions
-    print(f"  Model: {model}")
 
+    print(f"  Creating vector index (chunk_embedding, {dims} dims)...")
     try:
-        client = mlflow.deployments.get_deploy_client("databricks")
-        texts = [c["text"] for c in chunks]
-
-        # Batch in chunks of 100 to avoid request size limits
-        batch_size = 100
-        all_embeddings = []
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i : i + batch_size]
-            response = client.predict(
-                endpoint=model,
-                inputs={"input": batch},
-            )
-            all_embeddings.extend(item["embedding"] for item in response["data"])
-            print(f"  Embedded {min(i + batch_size, len(texts))}/{len(texts)} chunks")
-
-        for i, chunk in enumerate(chunks):
-            await session.run(
-                """
-                MATCH (ch:Chunk {chunk_id: $chunk_id})
-                SET ch.embedding = $embedding
-                """,
-                {"chunk_id": chunk["chunk_id"], "embedding": all_embeddings[i]},
-            )
-
-        print(f"  Stored embeddings on {len(chunks)} chunks")
-
-    except Exception as e:
-        print(f"  Embedding generation failed: {e}")
-        print("  Chunks will exist without embeddings.")
-        return
-
-    # Create vector index
-    try:
-        await session.run("DROP INDEX chunk_embedding IF EXISTS")
-        await session.run(
+        driver.execute_query("DROP INDEX chunk_embedding IF EXISTS")
+        driver.execute_query(
             f"""
             CREATE VECTOR INDEX chunk_embedding
             FOR (ch:Chunk)
@@ -257,14 +203,13 @@ async def _embed_chunks(session, chunks: list[dict]):
             }}}}
             """
         )
-        print(f"  Vector index 'chunk_embedding' created — {dims} dimensions")
-    except Exception as e:
-        print(f"  Vector index creation note: {e}")
+    except Exception as exc:
+        print(f"    Vector index note: {exc}")
 
-    # Create fulltext index with English analyzer
+    print("  Creating fulltext index (chunkText)...")
     try:
-        await session.run("DROP INDEX chunkText IF EXISTS")
-        await session.run(
+        driver.execute_query("DROP INDEX chunkText IF EXISTS")
+        driver.execute_query(
             """
             CREATE FULLTEXT INDEX chunkText
             FOR (ch:Chunk)
@@ -272,227 +217,156 @@ async def _embed_chunks(session, chunks: list[dict]):
             OPTIONS {indexConfig: {`fulltext.analyzer`: 'english'}}
             """
         )
-        print("  Fulltext index 'chunkText' created (English analyzer)")
-    except Exception as e:
-        print(f"  Fulltext index creation note: {e}")
+    except Exception as exc:
+        print(f"    Fulltext index note: {exc}")
 
 
-# ---------------------------------------------------------------------------
-# Stage 3 — Extract entities
-# ---------------------------------------------------------------------------
-
-
-def _parse_entity_response(raw: str) -> dict | None:
-    """Parse LLM JSON response. Return None on failure."""
-    text = raw.strip()
-    # Handle markdown code block wrapping
-    if "```json" in text:
-        text = text.split("```json")[1].split("```")[0].strip()
-    elif "```" in text:
-        text = text.split("```")[1].split("```")[0].strip()
-
-    try:
-        parsed = json.loads(text)
-        if not isinstance(parsed, dict):
-            return None
-        for key in ("features", "symptoms", "solutions"):
-            if key not in parsed:
-                parsed[key] = []
-            if not isinstance(parsed[key], list):
-                parsed[key] = []
-            parsed[key] = [str(x).strip() for x in parsed[key] if x]
-        return parsed
-    except (json.JSONDecodeError, KeyError, IndexError):
-        return None
-
-
-async def _extract_entities(session, chunks: list[dict]):
-    """Extract Feature/Symptom/Solution entities from each chunk using LLM."""
-    try:
-        import mlflow.deployments
-    except ImportError:
-        print("  mlflow not available — skipping entity extraction.")
-        return
-
-    client = mlflow.deployments.get_deploy_client("databricks")
-    llm_endpoint = CONFIG.llm_endpoint
-
-    extracted = 0
-    skipped = 0
-
-    for i, chunk in enumerate(chunks):
-        try:
-            response = client.predict(
-                endpoint=llm_endpoint,
-                inputs={
-                    "messages": [
-                        {"role": "system", "content": _EXTRACTION_SYSTEM_PROMPT},
-                        {"role": "user", "content": chunk["text"]},
-                    ],
-                    "max_tokens": 300,
-                    "temperature": 0.0,
-                },
-            )
-            raw_text = response["choices"][0]["message"]["content"]
-        except Exception as e:
-            print(f"  Warning: LLM call failed for {chunk['chunk_id']}: {e}")
-            skipped += 1
-            continue
-
-        entities = _parse_entity_response(raw_text)
-        if entities is None:
-            print(f"  Warning: malformed JSON for {chunk['chunk_id']}, skipping")
-            skipped += 1
-            continue
-
-        chunk_id = chunk["chunk_id"]
-
-        # Lowercase all entity names for consistent MERGE dedup
-        features = [n.lower() for n in entities["features"]]
-        symptoms = [n.lower() for n in entities["symptoms"]]
-        solutions = [n.lower() for n in entities["solutions"]]
-
-        if features:
-            await session.run(
-                """
-                UNWIND $names AS name
-                MERGE (f:Feature {name: name})
-                WITH f
-                MATCH (ch:Chunk {chunk_id: $chunk_id})
-                CREATE (ch)-[:MENTIONS_FEATURE]->(f)
-                """,
-                {"names": features, "chunk_id": chunk_id},
-            )
-
-        if symptoms:
-            await session.run(
-                """
-                UNWIND $names AS name
-                MERGE (s:Symptom {name: name})
-                WITH s
-                MATCH (ch:Chunk {chunk_id: $chunk_id})
-                CREATE (ch)-[:REPORTS_SYMPTOM]->(s)
-                """,
-                {"names": symptoms, "chunk_id": chunk_id},
-            )
-
-        if solutions:
-            await session.run(
-                """
-                UNWIND $names AS name
-                MERGE (sol:Solution {name: name})
-                WITH sol
-                MATCH (ch:Chunk {chunk_id: $chunk_id})
-                CREATE (ch)-[:PROVIDES_SOLUTION]->(sol)
-                """,
-                {"names": solutions, "chunk_id": chunk_id},
-            )
-
-        extracted += 1
-        if (i + 1) % 25 == 0 or (i + 1) == len(chunks):
-            print(f"  Processed {i + 1}/{len(chunks)} chunks")
-
-    print(f"  Entity extraction complete: {extracted} processed, {skipped} skipped")
-
-
-# ---------------------------------------------------------------------------
-# Stage 4 — Link entities to products
-# ---------------------------------------------------------------------------
-
-
-async def _link_entities_to_products(session):
-    """Create Product-level entity relationships by graph traversal."""
-    # HAS_FEATURE
-    await session.run(
-        """
-        MATCH (p:Product)<-[:COVERS|ABOUT|REVIEWS]-(doc)-[:HAS_CHUNK]->(ch:Chunk)-[:MENTIONS_FEATURE]->(f:Feature)
-        MERGE (p)-[:HAS_FEATURE]->(f)
-        """
-    )
-    print("  Created Product -[HAS_FEATURE]-> Feature")
-
-    # HAS_SYMPTOM
-    await session.run(
-        """
-        MATCH (p:Product)<-[:COVERS|ABOUT|REVIEWS]-(doc)-[:HAS_CHUNK]->(ch:Chunk)-[:REPORTS_SYMPTOM]->(s:Symptom)
-        MERGE (p)-[:HAS_SYMPTOM]->(s)
-        """
-    )
-    print("  Created Product -[HAS_SYMPTOM]-> Symptom")
-
-    # HAS_SOLUTION
-    await session.run(
-        """
-        MATCH (p:Product)<-[:COVERS|ABOUT|REVIEWS]-(doc)-[:HAS_CHUNK]->(ch:Chunk)-[:PROVIDES_SOLUTION]->(sol:Solution)
-        MERGE (p)-[:HAS_SOLUTION]->(sol)
-        """
-    )
-    print("  Created Product -[HAS_SOLUTION]-> Solution")
-
-
-# ---------------------------------------------------------------------------
-# Orchestrator
-# ---------------------------------------------------------------------------
+def _print_counts(driver: neo4j.Driver) -> None:
+    """Print node and relationship counts for verification."""
+    queries = [
+        ("Chunks", "MATCH (c:Chunk) RETURN count(c) AS count"),
+        ("Documents", "MATCH (d:Document) RETURN count(d) AS count"),
+        ("Features", "MATCH (f:Feature) RETURN count(f) AS count"),
+        ("Symptoms", "MATCH (s:Symptom) RETURN count(s) AS count"),
+        ("Solutions", "MATCH (sol:Solution) RETURN count(sol) AS count"),
+        ("FROM_CHUNK rels", "MATCH ()-[r:FROM_CHUNK]->() RETURN count(r) AS count"),
+        (
+            "FROM_DOCUMENT rels",
+            "MATCH ()-[r:FROM_DOCUMENT]->() RETURN count(r) AS count",
+        ),
+        ("HAS_CHUNK rels", "MATCH ()-[r:HAS_CHUNK]->() RETURN count(r) AS count"),
+        (
+            "MENTIONS_FEATURE rels",
+            "MATCH ()-[r:MENTIONS_FEATURE]->() RETURN count(r) AS count",
+        ),
+        (
+            "REPORTS_SYMPTOM rels",
+            "MATCH ()-[r:REPORTS_SYMPTOM]->() RETURN count(r) AS count",
+        ),
+        (
+            "PROVIDES_SOLUTION rels",
+            "MATCH ()-[r:PROVIDES_SOLUTION]->() RETURN count(r) AS count",
+        ),
+        (
+            "HAS_FEATURE rels",
+            "MATCH ()-[r:HAS_FEATURE]->() RETURN count(r) AS count",
+        ),
+        (
+            "HAS_SYMPTOM rels",
+            "MATCH ()-[r:HAS_SYMPTOM]->() RETURN count(r) AS count",
+        ),
+        (
+            "HAS_SOLUTION rels",
+            "MATCH ()-[r:HAS_SOLUTION]->() RETURN count(r) AS count",
+        ),
+        ("NEXT_CHUNK rels", "MATCH ()-[r:NEXT_CHUNK]->() RETURN count(r) AS count"),
+    ]
+    for label, cypher in queries:
+        records, _, _ = driver.execute_query(cypher)
+        print(f"  {label}: {records[0]['count']}")
 
 
 async def load_graphrag() -> int:
-    """Build GraphRAG layer: chunk, embed, extract entities, link to products."""
-    print("=== GraphRAG Pipeline ===")
-    print("Getting Neo4j credentials from Databricks secrets...")
+    """Build GraphRAG layer using SimpleKGPipeline."""
+    print("=" * 60)
+    print("GraphRAG Pipeline")
+    print("=" * 60)
+
+    print("\nGetting Neo4j credentials...")
     try:
         uri, password = _get_neo4j_credentials()
-    except ValueError as e:
-        print(f"  Error: {e}")
+    except ValueError as exc:
+        print(f"  Error: {exc}")
         return 1
 
-    driver = AsyncGraphDatabase.driver(uri, auth=("neo4j", password))
+    driver = neo4j.GraphDatabase.driver(uri, auth=("neo4j", password))
+    try:
+        driver.verify_connectivity()
+        print("  Connected to Neo4j")
 
-    chunks = _build_chunks()
+        print("\nFetching documents from Neo4j...")
+        documents = _fetch_documents(driver)
+        print(f"  Total documents: {len(documents)}")
+        if not documents:
+            print("\n  No documents found. Has step2_load_products.py been run?")
+            return 1
 
-    async with driver.session() as session:
-        print(f"\nStage 1 — Chunk ({len(chunks)} chunks)...")
-        await _create_chunks(session, chunks)
+        print("\nInitializing Databricks model adapters...")
+        embedder = DatabricksGraphRAGEmbedder()
+        llm = DatabricksGraphRAGLLM()
+        print(f"  Embedder: {embedder.model}")
+        print(f"  LLM: {llm.model_id}")
 
-        print("\nStage 2 — Embed...")
-        await _embed_chunks(session, chunks)
+        print("\nConfiguring SimpleKGPipeline...")
+        pipeline = SimpleKGPipeline(
+            llm=llm,
+            driver=driver,
+            embedder=embedder,
+            schema=SCHEMA,
+            from_pdf=False,
+            lexical_graph_config=LexicalGraphConfig(chunk_id_property="chunk_id"),
+            perform_entity_resolution=True,
+            on_error="IGNORE",
+        )
+        print("  Pipeline created")
 
-        print("\nStage 3 — Extract entities...")
-        await _extract_entities(session, chunks)
+        print(f"\nProcessing {len(documents)} documents...")
+        success = 0
+        failed = 0
+        for index, document in enumerate(documents, start=1):
+            try:
+                await pipeline.run_async(
+                    text=document["text"],
+                    document_metadata=document["metadata"],
+                )
+                success += 1
+            except Exception as exc:
+                failed += 1
+                source = document["metadata"]
+                print(
+                    f"  Error on {source['source_type']} {source['source_id']}: "
+                    f"{type(exc).__name__}: {exc}"
+                )
 
-        print("\nStage 4 — Link entities to products...")
-        await _link_entities_to_products(session)
+            if index % 25 == 0 or index == len(documents):
+                print(
+                    f"  Processed {index}/{len(documents)} "
+                    f"(success={success}, failed={failed})"
+                )
 
-    await driver.close()
+        print("\nPost-pipeline Step 1: Link chunks to source documents...")
+        _link_chunks_to_documents(driver)
 
-    ka_chunks = len(KNOWLEDGE_ARTICLES)
-    ticket_chunks = len(SUPPORT_TICKETS) * 2
-    review_chunks = len(REVIEWS)
+        print("\nPost-pipeline Step 2: Create compatibility relationships...")
+        _create_compatibility_relationships(driver)
 
-    print(f"\nGraphRAG pipeline complete!")
-    print(f"  Chunks: {len(chunks)}")
-    print(f"    KnowledgeArticle: {ka_chunks}")
-    print(f"    SupportTicket: {ticket_chunks} (2 per ticket)")
-    print(f"    Review: {review_chunks}")
-    return 0
+        print("\nPost-pipeline Step 3: Create product shortcuts...")
+        _create_product_shortcuts(driver)
+
+        print("\nPost-pipeline Step 4: Create indexes...")
+        _create_indexes(driver)
+
+        print("\nGraph counts:")
+        _print_counts(driver)
+
+        print()
+        print("=" * 60)
+        print(f"Pipeline complete. {success} processed, {failed} failed.")
+        print("=" * 60)
+        return 0 if failed == 0 else 1
+
+    finally:
+        driver.close()
 
 
-# ---------------------------------------------------------------------------
-# Module boilerplate (same pattern as load_products.py)
-# ---------------------------------------------------------------------------
-
-# Databricks always has a running event loop (notebooks and job clusters).
-# nest_asyncio patches it so asyncio.run() works inside the existing loop.
 try:
     import nest_asyncio
 
     nest_asyncio.apply()
 except ImportError:
-    pass  # Not on Databricks — not needed
+    pass
 
-print(f"[load_graphrag] __name__={__name__}, version=2025-02-23a")
+print("[load_graphrag] version=2026-05-08")
 
 if __name__ == "__main__":
     sys.exit(asyncio.run(load_graphrag()))
-else:
-    # Databricks Workspace: __name__ is not "__main__" when using the Run button
-    asyncio.run(load_graphrag())

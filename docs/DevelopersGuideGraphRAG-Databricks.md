@@ -177,7 +177,7 @@ GRAPHRAG ENTITY LAYER (extracted by LLM)
 
 The business entity layer comes from the product catalog, loaded by [`step2_load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step2_load_products.py). The document layer comes from the same script, which creates KnowledgeArticle, SupportTicket, and Review nodes and links them to products.
 
-The GraphRAG entity layer is where the graph gets its reasoning power. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) chunks the documents, embeds them with `databricks-bge-large-en`, then sends each chunk to `databricks-meta-llama-3-3-70b-instruct` to extract Feature, Symptom, and Solution entities. A final graph traversal links those entities back to the products they describe, creating the `HAS_FEATURE`, `HAS_SYMPTOM`, and `HAS_SOLUTION` relationships that make cross-product retrieval possible.
+The GraphRAG entity layer is where the graph gets its reasoning power. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) reads the document nodes, sends them through `neo4j-graphrag` `SimpleKGPipeline`, embeds chunks with `databricks-bge-large-en`, and uses the configured Databricks LLM endpoint to extract Feature, Symptom, and Solution entities. A final graph traversal links those entities back to the products they describe, creating the `HAS_FEATURE`, `HAS_SYMPTOM`, and `HAS_SOLUTION` relationships that make cross-product retrieval possible.
 
 The connection between layers is what makes it work. A query about "flat, unresponsive cushioning" hits the chunk vector index, finds a matching chunk, traverses to the Symptom node "cushion responsiveness loss," then follows that symptom to every other chunk that reports it and every product that has it. The retriever gathers context that spans products, documents, and extracted entities in a single traversal.
 
@@ -241,30 +241,29 @@ embedding = response["data"][0]["embedding"]  # 1024-dim vector
 
 ### Building the GraphRAG Layer
 
-This is where the graph gets its reasoning power. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) runs after the product load and adds four layers on top of the existing graph. Each stage builds on the previous one.
+This is where the graph gets its reasoning power. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) runs after the product load and uses `neo4j-graphrag` `SimpleKGPipeline` to add the retrieval graph on top of the existing product and document graph. Each stage builds on the previous one.
 
-**Stage 1 — Chunk.** The script creates Chunk nodes from three source types. Knowledge articles become one chunk each (the full article content). Support tickets split into two chunks: one for the issue description, one for the resolution text. Reviews become one chunk each. Chunks connect to their source documents via `HAS_CHUNK`. Support ticket chunk pairs also get `NEXT_CHUNK` edges to preserve the problem-to-solution sequence, so the retriever can follow a symptom chunk to its resolution in a single hop.
+**Stage 1 — Chunk.** The script fetches KnowledgeArticle, SupportTicket, and Review text from Neo4j and passes each document to `SimpleKGPipeline`. The pipeline creates Document and Chunk nodes, stores document metadata, and links chunks to generated Document nodes. A post-processing step connects those chunks back to the existing KnowledgeArticle, SupportTicket, and Review nodes with `HAS_CHUNK`.
 
-**Stage 2 — Embed.** All chunk text gets batch-embedded using `databricks-bge-large-en` through the Foundation Model API. Two indexes get created on the Chunk nodes: a vector index (`chunk_embedding`, 1024 dimensions, cosine similarity) for semantic search, and a fulltext index (`chunkText`) configured for English-language text for keyword matching. The fulltext index matters for queries containing specific brand or product terms that need exact matching alongside semantic similarity.
+**Stage 2 — Embed.** Chunk text is embedded through a `neo4j-graphrag` embedder adapter backed by the Databricks Foundation Model API. Two indexes get created on the Chunk nodes: a vector index (`chunk_embedding`, 1024 dimensions, cosine similarity) for semantic search, and a fulltext index (`chunkText`) configured for English-language text for keyword matching. The fulltext index matters for queries containing specific brand or product terms that need exact matching alongside semantic similarity.
 
-**Stage 3 — Extract Entities.** Each chunk is sent to `databricks-meta-llama-3-3-70b-instruct` with a structured extraction prompt. The LLM reads the chunk text and returns JSON with three arrays:
+**Stage 3 — Extract Entities.** `SimpleKGPipeline` sends each chunk to the configured Databricks LLM adapter with a schema that allows Feature, Symptom, and Solution nodes and their relationships:
 
 ```json
 {
-  "features": ["react foam midsole"],
-  "symptoms": ["cushion responsiveness loss"],
-  "solutions": ["replace every 300-500 miles", "rotate between two pairs"]
+  "node_types": ["Feature", "Symptom", "Solution"],
+  "relationship_types": ["HAS_FEATURE", "HAS_SYMPTOM", "HAS_SOLUTION", "RELATED_TO"]
 }
 ```
 
-The extraction prompt constrains entity names to short lowercase canonical forms (2-6 words) so that multiple chunks mentioning the same concept reuse the existing node instead of creating a duplicate. Temperature is set to 0.0, which makes the model return the same output for the same input rather than varying its response. Each entity becomes a Feature, Symptom, or Solution node linked to its source chunk via `MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, or `PROVIDES_SOLUTION`.
+The schema constrains extraction to the retail support concepts the agent needs. Each entity becomes a Feature, Symptom, or Solution node. The library links entities to chunks with `FROM_CHUNK`, and the script adds compatibility relationships (`MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`) so the deployed tools and demo retrievers keep their existing Cypher surface.
 
 This is the defining step of GraphRAG. An LLM reads unstructured text and produces structured entities that become graph nodes. The same approach can be applied to any domain by changing the extraction prompt and entity types.
 
 **Stage 4 — Link Entities to Products.** The final stage creates aggregated relationships between products and their entities through graph traversal. The path follows existing edges: from Product through the document that covers it, through the chunk extracted from that document, to the entity extracted from that chunk:
 
 ```
-Product <-[:COVERS|ABOUT|REVIEWS]- doc -[:HAS_CHUNK]-> chunk -[:MENTIONS_*]-> entity
+Product <-[:COVERS|ABOUT|REVIEWS]- doc -[:HAS_CHUNK]-> chunk <-[:FROM_CHUNK]- entity
 ```
 
 This traversal produces `Product -[:HAS_FEATURE]-> Feature`, `Product -[:HAS_SYMPTOM]-> Symptom`, and `Product -[:HAS_SOLUTION]-> Solution` relationships. These aggregated edges are what make cross-product retrieval possible. When a customer reports "cushion responsiveness loss," the retriever can go from that Symptom node to every product that has it and every solution that addresses it, without re-traversing the chunk layer each time.
@@ -283,7 +282,7 @@ GraphRAG retrieval patterns define how the LLM accesses the context and connecti
 
 ### Databricks Model Adapters
 
-The `neo4j-graphrag` retrievers expect an `Embedder` and `LLMInterface`. Two thin adapter classes bridge the gap to the Databricks Foundation Model API via `mlflow.deployments`. The embedder wraps `databricks-bge-large-en` and implements `embed_query()`. The LLM adapter wraps `databricks-meta-llama-3-3-70b-instruct` and implements `invoke()`, handling both string and message-list inputs since different retrievers use different calling conventions.
+The `neo4j-graphrag` retrievers expect an `Embedder` and `LLMInterface`. Two thin adapter classes bridge the gap to the Databricks Foundation Model API via `mlflow.deployments`. The embedder wraps `databricks-bge-large-en` and implements `embed_query()`. The LLM adapter wraps the configured Databricks LLM endpoint and implements `invoke()`, handling both string and message-list inputs since different retrievers use different calling conventions.
 
 Both adapters use `mlflow.deployments.get_deploy_client("databricks")`, which handles authentication automatically on Databricks clusters. No API keys to manage.
 

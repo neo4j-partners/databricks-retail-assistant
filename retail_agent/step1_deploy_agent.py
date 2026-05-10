@@ -18,6 +18,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 from retail_agent.src.deploy_config import CONFIG, DeployConfig, RunMode
 
@@ -90,6 +91,7 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     src_dir = _get_src_dir()
     code_files = [
         str(src_dir / "react_agent.py"),
+        str(src_dir / "demo_trace.py"),
         str(src_dir / "deploy_config.py"),
         str(src_dir / "retail_context.py"),
         str(src_dir / "diagnostics_tool.py"),
@@ -147,12 +149,14 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     print(f"Including code files: {[Path(f).name for f in code_files]}")
 
     pip_requirements = [
-        "mlflow>=3.1",
-        "databricks-agents>=0.15.0",
-        "langgraph>=1.0.8",
-        "langchain-core>=0.3.0",
-        "databricks-langchain>=0.15.0",
-        "neo4j>=5.20.0",
+        "mlflow==3.12.0",
+        "databricks-agents==1.10.1",
+        "langgraph==1.1.10",
+        "langgraph-prebuilt==1.0.13",
+        "langgraph-sdk==0.3.7",
+        "langchain-core==1.3.3",
+        "databricks-langchain==0.19.0",
+        "neo4j==6.2.0",
         "pydantic>=2.0.0",
         "pydantic-settings>=2.0.0",
         "openai>=1.0.0",
@@ -249,7 +253,66 @@ def deploy_agent(config: DeployConfig, model_version: int):
 # =============================================================================
 
 
-def wait_for_endpoint(config: DeployConfig, endpoint_name: str) -> bool:
+def _enum_value(value: Any) -> str | None:
+    """Return a stable string for SDK enum/string values."""
+    if value is None:
+        return None
+    return getattr(value, "value", str(value))
+
+
+def _served_entity_version(entity: Any) -> str | None:
+    return (
+        getattr(entity, "entity_version", None)
+        or getattr(entity, "model_version", None)
+    )
+
+
+def _served_entity_name(entity: Any) -> str | None:
+    return getattr(entity, "name", None)
+
+
+def _active_routes(endpoint: Any) -> list[Any]:
+    config = getattr(endpoint, "config", None)
+    traffic_config = getattr(config, "traffic_config", None)
+    return list(getattr(traffic_config, "routes", None) or [])
+
+
+def _route_target_name(route: Any) -> str | None:
+    return (
+        getattr(route, "served_entity_name", None)
+        or getattr(route, "served_model_name", None)
+    )
+
+
+def _target_version_receiving_traffic(
+    endpoint: Any, expected_model_version: str | None
+) -> bool:
+    if expected_model_version is None:
+        return True
+
+    config = getattr(endpoint, "config", None)
+    entities = list(getattr(config, "served_entities", None) or [])
+    target_names = {
+        _served_entity_name(entity)
+        for entity in entities
+        if _served_entity_version(entity) == expected_model_version
+    }
+    target_names.discard(None)
+    if not target_names:
+        return False
+
+    return any(
+        _route_target_name(route) in target_names
+        and getattr(route, "traffic_percentage", 0) > 0
+        for route in _active_routes(endpoint)
+    )
+
+
+def wait_for_endpoint(
+    config: DeployConfig,
+    endpoint_name: str,
+    expected_model_version: str | None = None,
+) -> bool:
     """Wait for the endpoint to be ready."""
     from databricks.sdk import WorkspaceClient
     from databricks.sdk.service.serving import EndpointStateReady
@@ -260,6 +323,8 @@ def wait_for_endpoint(config: DeployConfig, endpoint_name: str) -> bool:
     print("=" * 60)
 
     print(f"Endpoint: {endpoint_name}")
+    if expected_model_version:
+        print(f"Expected model version: {expected_model_version}")
     print(f"Max wait: {config.max_wait_seconds} seconds")
     print()
 
@@ -275,12 +340,34 @@ def wait_for_endpoint(config: DeployConfig, endpoint_name: str) -> bool:
         try:
             endpoint = w.serving_endpoints.get(endpoint_name)
             state = endpoint.state.ready if endpoint.state else None
+            config_update = (
+                _enum_value(getattr(endpoint.state, "config_update", None))
+                if endpoint.state
+                else None
+            )
+            pending_config = getattr(endpoint, "pending_config", None)
+            target_ready = _target_version_receiving_traffic(
+                endpoint, expected_model_version
+            )
 
-            if state == EndpointStateReady.READY:
-                print(f"\nEndpoint is READY after {elapsed:.0f} seconds")
+            if (
+                state == EndpointStateReady.READY
+                and config_update != "IN_PROGRESS"
+                and pending_config is None
+                and target_ready
+            ):
+                print(
+                    f"\nEndpoint is READY after {elapsed:.0f} seconds "
+                    "and target version is receiving traffic"
+                )
                 return True
 
-            print(f"  [{elapsed:>5.0f}s] State: {state}")
+            print(
+                f"  [{elapsed:>5.0f}s] State: {state}; "
+                f"config_update={config_update}; "
+                f"pending={pending_config is not None}; "
+                f"target_traffic={target_ready}"
+            )
             time.sleep(10)
 
         except Exception as e:
@@ -359,9 +446,12 @@ def run_deploy(config: DeployConfig) -> int:
                 if hasattr(deployment, "endpoint_name")
                 else config.resolved_endpoint_name
             )
-            if not wait_for_endpoint(config, endpoint_name):
-                print("\nWarning: Endpoint not ready within timeout")
+            if not wait_for_endpoint(
+                config, endpoint_name, str(registered_model.version)
+            ):
+                print("\nEndpoint not ready within timeout")
                 print("Check the Databricks UI for status")
+                return 1
 
         print()
         print("=" * 60)

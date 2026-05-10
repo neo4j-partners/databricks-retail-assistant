@@ -4,6 +4,7 @@ Usage:
     from retail_agent.src.deploy_config import CONFIG, AGENT_NAME, RunMode
 """
 
+import os
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -24,7 +25,7 @@ class DeployConfig:
     # Run mode
     run_mode: RunMode = RunMode.DEPLOY
     wait_for_ready: bool = True
-    max_wait_seconds: int = 600
+    max_wait_seconds: int = 1200
 
     # Unity Catalog — matches existing lakehouse_tables.py naming
     catalog: str = "retail_assistant"
@@ -32,7 +33,9 @@ class DeployConfig:
     model_name: str = AGENT_NAME
 
     # Endpoint name (auto-generated if empty)
-    endpoint_name: str = ""
+    endpoint_name: str = field(
+        default_factory=lambda: os.environ.get("RETAIL_AGENT_ENDPOINT_NAME", "")
+    )
 
     # MLflow
     experiment_name_pattern: str = f"/Users/{{user}}/{AGENT_NAME}"
@@ -53,6 +56,11 @@ class DeployConfig:
 
     # Deployment
     scale_to_zero: bool = True
+
+    # Supervisor (STUB) — see retail_agent/src/supervisor_agent.py
+    # Both fields must be set before step7_deploy_supervisor.py can do real work.
+    supervisor_model_name: str = "retail_supervisor_v1"
+    genie_space_id: str = ""
 
     # Sample queries for testing
     sample_queries: list[str] = field(

@@ -114,7 +114,7 @@ def _run_preference_exercise(endpoint_url: str, headers: dict) -> tuple[int, int
         (
             "Based on my preferences, recommend a product for me.",
             "Preference-based recommendation",
-            ["trail"],
+            ["Brooks", "150"],
         ),
     ]
 
@@ -221,7 +221,7 @@ def check_endpoint() -> int:
     print("=" * 50)
     print(f"Overall: {total_passed} passed, {total_failed} failed")
     print("Done.")
-    return 0
+    return 0 if total_failed == 0 else 1
 
 
 if __name__ == "__main__":

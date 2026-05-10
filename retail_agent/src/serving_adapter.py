@@ -21,6 +21,10 @@ import mlflow
 from mlflow.pyfunc import ChatAgent
 from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
 
+try:
+    from demo_trace import extract_demo_trace, get_demo_mode_hint
+except ModuleNotFoundError:
+    from retail_agent.src.demo_trace import extract_demo_trace, get_demo_mode_hint
 
 
 def _create_background_loop() -> asyncio.AbstractEventLoop:
@@ -163,9 +167,11 @@ class RetailAgent(ChatAgent):
         # Extract session_id and user_id from custom_inputs
         session_id = None
         user_id = None
+        demo_mode_hint = None
         if custom_inputs and isinstance(custom_inputs, dict):
             session_id = custom_inputs.get("session_id")
             user_id = custom_inputs.get("user_id")
+            demo_mode_hint = get_demo_mode_hint(custom_inputs.get("demo_mode"))
         if not session_id:
             session_id = "serving-default"
 
@@ -177,8 +183,12 @@ class RetailAgent(ChatAgent):
             user_id=user_id,
         )
 
-        request = {"messages": [{"role": m.role, "content": m.content} for m in messages]}
+        request_messages = [{"role": m.role, "content": m.content} for m in messages]
+        if demo_mode_hint:
+            request_messages.insert(0, {"role": "system", "content": demo_mode_hint})
+        request = {"messages": request_messages}
         result = await self._agent.ainvoke(request, context=retail_context)
+        demo_trace = extract_demo_trace(result.get("messages", []))
 
         # Extract the final AI message from LangGraph output
         ai_messages = [
@@ -190,7 +200,10 @@ class RetailAgent(ChatAgent):
         if not ai_messages:
             ai_messages = [ChatAgentMessage(role="assistant", content="No response generated.", id=str(uuid4()))]
 
-        return ChatAgentResponse(messages=ai_messages)
+        return ChatAgentResponse(
+            messages=ai_messages,
+            custom_outputs={"demo_trace": demo_trace},
+        )
 
 
 AGENT = RetailAgent()

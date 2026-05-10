@@ -1,97 +1,282 @@
-# Databricks Retail Assistant
+# Databricks Neo4j Retail Agent
 
-Autonomous commerce requires agents that do more than generate text. An agent handling product recommendations needs to traverse category and brand relationships, recall a buyer's past preferences, and remember which retrieval strategy worked for similar questions last week. Those are three distinct capabilities, and they map to three technologies that converge on Neo4j: knowledge graphs for relational structure, GraphRAG for grounded retrieval, and persistent agent memory for learning from experience. For a deeper look at how these patterns compose, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md).
+This repository builds a Databricks-hosted retail assistant backed by Neo4j. The agent can search products, diagnose product issues, answer GraphRAG-backed support questions, remember user preferences, and use those preferences for personalized recommendations.
 
-This repository implements those patterns as a two-agent supervisor system on Databricks using Genie, AgentBricks, and the Mosaic AI Agent Framework. A supervisor classifies user intent and routes analytics questions to a Genie Lakehouse Agent, product and recommendation questions to a Neo4j Knowledge Graph Agent. The KG agent is a LangGraph ReAct agent with persistent memory, deployed to Databricks Model Serving via MLflow.
+The current deployment path uses [`databricks-job-runner`](../databricks-job-runner) from a sibling checkout. Local commands build and upload a `retail_agent` wheel, upload thin Databricks job wrappers, submit the six pipeline steps, and validate the deployed Model Serving endpoint.
 
-## Architecture Overview
+For the design background behind the graph, GraphRAG, and memory patterns, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). For lower-level GraphRAG implementation notes, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
+
+## Architecture
+
+### Runtime Architecture
+
+```text
+Developer machine
+  uv + databricks-job-runner
+  .env
+  cli/
+    |
+    | upload wrappers + wheel
+    v
+Databricks Workspace
+  /Users/<user>/retail_agent/jobs/*.py
+  /Volumes/retail_assistant/retail/retail_volume/wheels/retail_agent-*.whl
+    |
+    | submit one-time jobs
+    v
+Databricks Job Cluster
+  Step 2: load product graph into Neo4j
+  Step 3: build GraphRAG layer in Neo4j
+  Step 1: log/register/deploy agent model
+  Step 4/5/6: endpoint and retrieval checks
+    |
+    v
+Databricks Model Serving
+  MLflow ChatAgent wrapper
+  LangGraph ReAct agent
+  ChatDatabricks LLM endpoint
+    |
+    v
+Neo4j
+  Product graph
+  GraphRAG chunks/entities/indexes
+  Agent memory
+```
+
+### Agent Architecture
+
+The deployed model is an MLflow `ChatAgent` implemented by `retail_agent/src/serving_adapter.py`. It lazily initializes a Neo4j `MemoryClient`, starts a persistent async event loop for the Neo4j async driver, creates the LangGraph ReAct agent, and injects `RetailContext` into tools through `ToolRuntime[RetailContext]`.
+
+The live agent includes these tool groups:
+
+| Tool group | Purpose |
+|------------|---------|
+| Product tools | Product search, product details, related products |
+| Knowledge tools | GraphRAG semantic search, hybrid keyword/vector search, product issue diagnosis |
+| Memory tools | Session-scoped remember, recall, and semantic memory search |
+| Preference tools | User-scoped long-term preference tracking and profile retrieval |
+| Commerce tools | Preference-aware product recommendations using knowledge graph traversal |
+| Reasoning tools | Store and recall multi-step reasoning traces |
+| Diagnostics | Validate serving-time tool injection and Neo4j/memory initialization |
 
 ### Data Architecture
 
-The assistant draws from two complementary data stores connected by a shared `product_id` key:
+The assistant uses Neo4j as the operational graph for product relationships, GraphRAG retrieval, and agent memory.
 
-![Dual Database Architecture](docs/images/dual-database-architecture.png)
+| Layer | Main nodes and relationships | Built by |
+|-------|------------------------------|----------|
+| Product graph | `Product`, `Category`, `Brand`, `Attribute`; `IN_CATEGORY`, `MADE_BY`, `HAS_ATTRIBUTE`, `SIMILAR_TO`, `BOUGHT_TOGETHER` | `step2_load_products.py` |
+| Knowledge source graph | `KnowledgeArticle`, `SupportTicket`, `Review`; source document relationships to products | `step2_load_products.py` |
+| GraphRAG layer | `Document`, `Chunk`, `Feature`, `Symptom`, `Solution`; `HAS_CHUNK`, `FROM_DOCUMENT`, `MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`, product shortcuts | `step3_load_graphrag.py` |
+| Agent memory | `Message`, `Entity`, `Preference`, `Fact`, `Task` and memory vector indexes | `neo4j-agent-memory` at serving time |
 
-- **Databricks Lakehouse.** 5 Delta tables in Unity Catalog (`retail_assistant.retail`) holding 1.15M transactions, 5,000 customers, 115K reviews, 417K daily inventory snapshots, and 20 stores. Optimized for SQL analytics, including revenue trends, customer segments, and basket analysis.
-- **Neo4j Knowledge Graph.** 570 products with Category, Brand, and Attribute nodes connected by relationships (IN_CATEGORY, MADE_BY, SIMILAR_TO, BOUGHT_TOGETHER, HAS_ATTRIBUTE). Includes agent memory (Message, Entity, Preference, Fact, Task) and a vector index for semantic search.
+Databricks provides the job execution environment, MLflow model registry, Model Serving endpoint, LLM endpoint, embedding endpoint, Unity Catalog volume for wheels, and optional Delta Lake tables for analytics/Genie demos.
 
-### Multi-Agent Architecture
+## New Features
 
-A two-agent supervisor system deployed on Databricks using Genie, AgentBricks and the Mosaic AI Agent Framework:
+- `dbx_rd` has been folded into `retail_agent`; the old standalone directory is no longer the runtime path.
+- The Databricks workflow now uses `databricks-job-runner` with local `.env` configuration, workspace job wrappers, and wheel uploads to a Unity Catalog volume.
+- GraphRAG loading now uses `neo4j-graphrag` `SimpleKGPipeline` with Databricks-native LLM and embedding adapters.
+- The GraphRAG layer extracts `Feature`, `Symptom`, and `Solution` entities, links them back to chunks and products, and creates both vector and fulltext indexes.
+- The live agent exposes GraphRAG knowledge tools for troubleshooting, hybrid keyword/vector retrieval, and product issue diagnosis.
+- The live agent includes short-term memory, long-term user preferences, reasoning trace memory, and preference-aware recommendations.
+- Step 1 waits for the target served model version to receive traffic before reporting deployment success.
+- Step 4 returns a nonzero status when memory or endpoint checks fail, so Databricks jobs no longer look green when logical checks fail.
+- `Chunk.chunk_id` is now populated for GraphRAG retriever compatibility.
 
-![Agent Architecture](docs/images/agent-architecture.png)
+## Prerequisites
 
-- **Supervisor.** A Databricks multi-agent supervisor that classifies user intent and routes to the appropriate agent. Analytics questions go to Genie; product/recommendation questions go to the Neo4j KG Agent. Combined queries hit both agents and the supervisor synthesizes a unified response.
-- **Genie Lakehouse Agent.** Translates natural language to SQL over the retail Delta tables.
-- **Neo4j KG Agent.** A LangGraph ReAct agent (`create_react_agent` with `context_schema=RetailContext`) deployed to a Databricks Model Serving endpoint. Uses `ToolRuntime[RetailContext]` to inject a `MemoryClient` for product search, recommendations, memory, and inventory tools.
+1. Python 3.12 or newer.
+2. `uv` installed locally.
+3. Databricks CLI configured with a profile that can access the target workspace.
+4. A sibling checkout of `../databricks-job-runner`.
+5. A running Databricks cluster for the job steps.
+6. Unity Catalog catalog, schema, and volume:
+   - `retail_assistant`
+   - `retail`
+   - `retail_volume`
+7. A Neo4j database reachable from Databricks.
+8. Databricks model serving access to:
+   - `databricks-claude-sonnet-4-6`
+   - `databricks-bge-large-en`
 
-## Neo4j Agentic Libraries
+Step 2 uses Spark and the Neo4j Spark Connector. Use a dedicated-access cluster and install:
 
-The assistant combines two Neo4j open-source libraries that both operate against the same Neo4j instance. For a detailed developer guide to the GraphRAG integration on Databricks, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
-
-- **[neo4j-agent-memory](https://github.com/neo4j-labs/agent-memory)** — Persistent, structured agent memory with short-term, long-term, and reasoning layers backed by a Neo4j graph.
-- **[neo4j-graphrag](https://github.com/neo4j-labs/neo4j-graphrag-python)** — Full-pipeline GraphRAG: chunking, embedding, LLM entity extraction, and retriever classes that combine vector search with graph traversal.
-
-### Agent Memory
-
-The assistant uses neo4j-agent-memory to give the agent persistent memory. Conversations, preferences, and learned facts are stored as nodes and relationships in the same Neo4j instance that holds the product catalog, and because memories are embedded as vectors, the agent can semantically search its own past.
-
-The memory system has three layers. **Short-term memory** tracks the current conversation as a session chain. **Long-term memory** captures durable knowledge — entities classified using the POLE+O model (Person, Object, Location, Event, Organization), user preferences, and facts with temporal context. **Reasoning memory** records how the agent solved past problems, storing each step, tool call, and outcome so similar requests can be handled faster.
-
-On each turn, the assistant loads relevant context from all three layers and passes it to the LLM alongside the user's message. A `search_memory` tool lets the agent query its own history at any time.
-
-### GraphRAG
-
-The assistant uses neo4j-graphrag to build a retrieval layer on top of the product knowledge graph, combining embeddings with graph structure so the agent can traverse from a matched chunk through extracted entities to discover related products, shared symptoms, and cross-product solutions.
-
-The GraphRAG pipeline (`step3_load_graphrag.py`) runs four stages: **chunk** knowledge articles, support tickets, and reviews into `Chunk` nodes; **embed** each chunk and create vector and fulltext indexes; **extract** `Feature`, `Symptom`, and `Solution` entities via LLM; and **link** those entities back to `Product` nodes through the document graph.
-
-The entity-enriched graph supports four neo4j-graphrag retriever classes (`step5_demo_retrievers.py`): **VectorRetriever** for baseline semantic search, **VectorCypherRetriever** adding entity traversal after vector matching, **HybridCypherRetriever** combining fulltext keyword and vector search with graph traversal, and **Text2CypherRetriever** where an LLM translates natural language directly into Cypher for analytical queries over the entity graph.
-
-## Create a Databricks Cluster
-
-Create a cluster with the Neo4j Spark Connector for running the import/export notebooks.
-
-1. **Create a new cluster**:
-   - Navigate to **Compute** → **Create Compute**
-   - **Cluster name**: `Neo4j-Demo-Cluster`
-   - **Access mode**: **Dedicated** (required for Neo4j Spark Connector)
-   - **Databricks Runtime**: 13.3 LTS or higher
-   - **Workers**: 2-4 (adjust based on data volume)
-
-2. **Install the Neo4j Spark Connector**:
-   - Click on your cluster → **Libraries** tab
-   - Click **Install New** → Select **Maven**
-   - Enter coordinates: `org.neo4j:neo4j-connector-apache-spark_2.12:5.3.1_for_spark_3`
-   - Click **Install**
-
-3. **Verify installation**:
-   - Library should show status "Installed"
-   - Restart the cluster if needed
-
-**Important**: Access mode MUST be "Dedicated" - the Neo4j Spark Connector does not work in Shared mode.
-
-## Lakehouse Data Generation
-
-Generate synthetic retail transaction data for Databricks Delta Lake integration. This produces CSV files that can be uploaded to a Databricks Unity Catalog Volume and converted to Delta Lake tables.
-
-### Generate transaction data
-
-Using the original 16-product catalog:
-
-```bash
-uv run python -m retail_agent.scripts.generate_transactions
+```text
+org.neo4j:neo4j-connector-apache-spark_2.12:5.3.1_for_spark_3
 ```
 
-Using the expanded 570-product catalog (recommended):
+## Environment Setup
+
+Install local dependencies:
 
 ```bash
-uv run python -m retail_agent.scripts.generate_transactions --expanded
+uv sync
 ```
 
-The expanded catalog is procedurally generated by `generate_expanded_catalog()` in `retail_agent/data/product_catalog.py`. It combines 7 categories, 40+ brands, and multiple subcategories to produce ~570 products with randomized names, prices, and attributes. The original 16 hardcoded products are included at the start for backward compatibility.
+Create `.env` from `.env.sample` and fill in the Databricks and Neo4j values:
 
-This outputs CSVs to `data/lakehouse/`:
+```env
+NEO4J_URI=neo4j+s://<database>.databases.neo4j.io
+NEO4J_PASSWORD=<password>
+
+DATABRICKS_PROFILE=<profile>
+DATABRICKS_COMPUTE_MODE=cluster
+DATABRICKS_CLUSTER_ID=<cluster-id>
+DATABRICKS_WORKSPACE_DIR=/Users/<user-email>/retail_agent
+DATABRICKS_VOLUME_PATH=/Volumes/retail_assistant/retail/retail_volume
+
+DATABRICKS_WAREHOUSE=<optional-sql-warehouse>
+```
+
+Upload Neo4j credentials into the Databricks secret scope used by serving:
+
+```bash
+./retail_agent/scripts/setup_databricks_secrets.sh --profile <profile>
+```
+
+The script reads `NEO4J_URI` and `NEO4J_PASSWORD` from `.env` and writes them to the `retail-agent-secrets` scope. The runner treats these Neo4j values as local setup inputs and does not forward the password as a job parameter.
+
+Validate the Databricks configuration:
+
+```bash
+uv run python -m cli validate
+```
+
+## Pipeline Flow
+
+The job wrapper filenames keep the original numbered names, but the recommended full run order is data first, then deploy, then verify.
+
+### 1. Upload Jobs And Wheel
+
+```bash
+uv run python -m cli upload --all
+uv run python -m cli upload --wheel
+```
+
+`upload --all` uploads the wrapper scripts from `jobs/` into `DATABRICKS_WORKSPACE_DIR`. `upload --wheel` builds the current `retail_agent` wheel and uploads it into `DATABRICKS_VOLUME_PATH/wheels`.
+
+### 2. Load Product And Source Knowledge Graph
+
+```bash
+uv run python -m cli submit run_retail_agent_step2_load_products.py
+```
+
+This creates the retail product graph, source knowledge nodes, product embeddings, and memory indexes in Neo4j.
+
+### 3. Build GraphRAG Layer
+
+```bash
+uv run python -m cli submit run_retail_agent_step3_load_graphrag.py
+```
+
+This reads `KnowledgeArticle`, `SupportTicket`, and `Review` nodes from Neo4j, runs `SimpleKGPipeline`, creates `Chunk` embeddings, extracts `Feature`, `Symptom`, and `Solution` entities, creates compatibility relationships used by the tools, links entities back to products, and creates `chunk_embedding` and `chunkText` indexes.
+
+### 4. Deploy The Agent
+
+```bash
+uv run python -m cli submit run_retail_agent_step1_deploy_agent.py
+```
+
+This logs the agent to MLflow, registers the model in Unity Catalog as `retail_assistant.retail.retail_agent_v3`, deploys it with `databricks-agents`, and waits until the new model version is the active traffic target.
+
+### 5. Verify Endpoint, Products, And Memory
+
+```bash
+uv run python -m cli submit run_retail_agent_step4_demo_agent.py
+```
+
+This checks endpoint readiness, runs diagnostics, exercises product search/detail/related-product tools, validates short-term memory, and validates long-term user preferences. It exits nonzero if the memory checks fail.
+
+### 6. Demonstrate GraphRAG Retrievers
+
+```bash
+uv run python -m cli submit run_retail_agent_step5_demo_retrievers.py
+```
+
+This demonstrates:
+
+| Retriever | Pattern |
+|-----------|---------|
+| `VectorRetriever` | Baseline semantic chunk search |
+| `VectorCypherRetriever` | Vector search plus entity graph traversal |
+| `HybridCypherRetriever` | Fulltext plus vector search plus entity traversal |
+| `Text2CypherRetriever` | LLM-generated Cypher over the entity graph |
+
+### 7. Verify Knowledge Tools Through The Endpoint
+
+```bash
+uv run python -m cli submit run_retail_agent_step6_check_knowledge.py
+```
+
+This sends live endpoint queries for troubleshooting, brand-specific hybrid search, product issue diagnosis, and cross-product knowledge comparison. It exits nonzero if the knowledge checks fail.
+
+## Supervisor (stub)
+
+The repository is structured for a future Mosaic AI multi-agent supervisor that routes analytics questions to a Genie space and product/KG questions to the deployed retail KG agent endpoint. The design is documented in [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). The implementation is a stub:
+
+- `retail_agent/src/supervisor_agent.py` — skeleton with sub-agent specs, `build_supervisor_chat_agent()` that raises `NotImplementedError`, and the full TODO list in the module docstring.
+- `retail_agent/step7_deploy_supervisor.py` — placeholder entry point. Submitting it via the runner prints a `STUB` banner and exits 0; it does not log, register, or deploy anything.
+- `jobs/run_retail_agent_step7_deploy_supervisor.py` — matching job wrapper.
+- `retail_agent/src/deploy_config.py` — adds `supervisor_model_name` and `genie_space_id` fields. `genie_space_id` is empty by default and must be set before any real deployment.
+
+To make this real, follow the TODOs in `supervisor_agent.py`: provision the Genie space, replace `build_supervisor_chat_agent()` with a real implementation using `databricks_ai_bridge.GenieAgent` and the multi-agent supervisor pattern, wire `step7_deploy_supervisor.py` to mirror `step1_deploy_agent.py`, and add a check script.
+
+## Useful Runner Commands
+
+```bash
+# Show runner help
+uv run python -m cli --help
+
+# Validate cluster, workspace path, and uploaded jobs
+uv run python -m cli validate
+
+# Upload wrappers only
+uv run python -m cli upload --all
+
+# Build and upload the package wheel
+uv run python -m cli upload --wheel
+
+# Run a specific job wrapper
+uv run python -m cli submit run_retail_agent_step4_demo_agent.py
+
+# View Databricks job logs
+uv run python -m cli logs <run-id>
+
+# Smoke test remote execution
+uv run python -m cli submit test_hello.py
+```
+
+## Local Validation
+
+There are currently no pytest tests in this repository, so `uv run pytest` exits with code 5 after collecting 0 tests. Use these checks instead:
+
+```bash
+uv run python -m py_compile \
+  retail_agent/step1_deploy_agent.py \
+  retail_agent/step2_load_products.py \
+  retail_agent/step3_load_graphrag.py \
+  retail_agent/step4_demo_agent.py \
+  retail_agent/step5_demo_retrievers.py \
+  retail_agent/step6_check_knowledge.py \
+  retail_agent/step7_deploy_supervisor.py \
+  cli/__main__.py \
+  jobs/_job_bootstrap.py
+
+uv run python -m cli validate
+```
+
+## Optional Lakehouse Data Generation
+
+The main agent runtime uses Neo4j. The repo also contains scripts for generating synthetic retail lakehouse data for Databricks SQL and Genie-style analytics demos.
+
+Generate the expanded catalog data:
+
+```bash
+uv run python -m retail_agent.scripts.generate_transactions --expanded --verify
+```
+
+This writes CSVs to `data/lakehouse/`:
 
 | File | Rows | Description |
 |------|------|-------------|
@@ -100,149 +285,82 @@ This outputs CSVs to `data/lakehouse/`:
 | `reviews.csv` | ~115K | Product reviews linked to transactions |
 | `inventory_snapshots.csv` | ~417K | Daily stock levels per product |
 | `stores.csv` | 20 | Physical store locations |
+| `knowledge_articles.csv` | Product knowledge articles | Product manuals, FAQs, and troubleshooting content |
 
-### Verify the generated data
-
-After generation, verify the CSVs with row counts, schema validation, and foreign key checks:
-
-```bash
-uv run python -m retail_agent.scripts.generate_transactions --expanded --verify
-```
-
-This checks all CSV files exist, validates a sample of rows against Pydantic schemas, and confirms every product ID in transactions exists in the catalog. Exits with code 0 on success, 1 on failure.
-
-### Upload to Databricks
-
-The lakehouse setup script uses the [Databricks SDK](https://docs.databricks.com/en/dev-tools/sdk-python.html) with CLI profile authentication. The script will auto-create the Unity Catalog catalog, schema, and volume if they don't already exist, but the workspace and SQL warehouse must be set up beforehand.
-
-#### Prerequisites
-
-1. **Databricks workspace** with Unity Catalog enabled.
-2. **Databricks CLI** installed (`pip install databricks-cli` or `brew install databricks`).
-3. **A personal access token** — generate one from your workspace under **Settings > Developer > Access tokens**.
-4. **A SQL Warehouse** — the script needs a running warehouse to execute SQL. Create one in your workspace:
-   - Go to **SQL Warehouses** in the left sidebar
-   - Click **Create SQL Warehouse**
-   - Choose **Serverless** (recommended) or **Pro**
-   - Name it (e.g., `retail_warehouse`) and start it
-   - The warehouse must be in a **Running** state when you run the script
-5. **Unity Catalog resources** — create the catalog, schema, and volume manually before running the script:
-   - Go to **Catalog** in the left sidebar
-   - Click **Create Catalog**, name it `retail_assistant`
-   - Inside the catalog, create a schema named `retail`
-   - Inside the schema, create a volume named `retail_volume`
-
-#### 1. Configure a Databricks CLI profile
-
-```bash
-databricks configure --profile my-profile
-```
-
-Enter your workspace host (e.g., `https://adb-1234567890.12.azuredatabricks.net`) and personal access token when prompted. This saves credentials to `~/.databrickscfg`.
-
-#### 2. Set environment variables
-
-Add these to your `.env` (see `.env.sample`):
-
-```env
-DATABRICKS_PROFILE=my-profile
-DATABRICKS_WAREHOUSE=retail_warehouse
-
-# Optional (defaults shown)
-# DATABRICKS_CATALOG=retail_assistant
-# DATABRICKS_SCHEMA=retail
-# DATABRICKS_VOLUME=retail_volume
-```
-
-#### 3. Run the table setup script
+Upload CSVs and create Delta tables:
 
 ```bash
 uv run python -m retail_agent.scripts.lakehouse_tables
 ```
 
-The script will:
-1. Upload CSVs to the Unity Catalog Volume
-2. Create Delta Lake tables with proper column types
-3. Add table and column comments for Genie compatibility
-
 Options:
 
 ```bash
-# Skip upload (if CSVs are already in the volume)
 uv run python -m retail_agent.scripts.lakehouse_tables --skip-upload
-
-# Skip table creation (upload only)
 uv run python -m retail_agent.scripts.lakehouse_tables --skip-tables
 ```
 
-## Running in Databricks
-
-The `retail_agent/` scripts run on Databricks, not locally. Get the code into your workspace using either Git folders (recommended) or file upload, then run each step on a cluster.
-
-### Get the code into Databricks
-
-**Option A: Git folders (recommended)**
-
-1. In the Databricks sidebar, click **Workspace**, navigate to your user folder.
-2. Click **Create > Git folder**.
-3. Enter the repository URL and select **GitHub** as the provider. For private repos, add a Personal Access Token under **Settings > Linked accounts** first.
-4. Click **Create Git folder**. To pull updates later, click the branch name and select **Pull**.
-
-**Option B: Upload files**
-
-1. In the sidebar, click **Workspace**, navigate to your user folder.
-2. Click the kebab menu (three dots) and select **Import**.
-3. Drag and drop the `retail_agent/` directory (or a `.zip` of it) into the dialog and click **Import**.
-
-### Prerequisites
-
-1. **Cluster** — A running compute cluster (DBR 15.0+). Install these libraries on the cluster: `neo4j`, `nest-asyncio`, `neo4j-graphrag` (step 5 only), `requests` and `databricks-sdk` (steps 4, 5, 6).
-2. **Neo4j secrets** — Store Neo4j credentials in Databricks secrets. The setup script reads `NEO4J_URI` and `NEO4J_PASSWORD` from your `.env` file:
-   ```bash
-   ./retail_agent/scripts/setup_databricks_secrets.sh --profile <your-profile>
-   ```
-3. **Unity Catalog** — The catalog `retail_assistant.retail` must exist (see [Upload to Databricks](#upload-to-databricks) above).
-
-### Run the steps
-
-Open each script as a notebook in the workspace (click the file to open it, attach your cluster, and run), or run as a Databricks Job with a **Python script** task. Execute in order:
-
-| Step | Script | What it does |
-|------|--------|--------------|
-| 1 | `step1_deploy_agent.py` | Logs model to MLflow, registers in Unity Catalog, deploys to Model Serving |
-| 2 | `step2_load_products.py` | Loads product catalog and knowledge graph into Neo4j |
-| 3 | `step3_load_graphrag.py` | Builds GraphRAG layer — chunks, embeddings, entity extraction |
-| 4 | `step4_demo_agent.py` | Verifies the deployed endpoint and runs sample queries |
-| 5 | `step5_demo_retrievers.py` | Demonstrates GraphRAG retriever patterns (requires `neo4j-graphrag` on cluster) |
-| 6 | `step6_check_knowledge.py` | Exercises GraphRAG knowledge tools (knowledge search, hybrid search, diagnosis) |
-
 ## Project Structure
 
-```
-retail_agent/                         # Databricks agent (deployed to Model Serving)
-├── step1_deploy_agent.py          # Deploy: MLflow log → UC register → agents.deploy()
-├── step2_load_products.py         # Load sample product data into Neo4j
-├── step3_load_graphrag.py         # Build GraphRAG layer (chunks, embeddings, entities)
-├── step4_demo_agent.py        # Verify deployed endpoint, run sample queries
-├── step5_demo_retrievers.py       # Demo GraphRAG retriever patterns
-├── step6_check_knowledge.py       # Exercise GraphRAG knowledge tools
-├── src/                           # Internal library (packaged flat via MLflow code_paths)
-│   ├── serving_adapter.py         # ChatAgent shim for Databricks Model Serving
-│   ├── react_agent.py             # LangGraph ReAct agent with context_schema
-│   ├── deploy_config.py           # Deployment configuration
-│   ├── retail_context.py          # RetailContext dataclass (ToolRuntime injection)
-│   ├── memory_tools.py            # Memory tools (ToolRuntime[RetailContext])
-│   ├── product_tools.py           # Product search tools (ToolRuntime[RetailContext])
-│   ├── knowledge_tools.py         # GraphRAG knowledge search tools (ToolRuntime[RetailContext])
-│   ├── endpoint_client.py         # Shared endpoint client for check scripts
-│   ├── diagnostics_tool.py        # Agent environment diagnostics
-│   └── databricks_embedder.py     # Databricks Foundation Model embedder
-├── data/                          # Product data definitions
-│   ├── product_catalog.py         # Product catalog (21 base + expanded generation)
-│   └── product_knowledge.py       # Knowledge articles, support tickets, reviews
-└── scripts/                       # Databricks data pipeline scripts
-    ├── generate_transactions.py   # Generate lakehouse CSV data (500K orders)
-    └── lakehouse_tables.py        # Upload CSVs & create Delta Lake tables
+```text
+cli/
+`-- __main__.py                       # databricks-job-runner entry point
 
+jobs/
+|-- _job_bootstrap.py                 # KEY=VALUE env injection + module runner
+|-- test_hello.py                     # remote execution smoke test
+|-- run_retail_agent_step1_deploy_agent.py
+|-- run_retail_agent_step2_load_products.py
+|-- run_retail_agent_step3_load_graphrag.py
+|-- run_retail_agent_step4_demo_agent.py
+|-- run_retail_agent_step5_demo_retrievers.py
+|-- run_retail_agent_step6_check_knowledge.py
+`-- run_retail_agent_step7_deploy_supervisor.py    # STUB
+
+retail_agent/
+|-- step1_deploy_agent.py             # MLflow log, UC register, Model Serving deploy
+|-- step2_load_products.py            # product graph and source knowledge load
+|-- step3_load_graphrag.py            # neo4j-graphrag SimpleKGPipeline load
+|-- step4_demo_agent.py               # endpoint, product, and memory checks
+|-- step5_demo_retrievers.py          # GraphRAG retriever demos
+|-- step6_check_knowledge.py          # live knowledge tool checks
+|-- step7_deploy_supervisor.py        # supervisor deploy (STUB)
+|-- data/
+|   |-- product_catalog.py
+|   `-- product_knowledge.py
+|-- scripts/
+|   |-- generate_transactions.py
+|   |-- lakehouse_tables.py
+|   `-- setup_databricks_secrets.sh
+`-- src/
+    |-- serving_adapter.py            # MLflow ChatAgent wrapper
+    |-- react_agent.py                # LangGraph ReAct agent
+    |-- retail_context.py             # ToolRuntime context
+    |-- deploy_config.py              # endpoint/model configuration
+    |-- databricks_embedder.py        # serving-time Databricks embedder
+    |-- graphrag_adapters.py          # neo4j-graphrag Databricks adapters
+    |-- endpoint_client.py            # shared endpoint test client
+    |-- product_tools.py
+    |-- knowledge_tools.py
+    |-- memory_tools.py
+    |-- preference_tools.py
+    |-- reasoning_tools.py
+    |-- commerce_tools.py
+    |-- diagnostics_tool.py
+    `-- supervisor_agent.py           # multi-agent supervisor skeleton (STUB)
 ```
 
+## Latest Verified Flow
+
+The full Databricks pipeline has been verified with:
+
+| Check | Result |
+|-------|--------|
+| Product graph load | Success |
+| GraphRAG load | 252 documents processed |
+| Endpoint deploy | Model version 5 active |
+| Endpoint and memory checks | 9 passed, 0 failed |
+| Retriever demo | Success |
+| Knowledge checks | 4 passed, 0 failed |
+
+Use `uv run python -m cli logs <run-id>` after each submitted step to inspect the full Databricks task output.
