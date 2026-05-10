@@ -48,8 +48,8 @@ The implementation should adapt the relevant visual and interaction behavior fro
 - The UI should blend into apx styling instead of being a pixel-perfect clone of the exported prototype.
 - The browser should call the demo client's FastAPI API, and the FastAPI backend should call the Databricks Model Serving endpoint.
 - The deployed retail agent is a Databricks Model Serving ChatAgent endpoint.
-- The serving endpoint name is `agents_retail_assistant-retail-retail_agent_v3`.
-- The endpoint currently serves Unity Catalog model `retail_assistant.retail.retail_agent_v3` version 5 at 100 percent traffic.
+- The serving endpoint name is `retail-graph-concierge`.
+- The endpoint currently serves Unity Catalog model `retail_assistant.retail.retail_graph_concierge` version 5 at 100 percent traffic.
 - The endpoint is in `READY` state as of the review.
 - Databricks SDK authentication should use the app's configured credentials through the existing dependency pattern.
 - Endpoint names, resource identifiers, and demo toggles should come from Databricks App configuration or environment-backed settings, not hardcoded values.
@@ -84,7 +84,7 @@ The implementation should adapt the relevant visual and interaction behavior fro
   - Confirm that implementation should blend into the existing apx shell while keeping the design's two-tab structure and live trace story.
   - Verify whether the apx MCP server is available.
   - Verify whether Databricks MCP tools are available.
-  - Use `agents_retail_assistant-retail-retail_agent_v3` as the serving endpoint name.
+  - Use `retail-graph-concierge` as the serving endpoint name.
   - Confirm endpoint readiness before live integration work.
   - Capture the actual ChatAgent response shape: `messages` plus Databricks request metadata.
   - Document which design fields can come directly from the endpoint and which need fallback, sample data, or adapter logic.

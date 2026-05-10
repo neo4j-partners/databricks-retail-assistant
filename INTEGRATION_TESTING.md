@@ -77,8 +77,8 @@ Run: `uv run python -m cli submit run_retail_agent_step3_load_graphrag.py`
 Run: `uv run python -m cli submit run_retail_agent_step1_deploy_agent.py`
 
 - [x] Job exits with status `SUCCESS`.
-- [x] Unity Catalog: `retail_assistant.retail.retail_agent_v3` has a new model version registered.
-- [x] Model Serving: endpoint `agents_retail_assistant-retail-retail_agent_v3` is in the `READY` state.
+- [x] Unity Catalog: `retail_assistant.retail.retail_graph_concierge` has a new model version registered.
+- [x] Model Serving: endpoint `retail-graph-concierge` is in the `READY` state.
 - [x] Model Serving: the endpoint's served model points at the new version registered in this run.
 - [x] Model Serving: the new version is the active traffic target. The job log must confirm this. Do not rely on `READY` alone.
 - [x] The endpoint's environment variables include the `{{secrets/retail-agent-secrets/neo4j-uri}}` and `{{secrets/retail-agent-secrets/neo4j-password}}` references.
@@ -138,6 +138,6 @@ Run after every individual section above has passed.
 Use this section when tearing down a test environment.
 
 - [ ] `agents.delete_deployment` removes the KG agent endpoint.
-- [ ] `databricks unity-catalog models delete retail_assistant.retail.retail_agent_v3 --profile $DATABRICKS_PROFILE` removes the registered model.
+- [ ] `databricks unity-catalog models delete retail_assistant.retail.retail_graph_concierge --profile $DATABRICKS_PROFILE` removes the registered model.
 - [ ] Neo4j: `MATCH (n) DETACH DELETE n` clears the database. Run only when the database is dedicated to this test.
 - [ ] `databricks secrets delete-scope retail-agent-secrets --profile $DATABRICKS_PROFILE` removes the secret scope.

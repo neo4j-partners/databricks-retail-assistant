@@ -27,10 +27,10 @@ The retail agent is a conversational shopping assistant deployed as a single Dat
 
 - The agent is a Python class (`RetailAgent`) that inherits from MLflow's ChatAgent interface
 - It is logged to MLflow as a source file using the Models from Code pattern, not as a serialized object
-- All library code from src/ is bundled alongside it via MLflow code_paths so the endpoint has everything it needs at runtime
+- The `retail_agent` package is bundled alongside it via MLflow `code_paths` so the endpoint has the agent, tools, integrations, and compatibility wrappers at runtime
 - Neo4j credentials are injected as Databricks secrets at deploy time and read from environment variables when the endpoint starts
 - The endpoint initializes lazily on the first real request after serving-time secrets are available
-- The active validated endpoint is `agents_retail_assistant-retail-retail_agent_v3`, with model version 8 receiving traffic
+- The active validated endpoint is `retail-graph-concierge`, with model version 8 receiving traffic
 - Scale-to-zero is requested by deployment configuration, but the active served endpoint versions currently report `scale_to_zero_enabled: false`
 
 ## Key Technologies
@@ -80,7 +80,7 @@ The retail agent is a conversational shopping assistant deployed as a single Dat
 
 ## Planned Work
 
-- Implement the Mosaic AI multi-agent supervisor currently stubbed in `retail_agent/src/supervisor_agent.py`.
+- Implement the Mosaic AI multi-agent supervisor currently stubbed in `retail_agent/agent/supervisor.py`.
 - Provision and wire a Genie space for lakehouse analytics over the Delta tables.
 - Deploy the supervisor as a separate Model Serving endpoint once the Genie and routing implementation is complete.
 - Wire the demo-client frontend submit helper to the implemented backend demo routes. The backend routes exist, but the current frontend still uses local sample demo data.

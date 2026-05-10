@@ -1,21 +1,9 @@
-"""Deploy the multi-agent supervisor (STUB).
-
-Placeholder entry point matching the step1..step6 pattern. The Mosaic AI
-multi-agent supervisor + Genie wiring is not yet implemented. See
-retail_agent/src/supervisor_agent.py for the skeleton and the README
-"Supervisor (stub)" section for the full TODO list.
-"""
+"""Compatibility entry point for the supervisor deployment stub."""
 
 import sys
 
-
-def main() -> int:
-    print("=" * 72)
-    print("STUB: step7_deploy_supervisor.py is a placeholder.")
-    print("The multi-agent supervisor + Genie wiring is not yet implemented.")
-    print("See retail_agent/src/supervisor_agent.py for the skeleton and TODOs.")
-    print("=" * 72)
-    return 1
+from retail_agent.deployment.deploy_supervisor import *  # noqa: F401,F403
+from retail_agent.deployment.deploy_supervisor import main
 
 
 if __name__ == "__main__":

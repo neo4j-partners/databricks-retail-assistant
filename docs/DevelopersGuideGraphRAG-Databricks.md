@@ -375,31 +375,31 @@ The agent decides which tool to call based on the user's question. "Search for r
 
 Deployment follows a four-step pipeline in [`step1_deploy_agent.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step1_deploy_agent.py):
 
-1. **Log model to MLflow.** The [`serving_adapter.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/src/serving_adapter.py) file is the entry point. MLflow's Models from Code approach packages it along with all imported modules (agent, tools, embedder, config) and the `neo4j-agent-memory` wheel as code artifacts.
+1. **Log model to MLflow.** The [`serving.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/agent/serving.py) file is the entry point. MLflow's Models from Code approach packages it along with all imported modules (agent, tools, embedder, config) and the `neo4j-agent-memory` wheel as code artifacts.
 
-2. **Register to Unity Catalog.** The logged model gets registered as a versioned model at `retail_assistant.retail.retail_agent_prototype`.
+2. **Register to Unity Catalog.** The logged model gets registered as a versioned model at `retail_assistant.retail.retail_graph_concierge`.
 
 3. **Deploy with `agents.deploy()`.** Neo4j credentials are injected as secret-backed environment variables. The endpoint supports scale-to-zero by default.
 
 4. **Wait for ready.** The script polls the endpoint state until it reports `READY` or the timeout expires.
 
-The [serving adapter](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/src/serving_adapter.py) handles the transition from Model Serving's synchronous `predict()` contract to the agent's async internals. A background thread manages the async Neo4j connection and keeps it alive across requests. The adapter delays connecting to Neo4j until the first real request arrives, since credentials aren't available during initial validation. Once connected, it reuses the same client for all subsequent calls.
+The [serving adapter](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/agent/serving.py) handles the transition from Model Serving's synchronous `predict()` contract to the agent's async internals. A background thread manages the async Neo4j connection and keeps it alive across requests. The adapter delays connecting to Neo4j until the first real request arrives, since credentials aren't available during initial validation. Once connected, it reuses the same client for all subsequent calls.
 
 ---
 
 ## Appendix: Configuration Reference
 
-All configuration lives in [`src/deploy_config.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/src/deploy_config.py) as a dataclass with sensible defaults:
+All configuration lives in [`agent/config.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/agent/config.py) as a dataclass with sensible defaults:
 
 | Setting | Default | Description |
 |---|---|---|
 | `catalog` | `retail_assistant` | Unity Catalog catalog name |
 | `schema` | `retail` | Unity Catalog schema name |
-| `model_name` | `retail_agent_prototype` | Model name in Unity Catalog |
+| `model_name` | `retail_graph_concierge` | Model name in Unity Catalog |
 | `llm_endpoint` | `databricks-claude-sonnet-4-6` | Databricks-hosted LLM for the agent |
 | `embedding_model` | `databricks-bge-large-en` | Foundation Model API embedding endpoint |
 | `embedding_dimensions` | `1024` | Must match vector index dimensions |
 | `scale_to_zero` | `true` | Enable scale-to-zero on serving endpoint |
 | `max_wait_seconds` | `600` | Timeout for endpoint readiness check |
 
-The full Unity Catalog model name resolves to `retail_assistant.retail.retail_agent_prototype` by default. The endpoint name is auto-generated as `agents_retail_assistant-retail-retail_agent_prototype`.
+The full Unity Catalog model name resolves to `retail_assistant.retail.retail_graph_concierge` by default. The endpoint name resolves to `retail-graph-concierge`.

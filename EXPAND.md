@@ -22,7 +22,7 @@ Two phases, each delivering a usable agent upgrade.
 
 ### What Changes
 
-Three new tools added to `src/`, registered in `react_agent.py` alongside the existing product and memory tools.
+Three new tools added under `retail_agent/tools/`, registered in `graph.py` alongside the existing product and memory tools.
 
 ### Requirements
 
@@ -32,7 +32,7 @@ Three new tools added to `src/`, registered in `react_agent.py` alongside the ex
 
 3. **`diagnose_product_issue` tool** — Takes a product ID and optional symptom description, traverses the graph from Product through HAS_SYMPTOM and HAS_SOLUTION relationships, and returns known symptoms and their solutions. When a symptom description is provided, uses embedding similarity to rank the most relevant symptoms. This tool does not exist in the demo — it is a new composition of the entity graph for direct product diagnostics.
 
-4. **System prompt update** — The agent's system prompt in `react_agent.py` is updated to instruct the LLM when to use GraphRAG tools versus product catalog tools. Knowledge search tools are for support questions, troubleshooting, and "how do I fix" queries. Product tools remain for browsing, pricing, and catalog queries.
+4. **System prompt update** — The agent's system prompt in `graph.py` is updated to instruct the LLM when to use GraphRAG tools versus product catalog tools. Knowledge search tools are for support questions, troubleshooting, and "how do I fix" queries. Product tools remain for browsing, pricing, and catalog queries.
 
 5. **No new dependencies** — All Cypher queries run through `client.graph.execute_read()`. All embeddings use `client._embedder.embed()`. No import of `neo4j-graphrag` library into the deployed agent. The retriever patterns are reimplemented as direct Cypher queries within the tools, keeping the deployment artifact unchanged.
 
@@ -40,8 +40,8 @@ Three new tools added to `src/`, registered in `react_agent.py` alongside the ex
 
 ### Files Affected
 
-- `src/knowledge_tools.py` — New file. Three tools + `KNOWLEDGE_TOOLS` list.
-- `src/react_agent.py` — Import `KNOWLEDGE_TOOLS`, add to `ALL_TOOLS`, update `SYSTEM_PROMPT`.
+- `retail_agent/tools/knowledge.py` — New file. Three tools + `KNOWLEDGE_TOOLS` list.
+- `retail_agent/agent/graph.py` — Import `KNOWLEDGE_TOOLS`, add to `ALL_TOOLS`, update `SYSTEM_PROMPT`.
 
 ### Verification
 
@@ -73,12 +73,12 @@ The agent gains long-term memory (user preferences and entity extraction), reaso
 
 ### Files Affected
 
-- `src/retail_context.py` — Add `user_id: str | None = None` field.
-- `src/serving_adapter.py` — Extract `user_id` from `custom_inputs`, pass to `RetailContext`.
-- `src/memory_tools.py` — Change `extract_entities` to `True` in `remember_message`. Add `track_preference`, `get_user_profile` tools.
-- `src/reasoning_tools.py` — New file. `record_reasoning_trace`, `recall_past_reasoning` tools + `REASONING_TOOLS` list.
-- `src/commerce_tools.py` — New file. `recommend_for_user` tool + `COMMERCE_TOOLS` list.
-- `src/react_agent.py` — Import new tool lists, add to `ALL_TOOLS`, update `SYSTEM_PROMPT`.
+- `retail_agent/agent/context.py` — Add `user_id: str | None = None` field.
+- `retail_agent/agent/serving.py` — Extract `user_id` from `custom_inputs`, pass to `RetailContext`.
+- `retail_agent/tools/memory.py` — Change `extract_entities` to `True` in `remember_message`. Add `track_preference`, `get_user_profile` tools.
+- `retail_agent/tools/reasoning.py` — New file. `record_reasoning_trace`, `recall_past_reasoning` tools + `REASONING_TOOLS` list.
+- `retail_agent/tools/commerce.py` — New file. `recommend_for_user` tool + `COMMERCE_TOOLS` list.
+- `retail_agent/agent/graph.py` — Import new tool lists, add to `ALL_TOOLS`, update `SYSTEM_PROMPT`.
 
 ### Verification
 

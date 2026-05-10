@@ -21,7 +21,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ENV_FILE="$PROJECT_ROOT/.env"
 
-# Configuration — must match retail_agent/src/deploy_config.py
+# Configuration — must match retail_agent.agent.config
 SCOPE_NAME="retail-agent-secrets"
 
 # Parse arguments
@@ -166,5 +166,5 @@ echo ""
 log_info "Setup complete!"
 echo ""
 echo "These secrets are used by the retail agent deployment."
-echo "See retail_agent/src/deploy_config.py for the mapping."
+echo "See retail_agent.agent.config for the mapping."
 echo ""

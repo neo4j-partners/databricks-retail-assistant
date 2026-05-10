@@ -1,6 +1,6 @@
-# Databricks Neo4j Retail Agent
+# Retail Graph Concierge
 
-This repository builds a Databricks-hosted retail assistant backed by Neo4j. The agent can search products, diagnose product issues, answer GraphRAG-backed support questions, remember user preferences, and use those preferences for personalized recommendations.
+This repository builds Retail Graph Concierge, a Databricks-hosted retail assistant backed by Neo4j. The agent can search products, diagnose product issues, answer GraphRAG-backed support questions, remember user preferences, and use those preferences for personalized recommendations.
 
 The current deployment path uses [`databricks-job-runner`](../databricks-job-runner) from a sibling checkout. Local commands build and upload a `retail_agent` wheel, upload thin Databricks job wrappers, submit the six pipeline steps, and validate the deployed Model Serving endpoint.
 
@@ -45,7 +45,7 @@ Neo4j
 
 ### Agent Architecture
 
-The deployed model is an MLflow `ChatAgent` implemented by `retail_agent/src/serving_adapter.py`. It lazily initializes a Neo4j `MemoryClient`, starts a persistent async event loop for the Neo4j async driver, creates the LangGraph ReAct agent, and injects `RetailContext` into tools through `ToolRuntime[RetailContext]`.
+The deployed model is an MLflow `ChatAgent` implemented by `retail_agent/agent/serving.py`. It lazily initializes a Neo4j `MemoryClient`, starts a persistent async event loop for the Neo4j async driver, creates the LangGraph ReAct agent, and injects `RetailContext` into tools through `ToolRuntime[RetailContext]`.
 
 The live agent includes these tool groups:
 
@@ -178,7 +178,7 @@ This reads `KnowledgeArticle`, `SupportTicket`, and `Review` nodes from Neo4j, r
 uv run python -m cli submit run_retail_agent_step1_deploy_agent.py
 ```
 
-This logs the agent to MLflow, registers the model in Unity Catalog as `retail_assistant.retail.retail_agent_v3`, deploys it with `databricks-agents`, and waits until the new model version is the active traffic target.
+This logs the agent to MLflow, registers the model in Unity Catalog as `retail_assistant.retail.retail_graph_concierge`, deploys it with `databricks-agents`, and waits until the new model version is the active traffic target.
 
 ### 5. Verify Endpoint, Products, And Memory
 
@@ -215,12 +215,12 @@ This sends live endpoint queries for troubleshooting, brand-specific hybrid sear
 
 The repository is structured for a future Mosaic AI multi-agent supervisor that routes analytics questions to a Genie space and product/KG questions to the deployed retail KG agent endpoint. The design is documented in [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). The implementation is a stub:
 
-- `retail_agent/src/supervisor_agent.py` — skeleton with sub-agent specs, `build_supervisor_chat_agent()` that raises `NotImplementedError`, and the full TODO list in the module docstring.
-- `retail_agent/step7_deploy_supervisor.py` — placeholder entry point. Submitting it via the runner prints a `STUB` banner and exits 0; it does not log, register, or deploy anything.
+- `retail_agent/agent/supervisor.py` — skeleton with sub-agent specs, `build_supervisor_chat_agent()` that raises `NotImplementedError`, and the full TODO list in the module docstring.
+- `retail_agent/step7_deploy_supervisor.py` — placeholder entry point. Submitting it via the runner prints a `STUB` banner and exits nonzero; it does not log, register, or deploy anything.
 - `jobs/run_retail_agent_step7_deploy_supervisor.py` — matching job wrapper.
-- `retail_agent/src/deploy_config.py` — adds `supervisor_model_name` and `genie_space_id` fields. `genie_space_id` is empty by default and must be set before any real deployment.
+- `retail_agent/agent/config.py` — adds `supervisor_model_name` and `genie_space_id` fields. `genie_space_id` is empty by default and must be set before any real deployment.
 
-To make this real, follow the TODOs in `supervisor_agent.py`: provision the Genie space, replace `build_supervisor_chat_agent()` with a real implementation using `databricks_ai_bridge.GenieAgent` and the multi-agent supervisor pattern, wire `step7_deploy_supervisor.py` to mirror `step1_deploy_agent.py`, and add a check script.
+To make this real, follow the TODOs in `retail_agent/agent/supervisor.py`: provision the Genie space, replace `build_supervisor_chat_agent()` with a real implementation using `databricks_ai_bridge.GenieAgent` and the multi-agent supervisor pattern, wire `step7_deploy_supervisor.py` to mirror `step1_deploy_agent.py`, and add a check script.
 
 ## Useful Runner Commands
 
@@ -318,13 +318,44 @@ jobs/
 `-- run_retail_agent_step7_deploy_supervisor.py    # STUB
 
 retail_agent/
-|-- step1_deploy_agent.py             # MLflow log, UC register, Model Serving deploy
-|-- step2_load_products.py            # product graph and source knowledge load
-|-- step3_load_graphrag.py            # neo4j-graphrag SimpleKGPipeline load
-|-- step4_demo_agent.py               # endpoint, product, and memory checks
-|-- step5_demo_retrievers.py          # GraphRAG retriever demos
-|-- step6_check_knowledge.py          # live knowledge tool checks
-|-- step7_deploy_supervisor.py        # supervisor deploy (STUB)
+|-- step1_deploy_agent.py             # compatibility wrapper
+|-- step2_load_products.py            # compatibility wrapper
+|-- step3_load_graphrag.py            # compatibility wrapper
+|-- step4_demo_agent.py               # compatibility wrapper
+|-- step5_demo_retrievers.py          # compatibility wrapper
+|-- step6_check_knowledge.py          # compatibility wrapper
+|-- step7_deploy_supervisor.py        # compatibility wrapper
+|-- agent/
+|   |-- serving.py                    # MLflow ChatAgent wrapper
+|   |-- graph.py                      # LangGraph ReAct agent
+|   |-- context.py                    # ToolRuntime context
+|   |-- config.py                     # endpoint/model configuration
+|   |-- demo_trace.py                 # structured demo trace extraction
+|   `-- supervisor.py                 # multi-agent supervisor skeleton (STUB)
+|-- tools/
+|   |-- catalog.py
+|   |-- knowledge.py
+|   |-- memory.py
+|   |-- preferences.py
+|   |-- reasoning.py
+|   |-- commerce.py
+|   `-- diagnostics.py
+|-- integrations/
+|   |-- databricks/
+|   |   |-- embeddings.py
+|   |   |-- graphrag.py
+|   |   `-- endpoint_client.py
+|   `-- neo4j/
+|       `-- memory_helpers.py
+|-- deployment/
+|   |-- deploy_agent.py
+|   |-- deploy_supervisor.py
+|   |-- load_products.py
+|   `-- load_graphrag.py
+|-- demos/
+|   |-- demo_agent.py
+|   |-- demo_retrievers.py
+|   `-- check_knowledge.py
 |-- data/
 |   |-- product_catalog.py
 |   `-- product_knowledge.py
@@ -332,22 +363,7 @@ retail_agent/
 |   |-- generate_transactions.py
 |   |-- lakehouse_tables.py
 |   `-- setup_databricks_secrets.sh
-`-- src/
-    |-- serving_adapter.py            # MLflow ChatAgent wrapper
-    |-- react_agent.py                # LangGraph ReAct agent
-    |-- retail_context.py             # ToolRuntime context
-    |-- deploy_config.py              # endpoint/model configuration
-    |-- databricks_embedder.py        # serving-time Databricks embedder
-    |-- graphrag_adapters.py          # neo4j-graphrag Databricks adapters
-    |-- endpoint_client.py            # shared endpoint test client
-    |-- product_tools.py
-    |-- knowledge_tools.py
-    |-- memory_tools.py
-    |-- preference_tools.py
-    |-- reasoning_tools.py
-    |-- commerce_tools.py
-    |-- diagnostics_tool.py
-    `-- supervisor_agent.py           # multi-agent supervisor skeleton (STUB)
+`-- src/                              # thin compatibility wrappers
 ```
 
 ## Latest Verified Flow

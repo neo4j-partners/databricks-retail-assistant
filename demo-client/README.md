@@ -20,7 +20,7 @@ Current state:
   response adaptation are implemented.
 - Frontend-to-backend API wiring is the remaining client gap.
 - The target retail agent serving endpoint is
-  `agents_retail_assistant-retail-retail_agent_v3`.
+  `retail-graph-concierge`.
 - The live retail agent endpoint is validated on model version 8 with
   `custom_outputs.demo_trace`.
 
@@ -157,7 +157,7 @@ cp .env.sample .env
 Runtime variables consumed by the backend:
 
 - `AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME`: target serving endpoint.
-  Defaults to `agents_retail_assistant-retail-retail_agent_v3`.
+  Defaults to `retail-graph-concierge`.
 - `AGENTIC_COMMERCE_RETAIL_AGENT_TIMEOUT_SECONDS`: upstream invocation timeout.
   Defaults to `120`.
 - `AGENTIC_COMMERCE_DEMO_DATA_MODE`: `live` or `sample`. Defaults to `live`.
@@ -285,7 +285,7 @@ databricks apps get-permissions <app-name> --profile <profile>
 Verify the target serving endpoint:
 
 ```bash
-databricks serving-endpoints get agents_retail_assistant-retail-retail_agent_v3 --profile <profile>
+databricks serving-endpoints get retail-graph-concierge --profile <profile>
 ```
 
 Expected serving endpoint state:
@@ -329,7 +329,7 @@ Direct endpoint validation note:
 Check serving endpoint permissions:
 
 ```bash
-databricks serving-endpoints get-permissions agents_retail_assistant-retail-retail_agent_v3 --profile <profile>
+databricks serving-endpoints get-permissions retail-graph-concierge --profile <profile>
 ```
 
 Remote validation checklist:

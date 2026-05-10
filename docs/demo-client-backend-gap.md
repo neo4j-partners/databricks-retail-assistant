@@ -50,8 +50,8 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 
 - Status: Complete
 - The `retail_agent` Model Serving endpoint exists and is ready.
-- The endpoint name is `agents_retail_assistant-retail-retail_agent_v3`.
-- The endpoint serves Unity Catalog model `retail_assistant.retail.retail_agent_v3`.
+- The endpoint name is `retail-graph-concierge`.
+- The endpoint serves Unity Catalog model `retail_assistant.retail.retail_graph_concierge`.
 - Model version `5` currently receives all endpoint traffic.
 - The endpoint has Neo4j secrets wired into its serving environment.
 - A direct endpoint invocation returns ChatAgent-style JSON with assistant messages and Databricks request metadata.
@@ -123,7 +123,7 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 - Outcome: The backend can be configured locally and inside Databricks Apps without hardcoded runtime values.
 - Checklist:
   - Add a config field for the retail agent serving endpoint name.
-  - Default the endpoint name to `agents_retail_assistant-retail-retail_agent_v3`.
+  - Default the endpoint name to `retail-graph-concierge`.
   - Add a config field for request timeout.
   - Add a config field for sample data mode.
   - Add a config field for whether fallback to sample data is allowed.
@@ -339,7 +339,7 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 - Status: Pending
 - Outcome: The deployed Databricks App can call the deployed retail agent endpoint.
 - Checklist:
-  - Confirm the Databricks App service principal has permission to query `agents_retail_assistant-retail-retail_agent_v3`.
+  - Confirm the Databricks App service principal has permission to query `retail-graph-concierge`.
   - Confirm the app can resolve the endpoint configuration after deployment.
   - Confirm deployed backend auth works without local CLI profile assumptions.
   - Confirm the endpoint can access Neo4j and its embedding dependencies from serving.
@@ -367,7 +367,7 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 - Status: In Progress
 - Complete: `demo-client` has backend routes for agentic search and issue diagnosis.
 - Complete: The routes are represented in OpenAPI with stable operation identifiers.
-- Implemented, pending live validation: The backend can call `agents_retail_assistant-retail-retail_agent_v3`.
+- Implemented, pending live validation: The backend can call `retail-graph-concierge`.
 - The live endpoint can return assistant prose plus `custom_outputs.demo_trace` for representative demo prompts.
 - Complete: The backend can return sample demo data without calling Model Serving.
 - Complete, pending live validation: The backend can adapt live ChatAgent `custom_outputs.demo_trace` into frontend-safe response objects.
