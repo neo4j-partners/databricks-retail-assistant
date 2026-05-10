@@ -61,6 +61,42 @@ def get_current_user() -> str:
         return os.environ.get("DATABRICKS_USER", "default")
 
 
+def _restore_env_var(name: str, previous: str | None) -> None:
+    """Restore an env var after temporarily changing it."""
+    if previous is None:
+        os.environ.pop(name, None)
+    else:
+        os.environ[name] = previous
+
+
+def validate_logged_model(model_uri: str, config: DeployConfig) -> None:
+    """Validate that the logged model loads and accepts ChatAgent input."""
+    import mlflow
+
+    print()
+    print("=" * 60)
+    print("STEP 1B: Validate Logged Model")
+    print("=" * 60)
+    print(f"Model URI: {model_uri}")
+    print(f"Environment manager: {config.validation_env_manager}")
+
+    input_example = {
+        "messages": [{"role": "user", "content": "Echo validation"}],
+        "custom_inputs": {
+            "session_id": "deployment-validation",
+            "demo_mode": "off",
+        },
+    }
+    result = mlflow.models.predict(
+        model_uri=model_uri,
+        input_data=input_example,
+        env_manager=config.validation_env_manager,
+    )
+    if not result:
+        raise RuntimeError("Logged model validation returned an empty result")
+    print("Logged model validation passed")
+
+
 # =============================================================================
 # STEP 1: LOG MODEL TO MLFLOW
 # =============================================================================
@@ -69,6 +105,7 @@ def get_current_user() -> str:
 def log_model_to_mlflow(config: DeployConfig) -> tuple:
     """Log the agent model to MLflow using Models from Code."""
     import mlflow
+    from mlflow.models.resources import DatabricksServingEndpoint
 
     print("=" * 60)
     print("STEP 1: Log Model to MLflow")
@@ -120,7 +157,10 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
 
     # Fallback: Databricks Volumes
     if not wheel_path:
-        volumes_candidate = Path(f"/Volumes/{config.catalog}/{config.schema}/retail_volume/libs/{wheel_name}")
+        volumes_candidate = Path(
+            f"/Volumes/{config.catalog}/{config.schema}/"
+            f"retail_volume/libs/{wheel_name}"
+        )
         if volumes_candidate.exists():
             wheel_path = volumes_candidate
 
@@ -140,11 +180,16 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         code_files.append(str(wheel_path))
         print(f"Including wheel: {wheel_path}")
     else:
-        print(f"WARNING: Wheel '{wheel_name}' not found. Searched:")
-        print(f"  - RETAIL_AGENT_WHEEL_PATH env var")
-        print(f"  - /Volumes/{config.catalog}/{config.schema}/retail_volume/libs/")
-        print(f"  - ../agent-memory/dist/ (local)")
-        print(f"  - ../../neo4j-labs/agent-memory/dist/ (local)")
+        searched = [
+            "RETAIL_AGENT_WHEEL_PATH env var",
+            f"/Volumes/{config.catalog}/{config.schema}/retail_volume/libs/",
+            "../agent-memory/dist/ (local)",
+            "../../neo4j-labs/agent-memory/dist/ (local)",
+        ]
+        locations = "\n  - ".join(searched)
+        raise FileNotFoundError(
+            f"Required wheel '{wheel_name}' not found. Searched:\n  - {locations}"
+        )
 
     print(f"Including code files: {[Path(f).name for f in code_files]}")
 
@@ -167,17 +212,45 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     if wheel_path:
         pip_requirements.append(f"code/{wheel_name}")
 
-    with mlflow.start_run(run_name=config.run_name):
-        log_kwargs = {
-            "artifact_path": config.artifact_path,
-            "python_model": str(model_file),
-            "pip_requirements": pip_requirements,
-            "code_paths": code_files,
-        }
+    input_example = {
+        "messages": [{"role": "user", "content": "Echo validation"}],
+        "custom_inputs": {
+            "session_id": "deployment-validation",
+            "demo_mode": "off",
+        },
+    }
+    resources = [
+        DatabricksServingEndpoint(endpoint_name=config.llm_endpoint),
+        DatabricksServingEndpoint(endpoint_name=config.embedding_model),
+    ]
 
-        model_info = mlflow.pyfunc.log_model(**log_kwargs)
-        print(f"Model logged: {model_info.model_uri}")
-        return model_info, model_info.model_uri
+    previous_allow = os.environ.get("RETAIL_AGENT_ALLOW_UNINITIALIZED_FOR_LOGGING")
+    os.environ["RETAIL_AGENT_ALLOW_UNINITIALIZED_FOR_LOGGING"] = "1"
+    try:
+        with mlflow.start_run(run_name=config.run_name):
+            log_kwargs = {
+                "artifact_path": config.artifact_path,
+                "python_model": str(model_file),
+                "pip_requirements": pip_requirements,
+                "code_paths": code_files,
+                "input_example": input_example,
+                "resources": resources,
+            }
+
+            model_info = mlflow.pyfunc.log_model(**log_kwargs)
+            print(f"Model logged: {model_info.model_uri}")
+
+            if config.validate_model:
+                validate_logged_model(model_info.model_uri, config)
+            else:
+                print("Skipping logged model validation")
+
+            return model_info, model_info.model_uri
+    finally:
+        _restore_env_var(
+            "RETAIL_AGENT_ALLOW_UNINITIALIZED_FOR_LOGGING",
+            previous_allow,
+        )
 
 
 # =============================================================================
@@ -219,6 +292,7 @@ def deploy_agent(config: DeployConfig, model_version: int):
 
     print(f"Model: {config.uc_model_name}")
     print(f"Version: {model_version}")
+    print(f"Endpoint: {config.resolved_endpoint_name}")
     print(f"Scale to zero: {config.scale_to_zero}")
 
     env_vars = config.get_environment_vars()
@@ -231,7 +305,8 @@ def deploy_agent(config: DeployConfig, model_version: int):
         print("\nNo environment variables (Step 2 — no secrets needed)")
 
     deploy_kwargs = {
-        "scale_to_zero_enabled": config.scale_to_zero,
+        "endpoint_name": config.resolved_endpoint_name,
+        "scale_to_zero": config.scale_to_zero,
     }
     if env_vars:
         deploy_kwargs["environment_vars"] = env_vars

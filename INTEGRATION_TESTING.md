@@ -129,9 +129,9 @@ Run: `uv run python -m cli submit run_retail_agent_step7_deploy_supervisor.py`
 
 Run after every individual section above has passed.
 
-- [ ] Run steps 2, 3, 1, 4, 5, 6, 7 in order from a clean workspace state. Every job exits `SUCCESS`.
-- [ ] The KG endpoint answers a product question, a recommendation question, a memory question, and a troubleshooting question inside one continuous chat session.
-- [ ] Logs from each step are retrievable via `uv run python -m cli logs <run-id>`.
+- [x] Run steps 2, 3, 1, 4, 5, 6, 7 in order from a clean workspace state. Every job exits `SUCCESS`.
+- [x] The KG endpoint answers a product question, a recommendation question, a memory question, and a troubleshooting question inside one continuous chat session.
+- [x] Logs from each step are retrievable via `uv run python -m cli logs <run-id>`.
 
 ## 14. Cleanup (Optional)
 

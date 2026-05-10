@@ -1,68 +1,359 @@
-# agentic-commerce ✨
+# agentic-commerce
 
-> A modern full-stack application built with [`apx`](https://github.com/databricks-solutions/apx) 🚀
+Databricks App demo client for the retail agent. The app is built with
+[`apx`](https://github.com/databricks-solutions/apx) and includes:
 
-## 🛠️ Tech Stack
+- Frontend: React, Vite, TanStack Router, shadcn-style components.
+- Backend: FastAPI served under `/api`.
+- API client: generated from the FastAPI OpenAPI schema by apx.
+- Deployment: Databricks Asset Bundle from `databricks.yml`.
 
-This application leverages a powerful, modern tech stack:
+Current state:
 
-- **Backend** 🐍 Python + [FastAPI](https://fastapi.tiangolo.com/)
-- **Frontend** ⚛️ React + [shadcn/ui](https://ui.shadcn.com/)
-- **API Client** 🔄 Auto-generated TypeScript client from OpenAPI schema
+- The two-tab frontend demo is implemented.
+- The UI currently uses local sample demo data because the frontend submit
+  helper is still sample-wired.
+- Backend demo routes are implemented:
+  - `POST /api/demo/search`
+  - `POST /api/demo/diagnose`
+- Backend live Model Serving invocation and `custom_outputs.demo_trace`
+  response adaptation are implemented.
+- Frontend-to-backend API wiring is the remaining client gap.
+- The target retail agent serving endpoint is
+  `agents_retail_assistant-retail-retail_agent_v3`.
+- The live retail agent endpoint is validated on model version 8 with
+  `custom_outputs.demo_trace`.
 
-## 🚀 Quick Start
+## Local Run And Test
 
-### Development Mode
+Prerequisites:
 
-Start all development servers (backend, frontend, and OpenAPI watcher) in detached mode:
+- apx installed.
+- `uv` available for Python package management.
+- Run commands from `demo-client`.
+
+Start all development servers in detached mode:
 
 ```bash
 apx dev start
 ```
 
-This will start an apx development server, which in it's turn runs backend, frontend and OpenAPI watcher.
-All servers run in the background, with logs kept in-memory of the apx dev server.
+Open the app:
 
-### 📊 Monitoring & Logs
-
-```bash
-# View all logs
-apx dev logs
-
-# Stream logs in real-time
-apx dev logs -f
-
-# Check server status
-apx dev status
-
-# Stop all servers
-apx dev stop
+```text
+http://localhost:9000
 ```
 
-## ✅ Code Quality
+View local logs:
 
-Run type checking and linting for both TypeScript and Python:
+```bash
+apx dev logs
+```
+
+Follow local logs:
+
+```bash
+apx dev logs -f
+```
+
+Check server status:
+
+```bash
+apx dev status
+```
+
+Run local checks:
 
 ```bash
 apx dev check
 ```
 
-## 📦 Build
-
-Create a production-ready build:
+Build the production artifact:
 
 ```bash
 apx build
 ```
 
-## 🚢 Deployment
-
-Deploy to Databricks:
+Smoke-check the running app:
 
 ```bash
-databricks bundle deploy -p <your-profile>
+curl -I http://localhost:9000
 ```
 
----
+Stop local servers:
 
-<p align="center">Built with ❤️ using <a href="https://github.com/databricks-solutions/apx">apx</a></p>
+```bash
+apx dev stop
+```
+
+Expected local results:
+
+- `apx dev status` reports frontend and backend as healthy.
+- `apx dev check` succeeds.
+- `apx build` succeeds.
+- `curl -I http://localhost:9000` returns `200 OK`.
+
+Backend route smoke checks:
+
+```bash
+curl -sS http://localhost:9000/api/demo/search \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Find running shoes under $150","demo_mode":"agentic_search"}'
+```
+
+```bash
+curl -sS http://localhost:9000/api/demo/diagnose \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"My running shoes feel flat after 300 miles. What should I do?","demo_mode":"issue_diagnosis"}'
+```
+
+Expected backend route results:
+
+- In live mode, responses include `source_type: "live"` when the backend can
+  reach Model Serving.
+- In sample mode, responses include `source_type: "sample"` and
+  `trace_source: "sample"`.
+- Search responses include `mode: "agentic_search"` and may include product
+  picks from live `demo_trace.product_results`.
+- Diagnosis responses include `mode: "issue_diagnosis"` and may include cited
+  chunks from live `demo_trace.knowledge_chunks`.
+
+Manual UI checks:
+
+- Agentic search loads as the first usable screen.
+- MacBook mouse preset renders top picks, related products, profile chips, and
+  intelligence surge rows.
+- Traveler headphones preset renders top picks, related products, profile
+  chips, and intelligence surge rows.
+- Typed search query submits on Enter and with the Ask button.
+- Issue diagnosis tab switches without a full page reload.
+- Headphones disconnect preset renders diagnosis path, actions, alternatives,
+  and cited sources.
+- Printer offline preset renders diagnosis path, actions, and cited sources.
+- Reset session clears the active response, profile chips, query, progress
+  state, and local session id.
+- Narrow viewport stacks the right rail below the main content without overlap.
+- Text stays inside cards and buttons at mobile and desktop widths.
+
+apx MCP and browser automation notes:
+
+- The apx CLI includes an MCP server entrypoint: `apx mcp`.
+- If your agent environment exposes apx MCP tools, prefer them for start, stop,
+  logs, checks, OpenAPI refresh, and component lookup.
+- This project does not currently include Playwright dependencies.
+- If your agent environment exposes Playwright MCP, use it for browser smoke
+  tests and viewport checks.
+- If Playwright MCP is not available, use manual browser checks or add
+  project-level Playwright tests later through apx package management.
+
+## Runtime Configuration
+
+Copy the sample environment file and edit values for your workspace:
+
+```bash
+cp .env.sample .env
+```
+
+Runtime variables consumed by the backend:
+
+- `AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME`: target serving endpoint.
+  Defaults to `agents_retail_assistant-retail-retail_agent_v3`.
+- `AGENTIC_COMMERCE_RETAIL_AGENT_TIMEOUT_SECONDS`: upstream invocation timeout.
+  Defaults to `120`.
+- `AGENTIC_COMMERCE_DEMO_DATA_MODE`: `live` or `sample`. Defaults to `live`.
+- `AGENTIC_COMMERCE_DEMO_ALLOW_SAMPLE_FALLBACK`: when true, live failures can
+  return sample responses with `source_type: "fallback"`.
+- `AGENTIC_COMMERCE_DEMO_INCLUDE_RAW_ENDPOINT_METADATA`: development-only raw
+  endpoint payload inclusion. Keep false for normal deployment.
+
+Deploy helper variables:
+
+- `DATABRICKS_PROFILE`: Databricks CLI profile. Leave empty to use default CLI
+  authentication.
+- `DATABRICKS_BUNDLE_TARGET`: bundle target, usually `dev`.
+- `DATABRICKS_APP_RESOURCE_KEY`: bundle app resource key from `databricks.yml`,
+  currently `agentic-commerce-app`.
+- `DATABRICKS_APP_NAME`: Databricks App name from `databricks.yml`, currently
+  `agentic-commerce`.
+- `DATABRICKS_DEPLOY_STRICT_VALIDATE`: when true, also runs strict bundle
+  validation.
+
+Databricks Apps receive additional runtime variables from the app config
+`env` section. `scripts/deploy_from_env.py` loads `.env`, temporarily stages
+only `AGENTIC_COMMERCE_*` values into `app.yml` for the build/deploy window,
+then restores the source file. Databricks CLI values such as
+`DATABRICKS_PROFILE` are used only by the deploy process.
+
+## Remote Deploy And Monitor
+
+Prerequisites:
+
+- Databricks CLI installed and authenticated.
+- A Databricks profile with access to the target workspace.
+- The target workspace supports Databricks Apps.
+- Run commands from `demo-client`.
+
+Deploy everything from `.env`:
+
+```bash
+uv run python scripts/deploy_from_env.py
+```
+
+Preview the deploy commands and staged runtime config:
+
+```bash
+uv run python scripts/deploy_from_env.py --dry-run
+```
+
+The helper runs:
+
+1. `apx build`
+2. `databricks bundle validate`
+3. Optional `databricks bundle validate --strict`
+4. `databricks bundle deploy`
+5. `databricks bundle run <app-resource-key>`
+6. `databricks bundle summary`
+
+Manual bundle commands:
+
+```bash
+databricks bundle validate --target <target> --profile <profile>
+```
+
+```bash
+databricks bundle validate --target <target> --profile <profile> --strict
+```
+
+```bash
+databricks bundle deploy --target <target> --profile <profile>
+```
+
+```bash
+databricks bundle run <app-resource-key> --target <target> --profile <profile>
+```
+
+```bash
+databricks bundle summary --target <target> --profile <profile>
+```
+
+```bash
+databricks bundle open <app-resource-key> --target <target> --profile <profile>
+```
+
+Inspect the app directly:
+
+```bash
+databricks apps get <app-name> --profile <profile>
+```
+
+View deployed logs:
+
+```bash
+databricks apps logs --target <target> --profile <profile>
+```
+
+Follow deployed logs:
+
+```bash
+databricks apps logs --target <target> --profile <profile> --follow
+```
+
+Show only app logs:
+
+```bash
+databricks apps logs --target <target> --profile <profile> --source APP
+```
+
+Show only system logs:
+
+```bash
+databricks apps logs --target <target> --profile <profile> --source SYSTEM
+```
+
+Search logs:
+
+```bash
+databricks apps logs --target <target> --profile <profile> --search "Error"
+```
+
+Check app permissions:
+
+```bash
+databricks apps get-permissions <app-name> --profile <profile>
+```
+
+Verify the target serving endpoint:
+
+```bash
+databricks serving-endpoints get agents_retail_assistant-retail-retail_agent_v3 --profile <profile>
+```
+
+Expected serving endpoint state:
+
+- `state.ready` is `READY`.
+- `state.config_update` is `NOT_UPDATING`.
+- Active traffic is routed to the latest validated model version.
+- The current validated upstream model version is `8`.
+
+Validate live trace output through the backend routes after deployment:
+
+```bash
+curl -sS <app-url>/api/demo/search \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Find running shoes under $150","demo_mode":"agentic_search"}'
+```
+
+```bash
+curl -sS <app-url>/api/demo/diagnose \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"My running shoes feel flat and unresponsive after 300 miles. What should I do?","demo_mode":"issue_diagnosis"}'
+```
+
+Expected live backend results:
+
+- Search returns `source_type: "live"`, `trace_source: "live"`, and product
+  picks when live tool output includes product results.
+- Diagnosis returns `source_type: "live"`, `trace_source: "live"`, and cited
+  sources or knowledge chunks when live tool output includes knowledge results.
+- If the endpoint returns prose without trace metadata, the backend keeps the
+  answer and marks trace data unavailable.
+
+Direct endpoint validation note:
+
+- Prefer backend route checks for the demo client contract.
+- If validating the raw Model Serving endpoint directly, use direct REST so the
+  request can include ChatAgent `custom_inputs`.
+- `databricks serving-endpoints query` may ignore or reject `custom_inputs`, so
+  it is not a reliable check for `demo_mode` or `custom_outputs.demo_trace`.
+
+Check serving endpoint permissions:
+
+```bash
+databricks serving-endpoints get-permissions agents_retail_assistant-retail-retail_agent_v3 --profile <profile>
+```
+
+Remote validation checklist:
+
+- Bundle validation succeeds.
+- Bundle deployment succeeds.
+- App starts successfully.
+- App URL opens in the browser.
+- App logs do not show startup errors.
+- System logs do not show dependency or resource injection failures.
+- App service principal can query the target serving endpoint.
+- Backend search route returns a live response with product picks when live mode
+  is configured and permissions are correct.
+- Backend diagnosis route returns a live response with cited sources or
+  knowledge chunks when live mode is configured and permissions are correct.
+- The UI still runs on sample demo data until frontend API wiring is connected.
+
+Troubleshooting:
+
+- If deployment fails, run bundle validation again and inspect system logs.
+- If the app does not start, inspect app and system logs.
+- If the deployed app cannot call Model Serving, confirm endpoint state,
+  endpoint permissions, and backend configuration.
+- If backend routes return sample data, check
+  `AGENTIC_COMMERCE_DEMO_DATA_MODE` and fallback settings.
+- If the UI only shows sample data, that is expected while the frontend submit
+  helper remains sample-wired or when sample mode is configured.

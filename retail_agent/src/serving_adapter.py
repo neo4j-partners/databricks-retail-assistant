@@ -27,6 +27,14 @@ except ModuleNotFoundError:
     from retail_agent.src.demo_trace import extract_demo_trace, get_demo_mode_hint
 
 
+ALLOW_UNINITIALIZED_ENV = "RETAIL_AGENT_ALLOW_UNINITIALIZED_FOR_LOGGING"
+
+
+def _allow_uninitialized_for_logging() -> bool:
+    value = os.environ.get(ALLOW_UNINITIALIZED_ENV, "")
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
 def _create_background_loop() -> asyncio.AbstractEventLoop:
     """Create a persistent event loop running in a background thread.
 
@@ -71,7 +79,8 @@ class RetailAgent(ChatAgent):
         if self._initialized:
             return
 
-        # Secrets not available during log_model() — skip init
+        # Secrets are intentionally unavailable during model logging and
+        # validation. Serving must provide them through endpoint env vars.
         if "NEO4J_URI" not in os.environ or "NEO4J_PASSWORD" not in os.environ:
             return
 
@@ -97,9 +106,9 @@ class RetailAgent(ChatAgent):
             embedding_model = os.environ.get(
                 "RETAIL_AGENT_EMBEDDING_MODEL", "databricks-bge-large-en"
             )
-            embedding_dims = int(os.environ.get(
-                "RETAIL_AGENT_EMBEDDING_DIMENSIONS", "1024"
-            ))
+            embedding_dims = int(
+                os.environ.get("RETAIL_AGENT_EMBEDDING_DIMENSIONS", "1024")
+            )
 
             settings = MemorySettings(
                 neo4j=Neo4jConfig(
@@ -144,14 +153,24 @@ class RetailAgent(ChatAgent):
         """
         self._ensure_initialized()
 
-        # Not yet initialized — either log_model() validation (no secrets)
-        # or a real init error at serving time.
+        # Not yet initialized. Allow this only during MLflow logging or
+        # validation, when Databricks endpoint secrets are not available.
         if self._agent is None:
-            error_msg = self._init_error or "Agent not initialized (secrets not available during model logging)."
+            if self._init_error:
+                raise RuntimeError(self._init_error)
+            if not _allow_uninitialized_for_logging():
+                raise RuntimeError(
+                    "Agent is not initialized. NEO4J_URI and NEO4J_PASSWORD "
+                    "must be supplied through Databricks serving environment "
+                    "variables."
+                )
             return ChatAgentResponse(
                 messages=[ChatAgentMessage(
                     role="assistant",
-                    content=f"Error: {error_msg}",
+                    content=(
+                        "Model loaded successfully. Runtime dependencies are "
+                        "deferred until Databricks serving secrets are available."
+                    ),
                     id=str(uuid4()),
                 )]
             )
