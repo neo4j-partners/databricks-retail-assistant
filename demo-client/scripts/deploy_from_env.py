@@ -95,7 +95,7 @@ def command_with_profile(
 
 
 def run(command: list[str], *, cwd: Path, env: dict[str, str], dry_run: bool) -> None:
-    print(f"+ {shlex.join(command)}")
+    print(f"+ {shlex.join(command)}", flush=True)
     if dry_run:
         return
     subprocess.run(command, cwd=cwd, env=env, check=True)
@@ -108,7 +108,7 @@ def run_json(
     env: dict[str, str],
     dry_run: bool,
 ) -> dict[str, Any] | None:
-    print(f"+ {shlex.join(command)}")
+    print(f"+ {shlex.join(command)}", flush=True)
     if dry_run:
         return None
 
