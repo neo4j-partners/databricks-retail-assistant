@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from retail_agent.agent.config import CONFIG, DeployConfig, RunMode
+from retail_agent.deployment.runtime import inject_env_params
 
 
 def _get_package_dir() -> Path:
@@ -556,6 +557,8 @@ def run_delete(config: DeployConfig) -> int:
 
 def main() -> int:
     """Main entry point."""
+    inject_env_params()
+
     print()
     print("=" * 60)
     print("RETAIL AGENT DEPLOYMENT")

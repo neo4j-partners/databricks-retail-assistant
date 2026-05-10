@@ -17,6 +17,7 @@ from neo4j_graphrag.experimental.components.types import LexicalGraphConfig
 from neo4j_graphrag.experimental.pipeline.kg_builder import SimpleKGPipeline
 
 from retail_agent.agent.config import CONFIG
+from retail_agent.deployment.runtime import inject_env_params
 from retail_agent.integrations.databricks.graphrag import (
     DatabricksGraphRAGEmbedder,
     DatabricksGraphRAGLLM,
@@ -268,6 +269,8 @@ def _print_counts(driver: neo4j.Driver) -> None:
 
 async def load_graphrag() -> int:
     """Build GraphRAG layer using SimpleKGPipeline."""
+    inject_env_params()
+
     print("=" * 60)
     print("GraphRAG Pipeline")
     print("=" * 60)
@@ -368,5 +371,11 @@ except ImportError:
 
 print("[load_graphrag] version=2026-05-08")
 
+
+def main() -> int:
+    """Synchronous console entry point for the async GraphRAG loader."""
+    return asyncio.run(load_graphrag())
+
+
 if __name__ == "__main__":
-    sys.exit(asyncio.run(load_graphrag()))
+    sys.exit(main())

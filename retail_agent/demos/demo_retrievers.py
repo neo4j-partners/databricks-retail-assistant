@@ -30,6 +30,7 @@ from neo4j_graphrag.types import LLMMessage
 from pydantic import BaseModel
 
 from retail_agent.agent.config import CONFIG
+from retail_agent.deployment.runtime import inject_env_params
 
 
 # ---------------------------------------------------------------------------
@@ -326,6 +327,8 @@ def demo_text2cypher(driver, llm):
 
 def demo_retrievers() -> int:
     """Run all retriever demos."""
+    inject_env_params()
+
     print("=== GraphRAG Retriever Demo ===\n")
 
     print("Getting Neo4j credentials...")

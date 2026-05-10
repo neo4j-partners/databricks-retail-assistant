@@ -12,6 +12,7 @@ Runs on a Databricks cluster or as a Databricks Job.
 
 import sys
 
+from retail_agent.deployment.runtime import inject_env_params
 from retail_agent.integrations.databricks.endpoint_client import ensure_endpoint_ready, run_exercise
 
 
@@ -44,6 +45,8 @@ def _run_knowledge_exercise(endpoint_url: str, headers: dict) -> tuple[int, int]
 
 def check_knowledge() -> int:
     """Run GraphRAG knowledge tool checks against the deployed endpoint."""
+    inject_env_params()
+
     try:
         endpoint_url, headers = ensure_endpoint_ready()
     except (RuntimeError, ValueError) as e:

@@ -363,7 +363,6 @@ retail_agent/
 |   |-- generate_transactions.py
 |   |-- lakehouse_tables.py
 |   `-- setup_databricks_secrets.sh
-`-- src/                              # thin compatibility wrappers
 ```
 
 ## Latest Verified Flow

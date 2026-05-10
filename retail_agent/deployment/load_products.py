@@ -32,6 +32,7 @@ from retail_agent.data.product_knowledge import (
     SUPPORT_TICKETS,
 )
 from retail_agent.agent.config import CONFIG
+from retail_agent.deployment.runtime import inject_env_params
 
 NEO4J_FORMAT = "org.neo4j.spark.DataSource"
 
@@ -401,6 +402,8 @@ def _generate_embeddings(driver):
 
 def load_sample_data() -> int:
     """Load all sample data into Neo4j."""
+    inject_env_params()
+
     print("Getting Neo4j credentials from Databricks secrets...")
     try:
         spark, uri, password = _get_spark_and_credentials()

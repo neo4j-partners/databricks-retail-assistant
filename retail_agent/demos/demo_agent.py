@@ -18,6 +18,7 @@ from uuid import uuid4
 import requests
 
 from retail_agent.agent.config import CONFIG
+from retail_agent.deployment.runtime import inject_env_params
 from retail_agent.integrations.databricks.endpoint_client import (
     ensure_endpoint_ready,
     run_exercise,
@@ -168,6 +169,8 @@ def _run_sample_queries(endpoint_url: str, headers: dict) -> None:
 
 def check_endpoint() -> int:
     """Run basic checks against the deployed endpoint."""
+    inject_env_params()
+
     try:
         endpoint_url, headers = ensure_endpoint_ready()
     except (RuntimeError, ValueError) as e:

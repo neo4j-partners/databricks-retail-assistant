@@ -23,6 +23,15 @@ dependencies = [
     "requests>=2.31.0",
 ]
 
+[project.scripts]
+retail-graph-concierge-deploy = "retail_agent.deployment.deploy_agent:main"
+retail-graph-concierge-load-products = "retail_agent.deployment.load_products:load_sample_data"
+retail-graph-concierge-load-graphrag = "retail_agent.deployment.load_graphrag:main"
+retail-graph-concierge-demo = "retail_agent.demos.demo_agent:check_endpoint"
+retail-graph-concierge-demo-retrievers = "retail_agent.demos.demo_retrievers:demo_retrievers"
+retail-graph-concierge-check-knowledge = "retail_agent.demos.check_knowledge:check_knowledge"
+retail-graph-concierge-deploy-supervisor = "retail_agent.deployment.deploy_supervisor:main"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",

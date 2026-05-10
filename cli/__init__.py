@@ -2,8 +2,20 @@
 
 from pathlib import Path
 
+from databricks.sdk.service.jobs import PythonWheelTask, RunResultState, SubmitTask
 from databricks_job_runner import Runner
-from databricks_job_runner.submit import submit_job
+from databricks_job_runner.errors import RunnerError
+
+
+ENTRY_POINTS = frozenset({
+    "retail-graph-concierge-deploy",
+    "retail-graph-concierge-load-products",
+    "retail-graph-concierge-load-graphrag",
+    "retail-graph-concierge-demo",
+    "retail-graph-concierge-demo-retrievers",
+    "retail-graph-concierge-check-knowledge",
+    "retail-graph-concierge-deploy-supervisor",
+})
 
 
 class RetailAgentRunner(Runner):
@@ -30,30 +42,72 @@ class RetailAgentRunner(Runner):
         no_wait: bool = False,
         compute_mode: str | None = None,
     ) -> None:
+        if script not in ENTRY_POINTS:
+            available = "\n  ".join(sorted(ENTRY_POINTS))
+            raise RunnerError(
+                f"Unknown Retail Graph Concierge entry point: {script}\n"
+                f"Available entry points:\n  {available}"
+            )
+
         params = self._job_params()
         run_name = f"{self.run_name_prefix}: {script}"
 
         if params:
             print(f"  Params:   {len(params)} env values from .env")
 
-        wheel_path: str | None = None
-        if self.wheel_package and script.startswith(f"run_{self.wheel_package}"):
-            wheel_name = self.find_wheel()
-            if wheel_name:
-                wheel_path = f"{self.wheel_volume_dir}/{wheel_name}"
-                print(f"  Wheel:    {wheel_path}")
+        wheel_name = self.find_wheel()
+        if not wheel_name:
+            raise RunnerError(
+                "No retail_agent wheel found in dist/. "
+                "Run: uv run python -m cli upload --wheel"
+            )
+        wheel_path = f"{self.wheel_volume_dir}/{wheel_name}"
+        print(f"  Wheel:    {wheel_path}")
 
-        run_id = submit_job(
-            self.ws,
-            compute=self._compute(compute_mode),
-            workspace_dir=self.config.databricks_workspace_dir,
-            script_name=script,
-            run_name=run_name,
-            params=params,
-            wheel_path=wheel_path,
-            no_wait=no_wait,
-            scripts_dir=self.scripts_dir,
+        compute = self._compute(compute_mode)
+        compute.validate(self.ws)
+
+        print("Submitting wheel entry point")
+        print(f"  Entry:    {script}")
+        print(f"  Run name: {run_name}")
+        print("---")
+
+        task = SubmitTask(
+            task_key="run_entry_point",
+            python_wheel_task=PythonWheelTask(
+                package_name=self.wheel_package or "retail_agent",
+                entry_point=script,
+                parameters=params if params else None,
+            ),
         )
+        task = compute.decorate_task(task, wheel_path)
+
+        waiter = self.ws.jobs.submit(
+            run_name=run_name,
+            tasks=[task],
+            environments=compute.environments(wheel_path),
+        )
+
+        run_id: int | None = waiter.run_id
+        if run_id is None:
+            raise RunnerError("Databricks did not return a run_id.")
+        print(f"  Run ID:   {run_id}")
+
+        if no_wait:
+            print("\nJob submitted (--no-wait). Check status in the Databricks UI.")
+        else:
+            print("  Waiting for completion...")
+            run = waiter.result()
+            result_state = run.state.result_state if run.state else None
+            state_name = result_state.value if result_state else "UNKNOWN"
+            page_url = run.run_page_url or ""
+
+            print(f"\n  Result:   {state_name}")
+            if page_url:
+                print(f"  URL:      {page_url}")
+            if result_state != RunResultState.SUCCESS:
+                raise RunnerError(f"Job finished with non-success state: {state_name}")
+            print("\nJob complete.")
 
         print()
         print("Next steps:")
@@ -62,10 +116,31 @@ class RetailAgentRunner(Runner):
             print(f"  List results:       {self.cli_command} download --list results")
             print(f"  Download results:   {self.cli_command} download results/<filename>")
 
+    def upload_all(self) -> None:
+        """No-op because jobs run Python wheel entry points directly."""
+        print("No job scripts to upload.")
+        print("Retail Graph Concierge jobs run from the uploaded wheel entry points.")
+        print("Run: uv run python -m cli upload --wheel")
+
+    def validate(self, file: str | None = None) -> None:
+        """Validate compute and wheel-entry-point configuration."""
+        self._compute().validate(self.ws)
+        if file and file not in ENTRY_POINTS:
+            available = "\n  ".join(sorted(ENTRY_POINTS))
+            raise RunnerError(
+                f"Unknown Retail Graph Concierge entry point: {file}\n"
+                f"Available entry points:\n  {available}"
+            )
+        print()
+        print("Available wheel entry points:")
+        for entry_point in sorted(ENTRY_POINTS):
+            print(f"  {entry_point}")
+        print()
+        print("Validation complete.")
+
 
 runner = RetailAgentRunner(
     run_name_prefix="retail_agent",
     project_dir=Path(__file__).resolve().parent.parent,
     wheel_package="retail_agent",
-    scripts_dir="jobs",
 )

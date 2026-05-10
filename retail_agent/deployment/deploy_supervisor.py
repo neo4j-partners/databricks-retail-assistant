@@ -8,8 +8,12 @@ retail_agent.agent.supervisor for the skeleton and the README
 
 import sys
 
+from retail_agent.deployment.runtime import inject_env_params
+
 
 def main() -> int:
+    inject_env_params()
+
     print("=" * 72)
     print("STUB: step7_deploy_supervisor.py is a placeholder.")
     print("The multi-agent supervisor + Genie wiring is not yet implemented.")
