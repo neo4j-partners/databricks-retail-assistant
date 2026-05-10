@@ -1,7 +1,7 @@
 """Verify the GraphRAG knowledge tools on the deployed agent endpoint.
 
-Run AFTER step4_demo_agent.py confirms the agent is healthy. Exercises
-the three knowledge tools added in Phase 1 of EXPAND.md:
+Run after `retail-graph-concierge-demo` confirms the agent is healthy.
+Exercises the three knowledge tools added in Phase 1 of EXPAND.md:
 
   1. knowledge_search          — semantic search + entity traversal
   2. hybrid_knowledge_search   — fulltext + vector + entity traversal

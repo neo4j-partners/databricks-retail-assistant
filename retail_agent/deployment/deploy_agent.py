@@ -524,7 +524,7 @@ def run_deploy(config: DeployConfig) -> int:
         print(f"Query endpoint: {deployment.query_endpoint}")
         print()
         print("To test:")
-        print("  Run step4_demo_agent.py on the cluster to verify.")
+        print("  Submit retail-graph-concierge-demo to verify the endpoint.")
         print()
         return 0
 

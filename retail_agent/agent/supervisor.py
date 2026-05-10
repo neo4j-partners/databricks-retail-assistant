@@ -1,8 +1,9 @@
 """Mosaic AI multi-agent supervisor for the retail assistant (STUB).
 
 STATUS
-    Skeleton only. Not deployed. step7_deploy_supervisor.py prints a STUB
-    message and exits without calling agents.deploy().
+    Skeleton only. Not deployed. The
+    retail-graph-concierge-deploy-supervisor entry point prints a STUB message
+    and exits without calling agents.deploy().
 
 DESIGN
     docs/agentic-commerce.md describes a two-agent system. A Databricks
@@ -14,7 +15,7 @@ DESIGN
 
     The supervisor itself is logged to MLflow as a ChatAgent and deployed to
     a separate Model Serving endpoint, in addition to the existing KG agent
-    endpoint deployed by step1_deploy_agent.py.
+    endpoint deployed by retail-graph-concierge-deploy.
 
 TODO TO MAKE THIS REAL
     1. Provision a Genie space over retail_assistant.retail.{transactions,
@@ -23,9 +24,9 @@ TODO TO MAKE THIS REAL
     2. Replace build_supervisor_chat_agent() with an implementation that
        uses databricks_ai_bridge.GenieAgent plus the multi-agent supervisor
        pattern from the databricks-agents docs.
-    3. Wire step7_deploy_supervisor.py to log/register/deploy this agent
-       (mirror step1_deploy_agent.py).
-    4. Add a check script under retail_agent/ that exercises analytics,
+    3. Wire retail_agent/deployment/deploy_supervisor.py to log/register/deploy
+       this agent, mirroring retail_agent/deployment/deploy_agent.py.
+    4. Add a demo entry point that exercises analytics,
        KG, and combined queries against the supervisor endpoint.
 """
 

@@ -4,7 +4,7 @@
 
 The retail agent today operates as a product search assistant. It can find products by vector similarity, look up details, traverse basic graph relationships (category, brand, attribute), and maintain short-term conversation memory. These are useful capabilities, but they leave two significant gaps.
 
-First, the agent cannot answer questions that require knowledge beyond the product catalog. The GraphRAG layer already exists in Neo4j — Chunk nodes with embeddings, extracted Feature/Symptom/Solution entities, and entity-to-product links — but the agent has no tools to reach it. A customer asking "my running shoes feel flat after 300 miles, what should I do?" gets a product search result instead of a grounded answer that traverses from symptom to solution to related products across the knowledge graph. The retriever patterns demonstrated in `step5_demo_retrievers.py` (VectorCypherRetriever, HybridCypherRetriever, Text2CypherRetriever) prove the value of entity-aware retrieval, but none of them are wired into the live agent.
+First, the agent cannot answer questions that require knowledge beyond the product catalog. The GraphRAG layer already exists in Neo4j — Chunk nodes with embeddings, extracted Feature/Symptom/Solution entities, and entity-to-product links — but the agent has no tools to reach it. A customer asking "my running shoes feel flat after 300 miles, what should I do?" gets a product search result instead of a grounded answer that traverses from symptom to solution to related products across the knowledge graph. The retriever patterns demonstrated in `retail_agent/demos/demo_retrievers.py` (VectorCypherRetriever, HybridCypherRetriever, Text2CypherRetriever) prove the value of entity-aware retrieval, but none of them are wired into the live agent.
 
 Second, the agent has no long-term learning. Every session starts from zero. There is no reasoning memory, no preference tracking, no ability to recall that a customer prefers trail shoes over road shoes or that a particular negotiation approach worked last quarter. The agent cannot accumulate operational intelligence, which is the foundation of agentic commerce.
 
@@ -26,7 +26,7 @@ Three new tools added under `retail_agent/tools/`, registered in `graph.py` alon
 
 ### Requirements
 
-1. **`knowledge_search` tool** — Takes a natural language query, runs VectorCypherRetriever against the `chunk_embedding` index, traverses MENTIONS_FEATURE / REPORTS_SYMPTOM / PROVIDES_SOLUTION relationships from matched chunks, and returns the chunk text plus extracted entities and related products. This is the VECTOR_CYPHER_QUERY pattern from `step5_demo_retrievers.py` adapted as an agent tool. Uses `client.graph.execute_read()` for the vector call and Cypher traversal (same access pattern as existing product tools), and `client._embedder.embed()` for query embedding (same pattern as `search_products`).
+1. **`knowledge_search` tool** — Takes a natural language query, runs VectorCypherRetriever against the `chunk_embedding` index, traverses MENTIONS_FEATURE / REPORTS_SYMPTOM / PROVIDES_SOLUTION relationships from matched chunks, and returns the chunk text plus extracted entities and related products. This is the VECTOR_CYPHER_QUERY pattern from `retail_agent/demos/demo_retrievers.py` adapted as an agent tool. Uses `client.graph.execute_read()` for the vector call and Cypher traversal (same access pattern as existing product tools), and `client._embedder.embed()` for query embedding (same pattern as `search_products`).
 
 2. **`hybrid_knowledge_search` tool** — Takes a query, runs against both the `chunk_embedding` vector index and `chunkText` fulltext index, blends results, then traverses entity relationships. Handles queries where exact terminology matters (brand names, specific part names) alongside semantic similarity. This is the HYBRID_CYPHER_QUERY pattern from the demo.
 
@@ -45,7 +45,7 @@ Three new tools added under `retail_agent/tools/`, registered in `graph.py` alon
 
 ### Verification
 
-- Deploy to Databricks Model Serving using existing `step1_deploy_agent.py` (no changes needed).
+- Deploy to Databricks Model Serving with `uv run python -m cli submit retail-graph-concierge-deploy`.
 - Query the endpoint with support-style questions ("my shoes feel flat", "Continental outsole peeling") and verify the agent uses knowledge tools and returns entity-grounded answers.
 - Query with catalog-style questions ("show me running shoes under $150") and verify the agent still uses product tools correctly.
 
@@ -85,13 +85,13 @@ The agent gains long-term memory (user preferences and entity extraction), reaso
 - Deploy and run a multi-turn session where the user states preferences ("I prefer trail running shoes", "I need waterproof"). Verify preferences persist in long-term memory.
 - Start a new session with the same `user_id`. Verify the agent retrieves the stored profile and personalizes responses without being told preferences again.
 - Trigger a multi-step troubleshooting workflow. Verify reasoning trace is recorded. Ask a similar question in a later session and verify the agent surfaces the past trace.
-- Run the existing `step4_demo_agent.py` sample queries and verify no regression in basic product search and memory behavior.
+- Run `uv run python -m cli submit retail-graph-concierge-demo` and verify no regression in basic product search and memory behavior.
 
 ---
 
 ## What This Does Not Include
 
-- **No changes to the Neo4j schema or data pipeline.** Phase 1 consumes the graph that `step2_load_products.py` and `step3_load_graphrag.py` already build. Phase 2 uses neo4j-agent-memory's built-in schema for long-term memory and reasoning traces.
+- **No changes to the Neo4j schema or data pipeline.** Phase 1 consumes the graph that `retail-graph-concierge-load-products` and `retail-graph-concierge-load-graphrag` already build. Phase 2 uses neo4j-agent-memory's built-in schema for long-term memory and reasoning traces.
 - **No new model endpoints.** Both phases use the existing `databricks-claude-sonnet-4-6` LLM endpoint and `databricks-bge-large-en` embedding endpoint.
 - **No external service integrations.** No payment processing, no inventory management APIs, no external enrichment. Those are future work beyond this proposal.
-- **No changes to `step1_deploy_agent.py`, `step2_load_products.py`, `step3_load_graphrag.py`, or `step5_demo_retrievers.py`.**
+- **No changes to the deployment entry points, product loader, GraphRAG loader, or retriever demo are required for this proposal.**

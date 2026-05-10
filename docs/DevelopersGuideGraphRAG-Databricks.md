@@ -175,9 +175,9 @@ GRAPHRAG ENTITY LAYER (extracted by LLM)
 (Product)─[:HAS_SOLUTION]─>(Solution)
 ```
 
-The business entity layer comes from the product catalog, loaded by [`step2_load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step2_load_products.py). The document layer comes from the same script, which creates KnowledgeArticle, SupportTicket, and Review nodes and links them to products.
+The business entity layer comes from the product catalog, loaded by [`retail_agent/deployment/load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/load_products.py). The document layer comes from the same module, which creates KnowledgeArticle, SupportTicket, and Review nodes and links them to products.
 
-The GraphRAG entity layer is where the graph gets its reasoning power. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) reads the document nodes, sends them through `neo4j-graphrag` `SimpleKGPipeline`, embeds chunks with `databricks-bge-large-en`, and uses the configured Databricks LLM endpoint to extract Feature, Symptom, and Solution entities. A final graph traversal links those entities back to the products they describe, creating the `HAS_FEATURE`, `HAS_SYMPTOM`, and `HAS_SOLUTION` relationships that make cross-product retrieval possible.
+The GraphRAG entity layer is where the graph gets its reasoning power. [`retail_agent/deployment/load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/load_graphrag.py) reads the document nodes, sends them through `neo4j-graphrag` `SimpleKGPipeline`, embeds chunks with `databricks-bge-large-en`, and uses the configured Databricks LLM endpoint to extract Feature, Symptom, and Solution entities. A final graph traversal links those entities back to the products they describe, creating the `HAS_FEATURE`, `HAS_SYMPTOM`, and `HAS_SOLUTION` relationships that make cross-product retrieval possible.
 
 The connection between layers is what makes it work. A query about "flat, unresponsive cushioning" hits the chunk vector index, finds a matching chunk, traverses to the Symptom node "cushion responsiveness loss," then follows that symptom to every other chunk that reports it and every product that has it. The retriever gathers context that spans products, documents, and extracted entities in a single traversal.
 
@@ -185,7 +185,7 @@ The connection between layers is what makes it work. A query about "flat, unresp
 
 ## Part III: Constructing the Graph on Databricks
 
-Building the knowledge graph happens in two scripts designed to run on a Databricks cluster. [`step2_load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step2_load_products.py) creates the product catalog and document nodes. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) adds the GraphRAG layer on top: chunks, embeddings, and LLM-extracted entities.
+Building the knowledge graph happens in two Python wheel entry points designed to run on a Databricks cluster. [`retail_agent/deployment/load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/load_products.py) creates the product catalog and document nodes. [`retail_agent/deployment/load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/load_graphrag.py) adds the GraphRAG layer on top: chunks, embeddings, and LLM-extracted entities.
 
 ### Loading the Product Knowledge Graph
 
@@ -193,7 +193,7 @@ The [Neo4j Spark Connector](https://neo4j.com/docs/spark/current/) is the bridge
 
 For building a knowledge graph, the write path matters most. Data from Delta tables, CSVs, or in-memory collections becomes a DataFrame, and the connector maps columns to node properties or relationship attributes. Node writes use a key column to match existing records, so re-running the load updates what's there rather than creating duplicates. Relationship writes match the source and target nodes by their identifying properties (like product ID or category name), then create the connection between them.
 
-The retail assistant's loader script ([`step2_load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step2_load_products.py)) wraps the connector in two helpers that all graph writes flow through:
+The retail assistant's loader module ([`retail_agent/deployment/load_products.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/load_products.py)) centralizes graph writes in two helpers:
 
 ```python
 def write_nodes(df, label, id_column):
@@ -241,7 +241,7 @@ embedding = response["data"][0]["embedding"]  # 1024-dim vector
 
 ### Building the GraphRAG Layer
 
-This is where the graph gets its reasoning power. [`step3_load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step3_load_graphrag.py) runs after the product load and uses `neo4j-graphrag` `SimpleKGPipeline` to add the retrieval graph on top of the existing product and document graph. Each stage builds on the previous one.
+This is where the graph gets its reasoning power. [`retail_agent/deployment/load_graphrag.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/load_graphrag.py) runs after the product load and uses `neo4j-graphrag` `SimpleKGPipeline` to add the retrieval graph on top of the existing product and document graph. Each stage builds on the previous one.
 
 **Stage 1 — Chunk.** The script fetches KnowledgeArticle, SupportTicket, and Review text from Neo4j and passes each document to `SimpleKGPipeline`. The pipeline creates Document and Chunk nodes, stores document metadata, and links chunks to generated Document nodes. A post-processing step connects those chunks back to the existing KnowledgeArticle, SupportTicket, and Review nodes with `HAS_CHUNK`.
 
@@ -256,7 +256,7 @@ This is where the graph gets its reasoning power. [`step3_load_graphrag.py`](htt
 }
 ```
 
-The schema constrains extraction to the retail support concepts the agent needs. Each entity becomes a Feature, Symptom, or Solution node. The library links entities to chunks with `FROM_CHUNK`, and the script adds compatibility relationships (`MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`) so the deployed tools and demo retrievers keep their existing Cypher surface.
+The schema constrains extraction to the retail support concepts the agent needs. Each entity becomes a Feature, Symptom, or Solution node. The library links entities to chunks with `FROM_CHUNK`, and the loader adds retrieval relationships (`MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`) so the deployed tools and demo retrievers can query the graph directly.
 
 This is the defining step of GraphRAG. An LLM reads unstructured text and produces structured entities that become graph nodes. The same approach can be applied to any domain by changing the extraction prompt and entity types.
 
@@ -373,7 +373,7 @@ The agent decides which tool to call based on the user's question. "Search for r
 
 ### Deployment Pipeline
 
-Deployment follows a four-step pipeline in [`step1_deploy_agent.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/step1_deploy_agent.py):
+Deployment follows a four-step pipeline in [`retail_agent/deployment/deploy_agent.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/deployment/deploy_agent.py):
 
 1. **Log model to MLflow.** The [`serving.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/agent/serving.py) file is the entry point. MLflow's Models from Code approach packages it along with all imported modules (agent, tools, embedder, config) and the `neo4j-agent-memory` wheel as code artifacts.
 

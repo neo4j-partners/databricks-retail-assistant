@@ -20,8 +20,8 @@ Current state:
   response adaptation are implemented.
 - Frontend-to-backend API wiring is the remaining client gap.
 - The target retail agent serving endpoint is
-  `retail-graph-concierge`.
-- The live retail agent endpoint is validated on model version 8 with
+  `agents_retail_assistant-retail-retail_agent_v3`.
+- The live retail agent endpoint is validated on model version 9 with
   `custom_outputs.demo_trace`.
 
 ## Local Run And Test
@@ -157,7 +157,7 @@ cp .env.sample .env
 Runtime variables consumed by the backend:
 
 - `AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME`: target serving endpoint.
-  Defaults to `retail-graph-concierge`.
+  Defaults to `agents_retail_assistant-retail-retail_agent_v3`.
 - `AGENTIC_COMMERCE_RETAIL_AGENT_TIMEOUT_SECONDS`: upstream invocation timeout.
   Defaults to `120`.
 - `AGENTIC_COMMERCE_DEMO_DATA_MODE`: `live` or `sample`. Defaults to `live`.
@@ -183,6 +183,10 @@ Databricks Apps receive additional runtime variables from the app config
 only `AGENTIC_COMMERCE_*` values into `app.yml` for the build/deploy window,
 then restores the source file. Databricks CLI values such as
 `DATABRICKS_PROFILE` are used only by the deploy process.
+
+The bundle also binds the configured retail agent serving endpoint as a
+Databricks App resource with `CAN_QUERY`, so the deployed app service principal
+gets the serving permission it needs during deployment.
 
 ## Remote Deploy And Monitor
 
@@ -213,6 +217,17 @@ The helper runs:
 4. `databricks bundle deploy`
 5. `databricks bundle run <app-resource-key>`
 6. `databricks bundle summary`
+7. `databricks apps get <app-name>`
+
+This path uses Databricks Declarative Automation Bundles. In the current CLI
+configuration this is the Terraform-backed bundle deploy path; there are no
+separate checked-in `.tf` files to run manually.
+
+The helper removes `DATABRICKS_CLUSTER_ID` from the deploy process environment
+because Databricks Apps do not need a cluster override. It also prints app URL,
+app state, compute state, and deployment state from `databricks apps get`,
+which is the authoritative status source when `bundle summary` does not show an
+app URL.
 
 Manual bundle commands:
 
@@ -222,6 +237,10 @@ databricks bundle validate --target <target> --profile <profile>
 
 ```bash
 databricks bundle validate --target <target> --profile <profile> --strict
+```
+
+```bash
+databricks bundle plan --target <target> --profile <profile>
 ```
 
 ```bash
@@ -285,7 +304,7 @@ databricks apps get-permissions <app-name> --profile <profile>
 Verify the target serving endpoint:
 
 ```bash
-databricks serving-endpoints get retail-graph-concierge --profile <profile>
+databricks serving-endpoints get agents_retail_assistant-retail-retail_agent_v3 --profile <profile>
 ```
 
 Expected serving endpoint state:
@@ -293,7 +312,7 @@ Expected serving endpoint state:
 - `state.ready` is `READY`.
 - `state.config_update` is `NOT_UPDATING`.
 - Active traffic is routed to the latest validated model version.
-- The current validated upstream model version is `8`.
+- The current validated upstream model version is `9`.
 
 Validate live trace output through the backend routes after deployment:
 
@@ -329,7 +348,7 @@ Direct endpoint validation note:
 Check serving endpoint permissions:
 
 ```bash
-databricks serving-endpoints get-permissions retail-graph-concierge --profile <profile>
+databricks serving-endpoints get-permissions agents_retail_assistant-retail-retail_agent_v3 --profile <profile>
 ```
 
 Remote validation checklist:

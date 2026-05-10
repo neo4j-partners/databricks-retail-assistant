@@ -1,8 +1,9 @@
 """Build GraphRAG layer using neo4j-graphrag SimpleKGPipeline.
 
-Run after step2_load_products.py. Reads KnowledgeArticle, SupportTicket, and
-Review nodes from Neo4j, chunks and embeds them, extracts Feature/Symptom/
-Solution entities, then links the new retrieval graph back to Product nodes.
+Run after `retail-graph-concierge-load-products`. Reads KnowledgeArticle,
+SupportTicket, and Review nodes from Neo4j, chunks and embeds them, extracts
+Feature/Symptom/Solution entities, then links the new retrieval graph back to
+Product nodes.
 
 Runs on a Databricks cluster or as a Databricks Job.
 """
@@ -68,7 +69,7 @@ def _get_neo4j_credentials() -> tuple[str, str]:
 
 
 def _fetch_documents(driver: neo4j.Driver) -> list[dict]:
-    """Fetch document texts from Neo4j nodes created by step2_load_products.py."""
+    """Fetch document texts from Neo4j nodes created by the product loader."""
     documents: list[dict] = []
 
     records, _, _ = driver.execute_query(
@@ -153,14 +154,14 @@ def _link_chunks_to_documents(driver: neo4j.Driver) -> None:
         )
 
 
-def _create_compatibility_relationships(driver: neo4j.Driver) -> None:
-    """Create legacy chunk-to-entity relationships used by agent tools."""
+def _create_chunk_entity_relationships(driver: neo4j.Driver) -> None:
+    """Create chunk-to-entity relationships used by agent tools."""
     for entity_label, relationship_type in [
         ("Feature", "MENTIONS_FEATURE"),
         ("Symptom", "REPORTS_SYMPTOM"),
         ("Solution", "PROVIDES_SOLUTION"),
     ]:
-        print(f"  Creating {relationship_type} compatibility relationships...")
+        print(f"  Creating {relationship_type} retrieval relationships...")
         driver.execute_query(
             f"""
             MATCH (entity:{entity_label})-[:FROM_CHUNK]->(ch:Chunk)
@@ -291,7 +292,7 @@ async def load_graphrag() -> int:
         documents = _fetch_documents(driver)
         print(f"  Total documents: {len(documents)}")
         if not documents:
-            print("\n  No documents found. Has step2_load_products.py been run?")
+            print("\n  No documents found. Has retail-graph-concierge-load-products been run?")
             return 1
 
         print("\nInitializing Databricks model adapters...")
@@ -340,8 +341,8 @@ async def load_graphrag() -> int:
         print("\nPost-pipeline Step 1: Link chunks to source documents...")
         _link_chunks_to_documents(driver)
 
-        print("\nPost-pipeline Step 2: Create compatibility relationships...")
-        _create_compatibility_relationships(driver)
+        print("\nPost-pipeline Step 2: Create chunk/entity retrieval relationships...")
+        _create_chunk_entity_relationships(driver)
 
         print("\nPost-pipeline Step 3: Create product shortcuts...")
         _create_product_shortcuts(driver)
@@ -368,9 +369,6 @@ try:
     nest_asyncio.apply()
 except ImportError:
     pass
-
-print("[load_graphrag] version=2026-05-08")
-
 
 def main() -> int:
     """Synchronous console entry point for the async GraphRAG loader."""

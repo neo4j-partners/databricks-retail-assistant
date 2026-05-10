@@ -143,7 +143,7 @@ class DeployConfig:
     )
 
     # Supervisor (STUB) — see retail_agent.agent.supervisor
-    # Both fields must be set before step7_deploy_supervisor.py can do real work.
+    # Both fields must be set before the supervisor deploy entry point can do real work.
     supervisor_model_name: str = field(
         default_factory=lambda: os.environ.get(
             "RETAIL_AGENT_SUPERVISOR_MODEL_NAME", "retail_supervisor_v1"

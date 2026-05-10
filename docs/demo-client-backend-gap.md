@@ -23,7 +23,7 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 ## Implementation Progress
 
 - Status: In Progress
-- `demo-client` backend contract, routes, config, sample data, live adapter, serving invocation wrapper, fallback behavior, session generation, logging, and no-Databricks adapter tests have been implemented.
+- `demo-client` backend contract, routes, config, sample data, live adapter, serving invocation client, fallback behavior, session generation, logging, and no-Databricks adapter tests have been implemented.
 - New backend routes:
   - `POST /api/demo/search` with operation id `runAgenticSearch`.
   - `POST /api/demo/diagnose` with operation id `runIssueDiagnosis`.
@@ -79,7 +79,7 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 - App configuration for the serving endpoint name, invocation timeout, sample data mode, fallback behavior, and diagnostics metadata has been added.
 - Backend request and response models for both demo modes have been added.
 - FastAPI routes for agentic search and issue diagnosis have been added.
-- A Model Serving invocation wrapper has been added.
+- A Model Serving invocation client has been added.
 - A response adapter for ChatAgent `messages` and `custom_outputs.demo_trace` has been added.
 - Curated backend-owned sample demo data has been added for the four design presets.
 - A stable error model has been added.
@@ -356,7 +356,7 @@ This plan covers the `demo-client` FastAPI backend and the scoped upstream `reta
 ## Future Upstream `retail_agent` Improvements
 
 - Status: Pending
-- Add exact per-tool timing when reliable timing metadata is available from LangGraph or wrapper instrumentation.
+- Add exact per-tool timing when reliable timing metadata is available from LangGraph or endpoint instrumentation.
 - Add token metadata when reliable usage data is available from the model or serving response.
 - Add richer graph-hop records if the demo needs edge-level path visualization rather than chunk-derived graph context.
 - Add a separate trace retrieval path only if `custom_outputs.demo_trace` proves insufficient.

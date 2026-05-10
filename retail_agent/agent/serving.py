@@ -1,4 +1,4 @@
-"""ChatAgent shim for Databricks Model Serving.
+"""ChatAgent adapter for Databricks Model Serving.
 
 Builds on the base agent by adding:
 - Lazy MemoryClient init from secrets (NEO4J_URI, NEO4J_PASSWORD)
@@ -53,7 +53,7 @@ def _create_background_loop() -> asyncio.AbstractEventLoop:
 
 
 class RetailAgent(ChatAgent):
-    """ChatAgent wrapper with Neo4j memory integration."""
+    """ChatAgent adapter with Neo4j memory integration."""
 
     def __init__(self):
         # All attributes must be defined in __init__ (MLflow requirement)

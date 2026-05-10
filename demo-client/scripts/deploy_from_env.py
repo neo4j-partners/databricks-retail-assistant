@@ -5,15 +5,19 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shlex
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 APP_RUNTIME_PREFIX = "AGENTIC_COMMERCE_"
+DEFAULT_APP_NAME = "agentic-commerce"
 DEFAULT_APP_RESOURCE_KEY = "agentic-commerce-app"
 DEFAULT_TARGET = "dev"
+DEFAULT_RETAIL_AGENT_ENDPOINT_NAME = "agents_retail_assistant-retail-retail_agent_v3"
 
 
 def parse_args() -> argparse.Namespace:
@@ -80,8 +84,11 @@ def command_with_profile(
     *,
     profile: str | None,
     target: str,
+    bundle_vars: dict[str, str] | None = None,
 ) -> list[str]:
     command = [*base, "--target", target]
+    for key, value in sorted((bundle_vars or {}).items()):
+        command.extend(["--var", f"{key}={value}"])
     if profile:
         command.extend(["--profile", profile])
     return command
@@ -92,6 +99,31 @@ def run(command: list[str], *, cwd: Path, env: dict[str, str], dry_run: bool) ->
     if dry_run:
         return
     subprocess.run(command, cwd=cwd, env=env, check=True)
+
+
+def run_json(
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str],
+    dry_run: bool,
+) -> dict[str, Any] | None:
+    print(f"+ {shlex.join(command)}")
+    if dry_run:
+        return None
+
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    parsed = json.loads(result.stdout)
+    if not isinstance(parsed, dict):
+        raise ValueError(f"Expected JSON object from command: {shlex.join(command)}")
+    return parsed
 
 
 def yaml_quote(value: str) -> str:
@@ -142,13 +174,20 @@ def main() -> int:
     values = parse_env_file(env_file)
     process_env = os.environ.copy()
     process_env.update(values)
+    ignored_cluster_id = process_env.pop("DATABRICKS_CLUSTER_ID", None)
 
     profile = values.get("DATABRICKS_PROFILE") or None
     target = values.get("DATABRICKS_BUNDLE_TARGET", DEFAULT_TARGET)
+    app_name = values.get("DATABRICKS_APP_NAME", DEFAULT_APP_NAME)
     app_resource_key = values.get(
         "DATABRICKS_APP_RESOURCE_KEY", DEFAULT_APP_RESOURCE_KEY
     )
     strict_validate = env_flag(values, "DATABRICKS_DEPLOY_STRICT_VALIDATE")
+    retail_agent_endpoint_name = (
+        values.get("AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME")
+        or DEFAULT_RETAIL_AGENT_ENDPOINT_NAME
+    )
+    bundle_vars = {"retail_agent_endpoint_name": retail_agent_endpoint_name}
     runtime_env = {
         key: value
         for key, value in values.items()
@@ -157,9 +196,15 @@ def main() -> int:
 
     print(f"Using env file: {env_file}")
     print(f"Bundle target: {target}")
+    print(f"Databricks app: {app_name}")
     print(f"Bundle app resource: {app_resource_key}")
     if profile:
         print(f"Databricks profile: {profile}")
+    if ignored_cluster_id:
+        print("Ignoring DATABRICKS_CLUSTER_ID for Databricks App deployment.")
+    print("Bundle variables:")
+    for key in sorted(bundle_vars):
+        print(f"  {key}={bundle_vars[key]}")
     if runtime_env:
         print("Runtime env staged into app.yml during deploy:")
         for key in sorted(runtime_env):
@@ -186,6 +231,7 @@ def main() -> int:
             ["databricks", "bundle", "validate"],
             profile=profile,
             target=target,
+            bundle_vars=bundle_vars,
         )
         run(validate, cwd=project_dir, env=process_env, dry_run=args.dry_run)
 
@@ -202,6 +248,7 @@ def main() -> int:
                 ["databricks", "bundle", "deploy"],
                 profile=profile,
                 target=target,
+                bundle_vars=bundle_vars,
             ),
             cwd=project_dir,
             env=process_env,
@@ -212,6 +259,7 @@ def main() -> int:
                 ["databricks", "bundle", "run", app_resource_key],
                 profile=profile,
                 target=target,
+                bundle_vars=bundle_vars,
             ),
             cwd=project_dir,
             env=process_env,
@@ -222,11 +270,42 @@ def main() -> int:
                 ["databricks", "bundle", "summary"],
                 profile=profile,
                 target=target,
+                bundle_vars=bundle_vars,
             ),
             cwd=project_dir,
             env=process_env,
             dry_run=args.dry_run,
         )
+        app_get = ["databricks", "apps", "get", app_name, "-o", "json"]
+        if profile:
+            app_get.extend(["--profile", profile])
+        app_details = run_json(
+            app_get,
+            cwd=project_dir,
+            env=process_env,
+            dry_run=args.dry_run,
+        )
+        if app_details is not None:
+            app_status = app_details.get("app_status")
+            compute_status = app_details.get("compute_status")
+            active_deployment = app_details.get("active_deployment")
+            deployment_status = (
+                active_deployment.get("status")
+                if isinstance(active_deployment, dict)
+                else None
+            )
+
+            print("Databricks app status:")
+            print(f"  name: {app_details.get('name')}")
+            print(f"  url: {app_details.get('url')}")
+            if isinstance(app_status, dict):
+                print(f"  app_state: {app_status.get('state')}")
+            if isinstance(compute_status, dict):
+                print(f"  compute_state: {compute_status.get('state')}")
+            if isinstance(active_deployment, dict):
+                print(f"  deployment_id: {active_deployment.get('deployment_id')}")
+            if isinstance(deployment_status, dict):
+                print(f"  deployment_state: {deployment_status.get('state')}")
     finally:
         if not args.dry_run:
             source_app_yml.write_text(original_app_yml)
@@ -237,6 +316,11 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as exc:
+    except (
+        FileNotFoundError,
+        json.JSONDecodeError,
+        ValueError,
+        subprocess.CalledProcessError,
+    ) as exc:
         print(f"deploy_from_env.py: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc

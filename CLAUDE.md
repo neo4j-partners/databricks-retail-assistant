@@ -10,15 +10,10 @@
 
 ## retail_agent/ — Databricks Agent
 
-This package is designed to run on Databricks Model Serving. Top-level step scripts are compatibility wrappers; implementation code is organized by responsibility.
+This package is designed to run on Databricks Model Serving. Implementation code is organized by responsibility and Databricks jobs run Python wheel entry points directly.
 
 ### Layout
 
-- `step1_deploy_agent.py` — Deploy agent to Databricks Model Serving
-- `step2_load_products.py` — Load sample product data into Neo4j
-- `step3_load_graphrag.py` — Build GraphRAG layer on product knowledge graph
-- `step4_demo_agent.py` — Verify deployment / run sample queries
-- `step5_demo_retrievers.py` — Demo GraphRAG retriever patterns
 - `agent/` — Core agent runtime:
   - `serving.py` — MLflow ChatAgent adapter
   - `graph.py` — LangGraph ReAct agent definition
@@ -37,7 +32,7 @@ This package is designed to run on Databricks Model Serving. Top-level step scri
   - `databricks/graphrag.py` — neo4j-graphrag Databricks adapters
   - `databricks/endpoint_client.py` — Model Serving endpoint client
   - `neo4j/memory_helpers.py` — Neo4j memory helper functions
-- `deployment/` and `demos/` — Implementation entry points behind the top-level step wrappers
+- `deployment/` and `demos/` — Databricks wheel entry point implementations
 - `data/` — Product data definitions:
   - `product_catalog.py` — Product data definitions
   - `product_knowledge.py` — Knowledge articles, support tickets, reviews
@@ -50,19 +45,14 @@ This package is designed to run on Databricks Model Serving. Top-level step scri
 - **No `test_` prefixed files** — Databricks auto-discovers and runs them as pytest. Use names like `check_endpoint.py` instead. See `RETAIL_BEST_PRACTICES.md`.
 - **Package imports** — Runtime modules use package-qualified imports under `retail_agent.*`; MLflow packages the `retail_agent` package via `code_paths`.
 - **Async bridging** — Uses a persistent background event loop, never `asyncio.run()`. See `RETAIL_BEST_PRACTICES.md`.
-- **Deploy**: Run `step1_deploy_agent.py` on Databricks cluster
-- **Check**: Run `step4_demo_agent.py` on Databricks cluster
+- **Deploy**: Submit `retail-graph-concierge-deploy` with the CLI
+- **Check**: Submit `retail-graph-concierge-demo` with the CLI
 
 ## Running Scripts
 
-Step scripts run on a Databricks cluster (via Run button or Databricks Job):
+Wheel entry points run on Databricks via `uv run python -m cli submit <entry-point>`:
 
-- `step1_deploy_agent.py` — Deploy agent to Model Serving
-- `step2_load_products.py` — Load product data into Neo4j
-- `step3_load_graphrag.py` — Build GraphRAG layer
-- `step4_demo_agent.py` — Demo basic agent capabilities
-- `step5_demo_retrievers.py` — Demo GraphRAG retriever patterns
-- `step6_check_knowledge.py` — Exercise GraphRAG knowledge tools
+- `retail-graph-concierge-check-knowledge` — Exercise GraphRAG knowledge tools
 
 Local data pipeline scripts (run with `uv run`):
 

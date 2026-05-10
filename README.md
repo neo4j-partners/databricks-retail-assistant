@@ -2,7 +2,7 @@
 
 This repository builds Retail Graph Concierge, a Databricks-hosted retail assistant backed by Neo4j. The agent can search products, diagnose product issues, answer GraphRAG-backed support questions, remember user preferences, and use those preferences for personalized recommendations.
 
-The current deployment path uses [`databricks-job-runner`](../databricks-job-runner) from a sibling checkout. Local commands build and upload a `retail_agent` wheel, upload thin Databricks job wrappers, submit the six pipeline steps, and validate the deployed Model Serving endpoint.
+The current deployment path uses [`databricks-job-runner`](../databricks-job-runner) from a sibling checkout. Local commands build and upload a `retail_agent` wheel, submit Databricks Python wheel entry points, and validate the deployed Model Serving endpoint.
 
 For the design background behind the graph, GraphRAG, and memory patterns, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). For lower-level GraphRAG implementation notes, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
 
@@ -16,10 +16,10 @@ Developer machine
   .env
   cli/
     |
-    | upload wrappers + wheel
+    | upload wheel
     v
 Databricks Workspace
-  /Users/<user>/retail_agent/jobs/*.py
+  /Users/<user>/retail_agent wheel entry points
   /Volumes/retail_assistant/retail/retail_volume/wheels/retail_agent-*.whl
     |
     | submit one-time jobs
@@ -32,7 +32,7 @@ Databricks Job Cluster
     |
     v
 Databricks Model Serving
-  MLflow ChatAgent wrapper
+  MLflow ChatAgent adapter
   LangGraph ReAct agent
   ChatDatabricks LLM endpoint
     |
@@ -65,9 +65,9 @@ The assistant uses Neo4j as the operational graph for product relationships, Gra
 
 | Layer | Main nodes and relationships | Built by |
 |-------|------------------------------|----------|
-| Product graph | `Product`, `Category`, `Brand`, `Attribute`; `IN_CATEGORY`, `MADE_BY`, `HAS_ATTRIBUTE`, `SIMILAR_TO`, `BOUGHT_TOGETHER` | `step2_load_products.py` |
-| Knowledge source graph | `KnowledgeArticle`, `SupportTicket`, `Review`; source document relationships to products | `step2_load_products.py` |
-| GraphRAG layer | `Document`, `Chunk`, `Feature`, `Symptom`, `Solution`; `HAS_CHUNK`, `FROM_DOCUMENT`, `MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`, product shortcuts | `step3_load_graphrag.py` |
+| Product graph | `Product`, `Category`, `Brand`, `Attribute`; `IN_CATEGORY`, `MADE_BY`, `HAS_ATTRIBUTE`, `SIMILAR_TO`, `BOUGHT_TOGETHER` | `retail-graph-concierge-load-products` |
+| Knowledge source graph | `KnowledgeArticle`, `SupportTicket`, `Review`; source document relationships to products | `retail-graph-concierge-load-products` |
+| GraphRAG layer | `Document`, `Chunk`, `Feature`, `Symptom`, `Solution`; `HAS_CHUNK`, `FROM_DOCUMENT`, `MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`, product shortcuts | `retail-graph-concierge-load-graphrag` |
 | Agent memory | `Message`, `Entity`, `Preference`, `Fact`, `Task` and memory vector indexes | `neo4j-agent-memory` at serving time |
 
 Databricks provides the job execution environment, MLflow model registry, Model Serving endpoint, LLM endpoint, embedding endpoint, Unity Catalog volume for wheels, and optional Delta Lake tables for analytics/Genie demos.
@@ -75,14 +75,14 @@ Databricks provides the job execution environment, MLflow model registry, Model 
 ## New Features
 
 - `dbx_rd` has been folded into `retail_agent`; the old standalone directory is no longer the runtime path.
-- The Databricks workflow now uses `databricks-job-runner` with local `.env` configuration, workspace job wrappers, and wheel uploads to a Unity Catalog volume.
+- The Databricks workflow now uses `databricks-job-runner` with local `.env` configuration and wheel uploads to a Unity Catalog volume.
 - GraphRAG loading now uses `neo4j-graphrag` `SimpleKGPipeline` with Databricks-native LLM and embedding adapters.
 - The GraphRAG layer extracts `Feature`, `Symptom`, and `Solution` entities, links them back to chunks and products, and creates both vector and fulltext indexes.
 - The live agent exposes GraphRAG knowledge tools for troubleshooting, hybrid keyword/vector retrieval, and product issue diagnosis.
 - The live agent includes short-term memory, long-term user preferences, reasoning trace memory, and preference-aware recommendations.
-- Step 1 waits for the target served model version to receive traffic before reporting deployment success.
-- Step 4 returns a nonzero status when memory or endpoint checks fail, so Databricks jobs no longer look green when logical checks fail.
-- `Chunk.chunk_id` is now populated for GraphRAG retriever compatibility.
+- `retail-graph-concierge-deploy` waits for the target served model version to receive traffic before reporting deployment success.
+- `retail-graph-concierge-demo` returns a nonzero status when memory or endpoint checks fail, so Databricks jobs no longer look green when logical checks fail.
+- `Chunk.chunk_id` is populated so GraphRAG retrievers and tools can use a stable chunk identifier.
 
 ## Prerequisites
 
@@ -145,21 +145,20 @@ uv run python -m cli validate
 
 ## Pipeline Flow
 
-The job wrapper filenames keep the original numbered names, but the recommended full run order is data first, then deploy, then verify.
+Jobs run Python wheel entry points from the uploaded retail_agent wheel. The recommended full run order is data first, then deploy, then verify.
 
-### 1. Upload Jobs And Wheel
+### 1. Upload Wheel
 
 ```bash
-uv run python -m cli upload --all
 uv run python -m cli upload --wheel
 ```
 
-`upload --all` uploads the wrapper scripts from `jobs/` into `DATABRICKS_WORKSPACE_DIR`. `upload --wheel` builds the current `retail_agent` wheel and uploads it into `DATABRICKS_VOLUME_PATH/wheels`.
+`upload --wheel` builds the current `retail_agent` wheel and uploads it into `DATABRICKS_VOLUME_PATH/wheels`.
 
 ### 2. Load Product And Source Knowledge Graph
 
 ```bash
-uv run python -m cli submit run_retail_agent_step2_load_products.py
+uv run python -m cli submit retail-graph-concierge-load-products
 ```
 
 This creates the retail product graph, source knowledge nodes, product embeddings, and memory indexes in Neo4j.
@@ -167,15 +166,15 @@ This creates the retail product graph, source knowledge nodes, product embedding
 ### 3. Build GraphRAG Layer
 
 ```bash
-uv run python -m cli submit run_retail_agent_step3_load_graphrag.py
+uv run python -m cli submit retail-graph-concierge-load-graphrag
 ```
 
-This reads `KnowledgeArticle`, `SupportTicket`, and `Review` nodes from Neo4j, runs `SimpleKGPipeline`, creates `Chunk` embeddings, extracts `Feature`, `Symptom`, and `Solution` entities, creates compatibility relationships used by the tools, links entities back to products, and creates `chunk_embedding` and `chunkText` indexes.
+This reads `KnowledgeArticle`, `SupportTicket`, and `Review` nodes from Neo4j, runs `SimpleKGPipeline`, creates `Chunk` embeddings, extracts `Feature`, `Symptom`, and `Solution` entities, creates retrieval relationships used by the tools, links entities back to products, and creates `chunk_embedding` and `chunkText` indexes.
 
 ### 4. Deploy The Agent
 
 ```bash
-uv run python -m cli submit run_retail_agent_step1_deploy_agent.py
+uv run python -m cli submit retail-graph-concierge-deploy
 ```
 
 This logs the agent to MLflow, registers the model in Unity Catalog as `retail_assistant.retail.retail_graph_concierge`, deploys it with `databricks-agents`, and waits until the new model version is the active traffic target.
@@ -183,7 +182,7 @@ This logs the agent to MLflow, registers the model in Unity Catalog as `retail_a
 ### 5. Verify Endpoint, Products, And Memory
 
 ```bash
-uv run python -m cli submit run_retail_agent_step4_demo_agent.py
+uv run python -m cli submit retail-graph-concierge-demo
 ```
 
 This checks endpoint readiness, runs diagnostics, exercises product search/detail/related-product tools, validates short-term memory, and validates long-term user preferences. It exits nonzero if the memory checks fail.
@@ -191,7 +190,7 @@ This checks endpoint readiness, runs diagnostics, exercises product search/detai
 ### 6. Demonstrate GraphRAG Retrievers
 
 ```bash
-uv run python -m cli submit run_retail_agent_step5_demo_retrievers.py
+uv run python -m cli submit retail-graph-concierge-demo-retrievers
 ```
 
 This demonstrates:
@@ -206,7 +205,7 @@ This demonstrates:
 ### 7. Verify Knowledge Tools Through The Endpoint
 
 ```bash
-uv run python -m cli submit run_retail_agent_step6_check_knowledge.py
+uv run python -m cli submit retail-graph-concierge-check-knowledge
 ```
 
 This sends live endpoint queries for troubleshooting, brand-specific hybrid search, product issue diagnosis, and cross-product knowledge comparison. It exits nonzero if the knowledge checks fail.
@@ -216,11 +215,11 @@ This sends live endpoint queries for troubleshooting, brand-specific hybrid sear
 The repository is structured for a future Mosaic AI multi-agent supervisor that routes analytics questions to a Genie space and product/KG questions to the deployed retail KG agent endpoint. The design is documented in [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). The implementation is a stub:
 
 - `retail_agent/agent/supervisor.py` — skeleton with sub-agent specs, `build_supervisor_chat_agent()` that raises `NotImplementedError`, and the full TODO list in the module docstring.
-- `retail_agent/step7_deploy_supervisor.py` — placeholder entry point. Submitting it via the runner prints a `STUB` banner and exits nonzero; it does not log, register, or deploy anything.
-- `jobs/run_retail_agent_step7_deploy_supervisor.py` — matching job wrapper.
+- `retail_agent/deployment/deploy_supervisor.py` — placeholder entry point. Submitting it via the runner prints a `STUB` banner and exits nonzero; it does not log, register, or deploy anything.
+- `retail-graph-concierge-deploy-supervisor` — wheel entry point for the current supervisor stub.
 - `retail_agent/agent/config.py` — adds `supervisor_model_name` and `genie_space_id` fields. `genie_space_id` is empty by default and must be set before any real deployment.
 
-To make this real, follow the TODOs in `retail_agent/agent/supervisor.py`: provision the Genie space, replace `build_supervisor_chat_agent()` with a real implementation using `databricks_ai_bridge.GenieAgent` and the multi-agent supervisor pattern, wire `step7_deploy_supervisor.py` to mirror `step1_deploy_agent.py`, and add a check script.
+To make this real, follow the TODOs in `retail_agent/agent/supervisor.py`: provision the Genie space, replace `build_supervisor_chat_agent()` with a real implementation using `databricks_ai_bridge.GenieAgent` and the multi-agent supervisor pattern, wire `retail_agent/deployment/deploy_supervisor.py` to mirror `retail_agent/deployment/deploy_agent.py`, and add a check script.
 
 ## Useful Runner Commands
 
@@ -228,23 +227,18 @@ To make this real, follow the TODOs in `retail_agent/agent/supervisor.py`: provi
 # Show runner help
 uv run python -m cli --help
 
-# Validate cluster, workspace path, and uploaded jobs
+# Validate cluster access and available wheel entry points
 uv run python -m cli validate
-
-# Upload wrappers only
-uv run python -m cli upload --all
 
 # Build and upload the package wheel
 uv run python -m cli upload --wheel
 
-# Run a specific job wrapper
-uv run python -m cli submit run_retail_agent_step4_demo_agent.py
+# Run a specific wheel entry point
+uv run python -m cli submit retail-graph-concierge-demo
 
 # View Databricks job logs
 uv run python -m cli logs <run-id>
 
-# Smoke test remote execution
-uv run python -m cli submit test_hello.py
 ```
 
 ## Local Validation
@@ -252,17 +246,7 @@ uv run python -m cli submit test_hello.py
 There are currently no pytest tests in this repository, so `uv run pytest` exits with code 5 after collecting 0 tests. Use these checks instead:
 
 ```bash
-uv run python -m py_compile \
-  retail_agent/step1_deploy_agent.py \
-  retail_agent/step2_load_products.py \
-  retail_agent/step3_load_graphrag.py \
-  retail_agent/step4_demo_agent.py \
-  retail_agent/step5_demo_retrievers.py \
-  retail_agent/step6_check_knowledge.py \
-  retail_agent/step7_deploy_supervisor.py \
-  cli/__main__.py \
-  jobs/_job_bootstrap.py
-
+uv run python -m compileall -q retail_agent demo-client/src
 uv run python -m cli validate
 ```
 
@@ -306,27 +290,9 @@ uv run python -m retail_agent.scripts.lakehouse_tables --skip-tables
 cli/
 `-- __main__.py                       # databricks-job-runner entry point
 
-jobs/
-|-- _job_bootstrap.py                 # KEY=VALUE env injection + module runner
-|-- test_hello.py                     # remote execution smoke test
-|-- run_retail_agent_step1_deploy_agent.py
-|-- run_retail_agent_step2_load_products.py
-|-- run_retail_agent_step3_load_graphrag.py
-|-- run_retail_agent_step4_demo_agent.py
-|-- run_retail_agent_step5_demo_retrievers.py
-|-- run_retail_agent_step6_check_knowledge.py
-`-- run_retail_agent_step7_deploy_supervisor.py    # STUB
-
 retail_agent/
-|-- step1_deploy_agent.py             # compatibility wrapper
-|-- step2_load_products.py            # compatibility wrapper
-|-- step3_load_graphrag.py            # compatibility wrapper
-|-- step4_demo_agent.py               # compatibility wrapper
-|-- step5_demo_retrievers.py          # compatibility wrapper
-|-- step6_check_knowledge.py          # compatibility wrapper
-|-- step7_deploy_supervisor.py        # compatibility wrapper
 |-- agent/
-|   |-- serving.py                    # MLflow ChatAgent wrapper
+|   |-- serving.py                    # MLflow ChatAgent adapter
 |   |-- graph.py                      # LangGraph ReAct agent
 |   |-- context.py                    # ToolRuntime context
 |   |-- config.py                     # endpoint/model configuration
@@ -351,7 +317,8 @@ retail_agent/
 |   |-- deploy_agent.py
 |   |-- deploy_supervisor.py
 |   |-- load_products.py
-|   `-- load_graphrag.py
+|   |-- load_graphrag.py
+|   `-- runtime.py
 |-- demos/
 |   |-- demo_agent.py
 |   |-- demo_retrievers.py
@@ -373,7 +340,7 @@ The full Databricks pipeline has been verified with:
 |-------|--------|
 | Product graph load | Success |
 | GraphRAG load | 252 documents processed |
-| Endpoint deploy | Model version 5 active |
+| Endpoint deploy | Model version 9 active on `agents_retail_assistant-retail-retail_agent_v3` |
 | Endpoint and memory checks | 9 passed, 0 failed |
 | Retriever demo | Success |
 | Knowledge checks | 4 passed, 0 failed |

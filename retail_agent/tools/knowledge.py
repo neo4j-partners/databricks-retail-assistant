@@ -1,7 +1,7 @@
 """GraphRAG knowledge tools using ToolRuntime[RetailContext] injection.
 
-Brings the retriever patterns from step5_demo_retrievers.py into the live
-agent as direct Cypher queries. No neo4j-graphrag dependency — all queries
+Brings the retriever demo patterns into the live agent as direct Cypher
+queries. No neo4j-graphrag dependency — all queries
 run through client.graph.execute_read().
 
 Three tools:

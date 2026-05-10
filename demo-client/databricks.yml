@@ -1,6 +1,10 @@
 bundle:
   name: "agentic-commerce"
 
+variables:
+  retail_agent_endpoint_name:
+    default: "agents_retail_assistant-retail-retail_agent_v3"
+
 sync:
   include:
     - .build
@@ -25,6 +29,10 @@ resources:
             database_name: "databricks_postgres"
             instance_name: ${resources.database_instances.agentic-commerce-db.name}
             permission: "CAN_CONNECT_AND_CREATE"
+        - name: "retail-agent"
+          serving_endpoint:
+            name: ${var.retail_agent_endpoint_name}
+            permission: "CAN_QUERY"
 
 targets:
   dev:

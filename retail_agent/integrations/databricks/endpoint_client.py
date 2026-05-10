@@ -1,8 +1,8 @@
 """Utility for sending queries to the deployed agent endpoint.
 
-Shared by step4_demo_agent.py and step6_check_knowledge.py. Handles
-auth resolution, response parsing, message sending, endpoint readiness
-checks, and keyword-validated exercise runs.
+Shared by the endpoint demo and knowledge-check entry points. Handles auth
+resolution, response parsing, message sending, endpoint readiness checks, and
+keyword-validated exercise runs.
 """
 
 from __future__ import annotations

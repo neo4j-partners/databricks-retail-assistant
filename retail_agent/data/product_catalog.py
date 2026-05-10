@@ -613,8 +613,8 @@ def _slugify(text: str) -> str:
 def generate_expanded_catalog(seed: int = 42) -> tuple[list[Product], dict[str, str]]:
     """Generate 500+ products across 7 categories and 40+ brands.
 
-    Returns ``(products, categories)`` where *products* includes the original 16
-    at the start of the list for backward compatibility.
+    Returns ``(products, categories)`` where *products* keeps the original 16
+    products at the start of the list for stable demo ordering.
     """
     rng = random.Random(seed)
 

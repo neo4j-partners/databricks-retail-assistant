@@ -29,7 +29,7 @@ class AppConfig(BaseSettings):
     )
     app_name: str = Field(default=app_name)
     retail_agent_endpoint_name: str = Field(
-        default="retail-graph-concierge"
+        default="agents_retail_assistant-retail-retail_agent_v3"
     )
     retail_agent_timeout_seconds: int = Field(default=120)
     demo_data_mode: str = Field(default="live")
