@@ -130,55 +130,6 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
     # Package imported by serving.py at runtime.
     code_files = [str(package_dir)]
 
-    # neo4j-agent-memory wheel
-    wheel_name = "neo4j_agent_memory-0.0.1-py3-none-any.whl"
-    wheel_path = None
-
-    # Check env var override first
-    env_wheel = os.environ.get("RETAIL_AGENT_WHEEL_PATH")
-    if env_wheel:
-        candidate = Path(env_wheel)
-        if candidate.is_dir():
-            candidate = candidate / wheel_name
-        if candidate.exists():
-            wheel_path = candidate
-
-    # Fallback: Databricks Volumes
-    if not wheel_path:
-        volumes_candidate = Path(
-            f"/Volumes/{config.catalog}/{config.schema}/"
-            f"retail_volume/libs/{wheel_name}"
-        )
-        if volumes_candidate.exists():
-            wheel_path = volumes_candidate
-
-    # Fallback: local relative paths (sibling repo)
-    if not wheel_path:
-        project_root = package_dir.parent
-        for candidate in [
-            project_root / ".." / "agent-memory" / "dist" / wheel_name,
-            project_root / ".." / ".." / "neo4j-labs" / "agent-memory" / "dist" / wheel_name,
-        ]:
-            candidate = candidate.resolve()
-            if candidate.exists():
-                wheel_path = candidate
-                break
-
-    if wheel_path:
-        code_files.append(str(wheel_path))
-        print(f"Including wheel: {wheel_path}")
-    else:
-        searched = [
-            "RETAIL_AGENT_WHEEL_PATH env var",
-            f"/Volumes/{config.catalog}/{config.schema}/retail_volume/libs/",
-            "../agent-memory/dist/ (local)",
-            "../../neo4j-labs/agent-memory/dist/ (local)",
-        ]
-        locations = "\n  - ".join(searched)
-        raise FileNotFoundError(
-            f"Required wheel '{wheel_name}' not found. Searched:\n  - {locations}"
-        )
-
     print(f"Including code paths: {[Path(f).name for f in code_files]}")
 
     pip_requirements = [
@@ -190,15 +141,12 @@ def log_model_to_mlflow(config: DeployConfig) -> tuple:
         "langchain-core==1.3.3",
         "databricks-langchain==0.19.0",
         "neo4j==6.2.0",
+        "neo4j-agent-memory==0.2.1",
         "pydantic>=2.0.0",
         "pydantic-settings>=2.0.0",
         "openai>=1.0.0",
         "nest-asyncio>=1.5.0",
     ]
-
-    # Include the bundled wheel in pip_requirements so it installs at serving time
-    if wheel_path:
-        pip_requirements.append(f"code/{wheel_name}")
 
     input_example = {
         "messages": [{"role": "user", "content": "Echo validation"}],

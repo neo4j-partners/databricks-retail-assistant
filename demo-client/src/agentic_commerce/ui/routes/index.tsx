@@ -558,7 +558,7 @@ function SearchDemo({
       <EmptyState
         glyph="answer area"
         title="Ask a question to see how the agent answers"
-        description="The client is wired to sample demo data while backend routes and structured trace output are being built."
+        description="Ask a shopping question to call the backend retail agent route and render the returned products, graph context, and trace details."
       />
     );
   }
@@ -651,7 +651,7 @@ function SupportDemo({
       <EmptyState
         glyph="diagnosis"
         title="Describe an issue to see symptom-to-solution reasoning"
-        description="The support view is ready for the backend route and currently uses curated sample responses."
+        description="Describe a product issue to call the backend diagnosis route and render returned actions, citations, and trace details."
       />
     );
   }
@@ -904,6 +904,9 @@ function DemoClient() {
 
     setLoading(false);
     setResponse(nextResponse);
+    if (nextResponse.sessionId) {
+      setSessionId(nextResponse.sessionId);
+    }
     setProgress(0);
     setLive(true);
   }

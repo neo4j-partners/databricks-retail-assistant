@@ -43,6 +43,7 @@ async def search_products(
 ) -> str:
     """Search the product catalog by query. Use this when a customer asks about products, wants to browse, or is looking for something specific."""
     client = runtime.context.client
+    embedder = runtime.context.embedder
     conditions = ["p:Product"]
     params: dict[str, Any] = {"query": query, "limit": limit}
 
@@ -59,9 +60,9 @@ async def search_products(
     where_clause = " AND ".join(conditions)
 
     try:
-        # NOTE: MemoryClient does not expose a public embedder property.
-        # Accessing _embedder is the only way to get the embedding provider.
-        embedding = await client._embedder.embed(query)
+        if embedder is None:
+            raise RuntimeError("No embedder is configured.")
+        embedding = await embedder.embed(query)
         params["embedding"] = embedding
 
         cypher = f"""

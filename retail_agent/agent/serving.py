@@ -84,7 +84,10 @@ class RetailAgent(ChatAgent):
         try:
             from neo4j_agent_memory import (
                 EmbeddingConfig,
+                ExtractionConfig,
+                ExtractorType,
                 MemoryClient,
+                MemoryConfig,
                 MemorySettings,
                 Neo4jConfig,
             )
@@ -115,6 +118,9 @@ class RetailAgent(ChatAgent):
                 embedding=EmbeddingConfig(
                     dimensions=embedding_dims,
                 ),
+                llm=None,
+                extraction=ExtractionConfig(extractor_type=ExtractorType.NONE),
+                memory=MemoryConfig(multi_tenant=True),
             )
             embedder = DatabricksEmbedder(
                 model=embedding_model,
@@ -195,9 +201,12 @@ class RetailAgent(ChatAgent):
         from retail_agent.agent.context import RetailContext
         retail_context = RetailContext(
             client=self._client,
+            embedder=getattr(self._client, "_embedder", None),
             session_id=session_id,
             user_id=user_id,
         )
+        if user_id:
+            await self._client.users.upsert_user(identifier=user_id)
 
         request_messages = [{"role": m.role, "content": m.content} for m in messages]
         if demo_mode_hint:

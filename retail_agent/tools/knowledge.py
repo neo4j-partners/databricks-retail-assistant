@@ -44,9 +44,12 @@ async def knowledge_search(
     — not the product catalog.
     """
     client = runtime.context.client
+    embedder = runtime.context.embedder
 
     try:
-        embedding = await client._embedder.embed(query)
+        if embedder is None:
+            raise RuntimeError("No embedder is configured.")
+        embedding = await embedder.embed(query)
     except Exception as e:
         logger.warning("Embedding failed for knowledge_search: %s", e)
         return json.dumps({"error": "Embedding service unavailable", "detail": str(e)})
@@ -98,9 +101,12 @@ async def hybrid_knowledge_search(
     coverage, then traverses entity relationships for context.
     """
     client = runtime.context.client
+    embedder = runtime.context.embedder
 
     try:
-        embedding = await client._embedder.embed(query)
+        if embedder is None:
+            raise RuntimeError("No embedder is configured.")
+        embedding = await embedder.embed(query)
     except Exception as e:
         logger.warning("Embedding failed for hybrid_knowledge_search: %s", e)
         return json.dumps({"error": "Embedding service unavailable", "detail": str(e)})
@@ -175,12 +181,15 @@ async def diagnose_product_issue(
     provide a symptom description to rank the most relevant symptoms first.
     """
     client = runtime.context.client
+    embedder = runtime.context.embedder
 
     if symptom_description:
         # Embed the symptom description and use it to rank matching chunks
         # by similarity, then collect symptoms and solutions from those chunks.
         try:
-            embedding = await client._embedder.embed(symptom_description)
+            if embedder is None:
+                raise RuntimeError("No embedder is configured.")
+            embedding = await embedder.embed(symptom_description)
         except Exception as e:
             logger.warning("Embedding failed in diagnose_product_issue: %s", e)
             embedding = None

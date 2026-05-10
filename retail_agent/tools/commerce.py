@@ -43,6 +43,7 @@ async def recommend_for_user(
         limit: Maximum number of recommendations to return.
     """
     client = runtime.context.client
+    embedder = runtime.context.embedder
     user_id = runtime.context.user_id
 
     # Step 1: Load user preferences from long-term memory
@@ -69,7 +70,9 @@ async def recommend_for_user(
 
     # Step 3: Embed the composite query
     try:
-        embedding = await client._embedder.embed(composite_query)
+        if embedder is None:
+            raise RuntimeError("No embedder is configured.")
+        embedding = await embedder.embed(composite_query)
     except Exception as e:
         logger.warning("Embedding failed for recommend_for_user: %s", e)
         return json.dumps({"error": "Embedding service unavailable", "detail": str(e)})

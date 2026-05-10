@@ -1,4 +1,10 @@
-# Proposal: Expand Retail Agent to GraphRAG-Powered Agentic Commerce
+# Historical Proposal: Expand Retail Agent to GraphRAG-Powered Agentic Commerce
+
+This document is historical background for the retail agent GraphRAG and memory expansion.
+
+The remaining work to make the demo client use a real backend is consolidated in `docs/real-backend.md`.
+
+---
 
 ## Problem Statement
 

@@ -34,8 +34,8 @@ def agent_diagnostics(
     client = runtime.context.client
     info["client_initialized"] = client is not None
     if client is not None:
-        info["has_graph"] = getattr(client, "_client", None) is not None
-        info["has_embedder"] = getattr(client, "_embedder", None) is not None
+        info["has_graph"] = getattr(client, "is_connected", False)
+        info["has_embedder"] = runtime.context.embedder is not None
         info["has_short_term"] = getattr(client, "short_term", None) is not None
         info["has_long_term"] = getattr(client, "long_term", None) is not None
 

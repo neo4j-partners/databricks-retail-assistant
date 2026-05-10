@@ -34,6 +34,7 @@ async def remember_message(
     """
     client = runtime.context.client
     session_id = runtime.context.session_id or "default"
+    user_identifier = runtime.context.memory_user_identifier
 
     await client.short_term.add_message(
         session_id,
@@ -41,6 +42,7 @@ async def remember_message(
         content,
         extract_entities=True,
         generate_embedding=True,
+        user_identifier=user_identifier,
     )
 
     # Retrieve the conversation to confirm storage

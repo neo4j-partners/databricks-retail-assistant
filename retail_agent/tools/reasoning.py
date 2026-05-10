@@ -43,6 +43,7 @@ async def record_reasoning_trace(
     """
     client = runtime.context.client
     session_id = runtime.context.session_id or "default"
+    user_identifier = runtime.context.memory_user_identifier
 
     try:
         # Start the trace
@@ -50,6 +51,7 @@ async def record_reasoning_trace(
             session_id=session_id,
             task=task,
             generate_embedding=True,
+            user_identifier=user_identifier,
         )
 
         # Record each step with its tool calls
@@ -112,19 +114,50 @@ async def recall_past_reasoning(
         limit: Maximum number of past traces to return.
     """
     client = runtime.context.client
+    embedder = runtime.context.embedder
+    user_identifier = runtime.context.memory_user_identifier
 
     try:
-        similar_traces = await client.reasoning.get_similar_traces(
-            task=task_description,
-            limit=limit,
-            success_only=True,
-            threshold=0.5,
+        if embedder is None:
+            return json.dumps({
+                "query": task_description,
+                "past_traces": [],
+                "count": 0,
+                "note": "No embedder is configured for reasoning recall.",
+            })
+        if not user_identifier:
+            return json.dumps({
+                "query": task_description,
+                "past_traces": [],
+                "count": 0,
+                "note": "No user identifier is available for scoped reasoning recall.",
+            })
+
+        task_embedding = await embedder.embed(task_description)
+        rows = await client.graph.execute_read(
+            """
+            CALL db.index.vector.queryNodes('task_embedding_idx', $candidate_limit, $embedding)
+            YIELD node, score
+            WHERE score >= $threshold AND node.success = true
+            WITH node, score
+            MATCH (:User {identifier: $user_identifier})-[:HAS_TRACE]->(node)
+            RETURN node.id AS trace_id, score
+            ORDER BY score DESC
+            LIMIT $limit
+            """,
+            {
+                "embedding": task_embedding,
+                "candidate_limit": max(limit * 5, limit),
+                "threshold": 0.5,
+                "limit": limit,
+                "user_identifier": user_identifier,
+            },
         )
 
         results = []
-        for trace in similar_traces:
+        for row in rows:
             # Get full trace with steps
-            full_trace = await client.reasoning.get_trace(trace.id)
+            full_trace = await client.reasoning.get_trace(row["trace_id"])
             if not full_trace:
                 continue
 
@@ -132,7 +165,7 @@ async def recall_past_reasoning(
                 "task": full_trace.task,
                 "outcome": full_trace.outcome,
                 "success": full_trace.success,
-                "similarity": trace.metadata.get("similarity", 0.0),
+                "similarity": row["score"],
                 "steps": [],
             }
 

@@ -9,7 +9,7 @@ invokes the agent — locally or via the Databricks serving adapter.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from neo4j_agent_memory import MemoryClient
@@ -24,5 +24,11 @@ class RetailContext:
     """
 
     client: MemoryClient
+    embedder: Any | None = None
     session_id: str | None = None
     user_id: str | None = None
+
+    @property
+    def memory_user_identifier(self) -> str | None:
+        """Identifier used for neo4j-agent-memory multi-tenant scoping."""
+        return self.user_id or self.session_id
