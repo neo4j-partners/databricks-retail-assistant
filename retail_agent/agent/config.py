@@ -10,7 +10,7 @@ from enum import Enum
 
 AGENT_DISPLAY_NAME = "Retail Graph Concierge"
 AGENT_NAME = "retail_graph_concierge"
-DEFAULT_ENDPOINT_NAME = "retail-graph-concierge"
+DEFAULT_ENDPOINT_NAME = "agents_retail_assistant-retail-retail_agent_v3"
 
 
 def _env_bool(name: str, default: bool) -> bool:

@@ -61,6 +61,7 @@ class RetailAgent(ChatAgent):
         self._initialized = False
         self._init_error: str | None = None
         self._client = None
+        self._embedder = None
         self._loop: asyncio.AbstractEventLoop | None = None
 
     def _ensure_initialized(self):
@@ -128,6 +129,7 @@ class RetailAgent(ChatAgent):
             )
             if not embedder.validate_endpoint():
                 embedder = None
+            self._embedder = embedder
 
             self._client = MemoryClient(settings, embedder=embedder)
 
@@ -201,7 +203,7 @@ class RetailAgent(ChatAgent):
         from retail_agent.agent.context import RetailContext
         retail_context = RetailContext(
             client=self._client,
-            embedder=getattr(self._client, "_embedder", None),
+            embedder=self._embedder,
             session_id=session_id,
             user_id=user_id,
         )

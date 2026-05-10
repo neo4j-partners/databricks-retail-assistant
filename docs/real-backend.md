@@ -15,9 +15,9 @@ This document is now the source of truth for the remaining work. The older demo 
 - The retail agent has GraphRAG knowledge tools for vector search, hybrid search, and product issue diagnosis.
 - The retail agent has long-term preference tools and a personalized recommendation tool.
 - The retail agent serving adapter has source code that can return structured demo trace metadata from real LangGraph tool calls.
-- The demo-client backend has search and diagnosis routes that can call a Databricks Model Serving endpoint.
+- The demo-client backend has search and diagnosis routes that can call the `agents_retail_assistant-retail-retail_agent_v3` Databricks Model Serving endpoint.
 - The generated frontend API client includes search and diagnosis calls.
-- The visible React demo is still wired to local sample data.
+- The visible React demo now submits through the generated backend API client.
 - Live endpoint behavior, deployed app permissions, and real trace rendering have not been validated end to end.
 
 ## Assumptions
@@ -26,7 +26,7 @@ This document is now the source of truth for the remaining work. The older demo 
 - The backend remains the boundary for Databricks authentication, response normalization, fallback behavior, and logging.
 - The first production-worthy demo keeps the two existing tabs: Agentic Search and Issue Diagnosis.
 - Sample data remains available for local development and explicitly enabled fallback, but live mode must be the normal path.
-- The deployed endpoint name must be confirmed before final validation because the docs and app configuration currently disagree.
+- The canonical deployed endpoint name is `agents_retail_assistant-retail-retail_agent_v3`.
 - Reset remains browser-local unless a scoped server-side memory reset capability is deliberately added later.
 
 ## Risks
@@ -43,34 +43,43 @@ This document is now the source of truth for the remaining work. The older demo 
 
 ### Phase 1: Make The Frontend Use The Backend
 
-- Status: Pending
+- Status: Complete
 - Outcome: Submitting either demo tab calls the generated backend API client instead of local sample data.
 - Checklist:
-  - Replace the active submit path in the React route with the generated search and diagnosis API calls.
-  - Keep the existing UI response shape by adding a small frontend adapter from backend response fields to display fields.
-  - Preserve preset buttons by passing preset ids to the backend instead of selecting local samples in the browser.
-  - Preserve session id handling by sending the current session id to the backend and storing the returned effective session id.
-  - Add user-visible warnings when the backend reports sample, fallback, inferred, or unavailable trace data.
-  - Remove or demote the local sample helper so it cannot be mistaken for the real production path.
+  - Complete: Replace the active submit path in the React route with the generated search and diagnosis API calls.
+  - Complete: Keep the existing UI response shape by adding a frontend adapter from backend response fields to display fields.
+  - Complete: Preserve preset buttons by passing preset ids to the backend instead of selecting local samples in the browser.
+  - Complete: Preserve session id handling by sending the current session id to the backend and storing the returned effective session id.
+  - Complete: Add user-visible warnings when the backend reports sample, fallback, inferred, or unavailable trace data.
+  - Complete: Remove the local sample-only submit path from the active helper so it cannot be mistaken for the real production path.
 - Validation:
-  - A typed frontend check passes.
-  - Browser submits reach `/api/demo/search` and `/api/demo/diagnose`.
-  - The sample-data warning about local-only backend wiring no longer appears in live mode.
+  - Complete: A typed frontend check passes.
+  - Pending: Browser submits reach `/api/demo/search` and `/api/demo/diagnose`.
+  - Complete: The sample-data warning about local-only backend wiring no longer appears in live mode.
+- Review:
+  - The adapter registers placeholder product records for live products that were not present in the original demo catalog, so live product cards no longer disappear because of unknown ids.
+  - Backend warnings are preserved and expanded with source and trace provenance when needed.
+  - Errors are converted into visible low-confidence or empty-result demo responses instead of leaving the UI stuck in loading state.
+  - Browser-level network verification is still pending and is included in final readiness validation.
 
 ### Phase 2: Confirm Endpoint Naming And Configuration
 
-- Status: Pending
+- Status: Complete
 - Outcome: The app consistently targets the intended retail agent serving endpoint.
 - Checklist:
-  - Decide whether the canonical endpoint is `retail-graph-concierge` or `agents_retail_assistant-retail-retail_agent_v3`.
-  - Align the backend default, sample environment file, bundle variable, deployment docs, and any demo script to the same endpoint name.
-  - Keep the endpoint configurable through environment or bundle variables.
-  - Verify that sample mode and live mode are controlled only by explicit configuration.
-  - Confirm fallback is disabled by default unless a demo environment intentionally enables it.
+  - Complete: Choose `agents_retail_assistant-retail-retail_agent_v3` as the canonical deployed serving endpoint.
+  - Complete: Align the backend default, sample environment file, bundle variable, deployment docs, and demo script defaults to the same endpoint name.
+  - Complete: Keep the endpoint configurable through environment or bundle variables.
+  - Complete: Verify that sample mode and live mode are controlled only by explicit configuration.
+  - Complete: Confirm fallback is disabled by default unless a demo environment intentionally enables it.
 - Validation:
-  - Local configuration reports the expected endpoint.
-  - The built app contains no hardcoded stale endpoint name.
-  - The old endpoint name appears only in historical notes if it is no longer canonical.
+  - Complete: The Databricks serving endpoint list shows `agents_retail_assistant-retail-retail_agent_v3` is READY.
+  - Complete: Local configuration defaults now report the expected endpoint.
+  - Complete: The stale endpoint name appears only as a CLI command prefix, historical naming, or non-demo artifact text.
+- Review:
+  - The serving endpoint name is now consistent across the retail agent default config, demo-client backend default, demo-client environment sample, bundle variable, deploy helper default, and demo-client README.
+  - `retail-graph-concierge-*` remains in command names and entry points because renaming those would be a broader CLI migration, not an endpoint configuration fix.
+  - The endpoint remains overrideable through `RETAIL_AGENT_ENDPOINT_NAME`, `AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME`, and bundle variables.
 
 ### Phase 3: Validate Live Backend Invocation
 

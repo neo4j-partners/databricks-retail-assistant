@@ -402,4 +402,4 @@ All configuration lives in [`agent/config.py`](https://github.com/neo4j-partners
 | `scale_to_zero` | `true` | Enable scale-to-zero on serving endpoint |
 | `max_wait_seconds` | `600` | Timeout for endpoint readiness check |
 
-The full Unity Catalog model name resolves to `retail_assistant.retail.retail_graph_concierge` by default. The endpoint name resolves to `retail-graph-concierge`.
+The full Unity Catalog model name resolves to `retail_assistant.retail.retail_graph_concierge` by default. The active validated serving endpoint is `agents_retail_assistant-retail-retail_agent_v3`.

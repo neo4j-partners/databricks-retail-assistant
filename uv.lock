@@ -2021,6 +2021,20 @@ wheels = [
 ]
 
 [[package]]
+name = "neo4j-agent-memory"
+version = "0.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "neo4j" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0e/c1/4eec3adddafdef78a3d2307c19b5125d9fe8fd6158ac46a1a352f529866e/neo4j_agent_memory-0.2.1.tar.gz", hash = "sha256:d2926f2c847e8c93d395812b372af727f89621b69fb5d6586d5aa17553af425a", size = 245294, upload-time = "2026-05-05T23:57:22.253Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/c7/c87a6b4f3ca56e8e8c99868140fda2a6ec7bcedc9e478d630cbb5c32496a/neo4j_agent_memory-0.2.1-py3-none-any.whl", hash = "sha256:3e98dd033b4c28448559394bb90b8f6431b46b23dec75bea59cdda0fac3f9218", size = 308015, upload-time = "2026-05-05T23:57:20.553Z" },
+]
+
+[[package]]
 name = "neo4j-graphrag"
 version = "1.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3033,6 +3047,7 @@ dependencies = [
     { name = "langgraph-prebuilt" },
     { name = "mlflow" },
     { name = "neo4j" },
+    { name = "neo4j-agent-memory" },
     { name = "neo4j-graphrag" },
     { name = "nest-asyncio" },
     { name = "openai" },
@@ -3060,6 +3075,7 @@ requires-dist = [
     { name = "langgraph-prebuilt", specifier = ">=1.0.4" },
     { name = "mlflow", specifier = ">=3.1" },
     { name = "neo4j", specifier = ">=5.20.0" },
+    { name = "neo4j-agent-memory", specifier = "==0.2.1" },
     { name = "neo4j-graphrag", specifier = ">=1.13.0" },
     { name = "nest-asyncio", specifier = ">=1.5.0" },
     { name = "openai", specifier = ">=1.0.0" },
