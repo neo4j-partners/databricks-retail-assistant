@@ -8,8 +8,8 @@ import os
 from dataclasses import dataclass, field
 from enum import Enum
 
-AGENT_DISPLAY_NAME = "Retail Graph Concierge"
-AGENT_NAME = "retail_graph_concierge"
+AGENT_DISPLAY_NAME = "Retail Agent"
+AGENT_NAME = "retail_agent_v3"
 DEFAULT_ENDPOINT_NAME = "agents_retail_assistant-retail-retail_agent_v3"
 
 
@@ -138,7 +138,7 @@ class DeployConfig:
     )
     validation_env_manager: str = field(
         default_factory=lambda: os.environ.get(
-            "RETAIL_AGENT_VALIDATION_ENV_MANAGER", "uv"
+            "RETAIL_AGENT_VALIDATION_ENV_MANAGER", "virtualenv"
         )
     )
 

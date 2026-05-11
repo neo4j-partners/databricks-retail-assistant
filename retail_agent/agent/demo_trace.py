@@ -15,6 +15,7 @@ TOOL_OUTPUT_FIELDS = {
     "diagnose_product_issue": "diagnosis",
     "get_user_profile": "profile",
     "track_preference": "memory_writes",
+    "recommend_for_user": "product_results",
 }
 
 DEMO_MODE_HINTS = {
@@ -23,14 +24,18 @@ DEMO_MODE_HINTS = {
         "shopping and recommendation requests. Use search_products for "
         "catalog matches, get_related_products for graph-backed adjacent "
         "recommendations, and get_user_profile or track_preference when "
-        "user-specific context is available. Return normal assistant prose."
+        "user-specific context is available. Demo catalog examples include "
+        "trail running shoes, rain shells, outdoor gear, and fitness apparel. "
+        "Return normal assistant prose."
     ),
     "issue_diagnosis": (
         "Demo mode: issue_diagnosis. Prefer support and knowledge-graph "
         "tools for troubleshooting requests. Use knowledge_search or "
         "hybrid_knowledge_search for symptoms, sources, features, and "
         "solutions. Use diagnose_product_issue when a specific product can "
-        "be identified. Return normal assistant prose."
+        "be identified. Demo troubleshooting examples include flat running "
+        "shoe midsoles, outsole peeling, fit issues, and gear durability. "
+        "Return normal assistant prose."
     ),
 }
 
@@ -188,6 +193,17 @@ def _normalize_tool_payload(
         trace["profile"].extend(_normalize_rows(payload.get("preferences")))
     elif tool_name == "track_preference":
         trace["memory_writes"].append(_json_safe(payload))
+    elif tool_name == "recommend_for_user":
+        trace["product_results"].extend(
+            _normalize_rows(payload.get("recommendations"))
+        )
+        preferences = _string_list(payload.get("preferences_used"))
+        trace["profile"].extend(
+            {"label": "preference", "value": preference}
+            for preference in preferences
+        )
+        if payload.get("note"):
+            trace["warnings"].append(_tool_warning(tool_name, str(payload["note"])))
 
 
 def _normalize_rows(value: Any) -> list[dict[str, Any]]:

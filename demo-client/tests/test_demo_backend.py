@@ -1,21 +1,65 @@
 from __future__ import annotations
 
+import json
+import socket
 import unittest
+import urllib.error
+from typing import cast
+from unittest.mock import patch
+
+from databricks.sdk import WorkspaceClient
 
 from agentic_commerce.backend.demo_adapter import (
     adapt_diagnosis_trace,
     adapt_search_trace,
 )
-from agentic_commerce.backend.router import _safe_error_status
+from agentic_commerce.backend.core._config import AppConfig
+from agentic_commerce.backend.router import (
+    DemoRouteError,
+    _effective_user_id,
+    _handle_search_failure,
+    _log_demo_result,
+    _safe_error_status,
+)
+from agentic_commerce.backend.models import AgenticSearchIn
 from agentic_commerce.backend.sample_data import diagnosis_sample, search_sample
-from agentic_commerce.backend.serving_client import ServingInvocationError
+from agentic_commerce.backend.serving_client import (
+    ServingInvocationError,
+    invoke_retail_agent,
+)
+
+
+class _FakeWorkspaceClient:
+    class _Config:
+        host = "https://example.databricks.com"
+
+        @staticmethod
+        def authenticate() -> dict[str, str]:
+            return {"Authorization": "Bearer token"}
+
+    config = _Config()
+
+
+class _FakeHTTPResponse:
+    def __init__(self, body: dict[str, object]) -> None:
+        self._body = json.dumps(body).encode("utf-8")
+        self.headers = {"x-databricks-request-id": "dbx-request-1"}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return self._body
 
 
 class DemoAdapterTests(unittest.TestCase):
     def test_search_trace_maps_live_product_results(self) -> None:
         adapted = adapt_search_trace(
             {
-                "messages": [{"role": "assistant", "content": "Pick this mouse."}],
+                "messages": [{"role": "assistant", "content": "Pick these shoes."}],
                 "custom_outputs": {
                     "demo_trace": {
                         "trace_source": "live",
@@ -35,7 +79,7 @@ class DemoAdapterTests(unittest.TestCase):
         )
 
         self.assertEqual(adapted["trace_source"], "live")
-        self.assertEqual(adapted["answer"], "Pick this mouse.")
+        self.assertEqual(adapted["answer"], "Pick these shoes.")
         self.assertEqual(adapted["product_picks"][0].name, "Logitech MX Master 3S")
         self.assertEqual(adapted["tool_timeline"][0].tool_name, "search_products")
 
@@ -78,8 +122,8 @@ class DemoAdapterTests(unittest.TestCase):
 class SampleDataTests(unittest.TestCase):
     def test_search_sample_has_session_and_products(self) -> None:
         response = search_sample(
-            preset_id="macbook-coding-mouse",
-            prompt="mouse",
+            preset_id="trail-running-shoes",
+            prompt="trail shoes",
             request_id="req",
             session_id="session",
         )
@@ -90,8 +134,8 @@ class SampleDataTests(unittest.TestCase):
 
     def test_diagnosis_sample_has_sources(self) -> None:
         response = diagnosis_sample(
-            preset_id="printer-offline",
-            prompt="printer offline",
+            preset_id="outsole-peeling",
+            prompt="outsole peeling",
             request_id="req",
             session_id="session",
         )
@@ -110,6 +154,128 @@ class ErrorMappingTests(unittest.TestCase):
         error = ServingInvocationError("timeout", status_code=504)
 
         self.assertEqual(_safe_error_status(error), 504)
+
+    def test_effective_user_id_falls_back_to_session_id(self) -> None:
+        self.assertEqual(_effective_user_id(None, "session-1"), "session:session-1")
+        self.assertEqual(_effective_user_id("  ", "session-1"), "session:session-1")
+        self.assertEqual(_effective_user_id("user-1", "session-1"), "user-1")
+
+    def test_demo_result_log_contains_operational_fields(self) -> None:
+        config = AppConfig(retail_agent_endpoint_name="endpoint-1")
+
+        with self.assertLogs("agentic-commerce", level="INFO") as captured:
+            _log_demo_result(
+                mode="agentic_search",
+                config=config,
+                request_id="request-1",
+                session_id="session-1",
+                source_type="live",
+                latency_ms=123,
+                databricks_request_id="dbx-request-1",
+                fallback_reason=None,
+            )
+
+        message = captured.output[0]
+        self.assertIn("mode=agentic_search", message)
+        self.assertIn("request_id=request-1", message)
+        self.assertIn("session_id=session-1", message)
+        self.assertIn("endpoint=endpoint-1", message)
+        self.assertIn("source_type=live", message)
+        self.assertIn("latency_ms=123", message)
+        self.assertIn("databricks_request_id=dbx-request-1", message)
+
+    def test_disabled_fallback_error_reports_unavailable(self) -> None:
+        config = AppConfig(demo_allow_sample_fallback=False)
+        request = AgenticSearchIn(prompt="trail shoes", session_id="session-1")
+        error = ServingInvocationError("offline", status_code=503, retryable=True)
+
+        with self.assertRaises(DemoRouteError) as raised:
+            _handle_search_failure(
+                exc=error,
+                request=request,
+                config=config,
+                request_id="request-1",
+                session_id="session-1",
+                started=0.0,
+            )
+
+        self.assertFalse(raised.exception.error.fallback_available)
+        self.assertEqual(raised.exception.status_code, 503)
+
+
+class ServingClientTests(unittest.TestCase):
+    def test_invoke_retail_agent_sends_custom_inputs(self) -> None:
+        captured = {}
+
+        def fake_urlopen(request, timeout):  # noqa: ANN001
+            captured["url"] = request.full_url
+            captured["timeout"] = timeout
+            captured["body"] = json.loads(request.data.decode("utf-8"))
+            captured["headers"] = dict(request.header_items())
+            return _FakeHTTPResponse(
+                {"messages": [{"role": "assistant", "content": "Live answer."}]}
+            )
+
+        config = AppConfig(retail_agent_timeout_seconds=17)
+        with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+            result = invoke_retail_agent(
+                ws=cast(WorkspaceClient, _FakeWorkspaceClient()),
+                config=config,
+                prompt="Find trail shoes",
+                session_id="session-1",
+                user_id="user-1",
+                demo_mode="agentic_search",
+            )
+
+        self.assertIn(config.retail_agent_endpoint_name, captured["url"])
+        self.assertEqual(captured["timeout"], 17)
+        self.assertEqual(
+            captured["body"]["messages"],
+            [{"role": "user", "content": "Find trail shoes"}],
+        )
+        self.assertEqual(
+            captured["body"]["custom_inputs"],
+            {
+                "session_id": "session-1",
+                "demo_mode": "agentic_search",
+                "user_id": "user-1",
+            },
+        )
+        self.assertEqual(result.databricks_request_id, "dbx-request-1")
+        self.assertEqual(result.payload["messages"][0]["content"], "Live answer.")
+
+    def test_invoke_retail_agent_maps_socket_timeout(self) -> None:
+        config = AppConfig(retail_agent_timeout_seconds=1)
+        with patch("urllib.request.urlopen", side_effect=socket.timeout("slow")):
+            with self.assertRaises(ServingInvocationError) as raised:
+                invoke_retail_agent(
+                    ws=cast(WorkspaceClient, _FakeWorkspaceClient()),
+                    config=config,
+                    prompt="Find trail shoes",
+                    session_id="session-1",
+                    user_id="user-1",
+                    demo_mode="agentic_search",
+                )
+
+        self.assertEqual(raised.exception.status_code, 504)
+        self.assertTrue(raised.exception.retryable)
+
+    def test_invoke_retail_agent_maps_wrapped_timeout(self) -> None:
+        config = AppConfig(retail_agent_timeout_seconds=1)
+        error = urllib.error.URLError(socket.timeout("slow"))
+        with patch("urllib.request.urlopen", side_effect=error):
+            with self.assertRaises(ServingInvocationError) as raised:
+                invoke_retail_agent(
+                    ws=cast(WorkspaceClient, _FakeWorkspaceClient()),
+                    config=config,
+                    prompt="Find trail shoes",
+                    session_id="session-1",
+                    user_id="user-1",
+                    demo_mode="agentic_search",
+                )
+
+        self.assertEqual(raised.exception.status_code, 504)
+        self.assertTrue(raised.exception.retryable)
 
 
 if __name__ == "__main__":

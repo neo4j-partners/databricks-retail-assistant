@@ -81,9 +81,23 @@ async def search_products(
         result = await client.graph.execute_read(cypher, params)
     except Exception:
         logger.info("Vector search unavailable, falling back to text search")
-        cypher = """
+        fallback_conditions = [
+            "(toLower(p.name) CONTAINS toLower($query) "
+            "OR toLower(coalesce(p.description, '')) CONTAINS toLower($query))"
+        ]
+        if category:
+            fallback_conditions.append("p.category = $category")
+        if brand:
+            fallback_conditions.append("p.brand = $brand")
+        if max_price is not None:
+            fallback_conditions.append("p.price <= $max_price")
+        fallback_where = " AND ".join(fallback_conditions)
+        fallback_params = {
+            key: value for key, value in params.items() if key != "embedding"
+        }
+        cypher = f"""
         MATCH (p:Product)
-        WHERE p.name CONTAINS $query OR p.description CONTAINS $query
+        WHERE {fallback_where}
         RETURN elementId(p) AS id, p.name AS name,
                coalesce(p.description, '') AS description,
                coalesce(p.price, 0) AS price,
@@ -93,7 +107,7 @@ async def search_products(
                1.0 AS score
         LIMIT $limit
         """
-        result = await client.graph.execute_read(cypher, {"query": query, "limit": limit})
+        result = await client.graph.execute_read(cypher, fallback_params)
 
     products = [dict(r) for r in result]
     return json.dumps({"products": products, "count": len(products)})

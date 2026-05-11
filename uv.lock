@@ -3034,7 +3034,7 @@ wheels = [
 
 [[package]]
 name = "retail-agent"
-version = "0.1.9"
+version = "0.1.19"
 source = { editable = "." }
 dependencies = [
     { name = "databricks-agents" },

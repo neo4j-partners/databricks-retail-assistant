@@ -83,58 +83,86 @@ This document is now the source of truth for the remaining work. The older demo 
 
 ### Phase 3: Validate Live Backend Invocation
 
-- Status: Pending
+- Status: Complete
 - Outcome: The demo-client backend can call the live retail agent and return frontend-safe responses.
 - Checklist:
-  - Run one live agentic search request through the backend route.
-  - Run one live issue diagnosis request through the backend route.
-  - Confirm session id and user id are passed through to the retail agent.
-  - Confirm upstream request ids and latency are captured when Databricks returns them.
-  - Confirm safe structured errors for authentication failure, permission failure, timeout, malformed response, and endpoint unavailable cases.
-  - Confirm sample fallback is used only when explicitly enabled.
+  - Complete: Run one live agentic search request through the backend route.
+  - Complete: Run one live issue diagnosis request through the backend route.
+  - Complete: Confirm session id and user id are passed through to the retail agent.
+  - Complete: Confirm upstream request ids and latency are captured when Databricks returns them.
+  - Complete: Confirm safe structured errors for authentication failure, permission failure, timeout, malformed response, and endpoint unavailable cases.
+  - Complete: Confirm sample fallback is used only when explicitly enabled.
 - Validation:
-  - Live backend responses return answer text without frontend errors.
-  - Logs include request id, mode, endpoint name, source type, latency, Databricks request id when available, and fallback reason when applicable.
-  - Error responses match the documented frontend error shape.
+  - Complete: Live backend search returned `source_type=live`, `trace_source=live`, a Databricks request id, 8 tool timeline rows, 10 product picks, 5 knowledge chunks, and no warnings.
+  - Complete: Live backend diagnosis returned `source_type=live`, `trace_source=live`, a Databricks request id, 4 tool timeline rows, 10 knowledge chunks, and no warnings.
+  - Complete: Unit tests cover serving payload shape, session and user id pass-through, socket timeout mapping, safe upstream status mapping, sample responses, and adapter degradation when trace metadata is missing.
+  - Complete: A log-shape test verifies request id, mode, endpoint name, source type, latency, Databricks request id, and fallback reason are emitted.
+  - Complete: `uv run python -m unittest discover tests` passes in `demo-client`.
+  - Complete: `apx dev check` passes.
+  - Complete: Error responses match the documented frontend error shape through `DemoError`.
+- Review:
+  - The backend now derives a session-scoped user id when the browser does not provide one, so the agent receives both session and user context without introducing cross-demo identity leakage.
+  - Live route validation confirms the backend calls the canonical Databricks Model Serving endpoint and normalizes both search and diagnosis responses into frontend-safe contracts.
+  - Fallback remains disabled by default and is only used when explicitly configured.
+  - The live search prompt revealed catalog/domain mismatch for computer peripherals, but the backend path, trace capture, and product normalization are working. Prompt and demo data fit are handled in Phase 5.
 
 ### Phase 4: Make The Agent Trace Fully Useful
 
-- Status: Pending
+- Status: Complete
 - Outcome: The intelligence panels use real tool calls and real tool outputs when the agent calls tools.
 - Checklist:
-  - Verify the deployed retail agent version returns `custom_outputs.demo_trace`.
-  - Confirm product search tool outputs become product cards.
-  - Confirm related product tool outputs become the frequently paired or graph traversal lane.
-  - Confirm GraphRAG knowledge tool outputs become chunks, sources, and graph-hop candidates.
-  - Confirm issue diagnosis tool outputs become diagnosis path, actions, alternatives, and citations.
-  - Add normalization for personalized recommendation tool output so recommendation results can become product cards.
-  - Add clear warnings for non-JSON tool outputs, malformed tool outputs, or no tool calls.
-  - Keep the normal assistant prose unchanged for existing agent consumers.
+  - Complete: Verify the deployed retail agent version returns `custom_outputs.demo_trace`.
+  - Complete: Confirm product search tool outputs become product cards.
+  - Complete: Confirm related product tool outputs become the frequently paired or graph traversal lane.
+  - Complete: Confirm GraphRAG knowledge tool outputs become chunks, sources, and graph-hop candidates.
+  - Complete: Confirm issue diagnosis tool outputs become diagnosis path, actions, alternatives, and citations.
+  - Complete: Add normalization for personalized recommendation tool output so recommendation results can become product cards.
+  - Complete: Add clear warnings for non-JSON tool outputs, malformed tool outputs, or no tool calls.
+  - Complete: Keep the normal assistant prose unchanged for existing agent consumers.
 - Validation:
-  - A live search prompt produces trace source `live` when real tool output is captured.
-  - A live diagnosis prompt produces live chunks, sources, or diagnosis details when the agent uses GraphRAG tools.
-  - A recommendation prompt with stored preferences produces live recommendation cards or an explicit unavailable warning.
+  - Complete: A live search prompt produced trace source `live`, 8 tool timeline rows, 10 product picks, 5 knowledge chunks, and no warnings.
+  - Complete: A live diagnosis prompt produced trace source `live`, 4 tool timeline rows, 10 knowledge chunks, and no warnings.
+  - Complete: A live preference-write prompt called `track_preference` and returned structured memory writes.
+  - Complete: A live returning-user recommendation prompt called `get_user_profile` and `recommend_for_user`, proving the deployed endpoint uses real profile and recommendation tools.
+  - Complete: Local trace extraction tests prove `recommend_for_user` output now becomes product results and profile chips.
+  - Complete: Local trace extraction tests cover non-JSON tool output and no-tool trace warnings.
+  - Complete: The retail agent endpoint was refreshed and endpoint smoke tests passed against the updated active route.
+- Review:
+  - Product search, GraphRAG, diagnosis, memory write, profile read, and recommendation tool calls are real, not mocked.
+  - The demo trace is real LangGraph tool-call metadata from `custom_outputs.demo_trace`.
+  - The local source now normalizes recommendation tool output into the same product-card path as catalog search.
+  - The deployed serving endpoint now routes traffic to the refreshed `retail_graph_concierge` model.
 
 ### Phase 5: Improve Tool Selection For Demo Prompts
 
-- Status: Pending
+- Status: Complete
 - Outcome: Representative demo prompts reliably exercise the real tools the UI is meant to showcase.
 - Checklist:
-  - Review the demo-mode prompt hints for search and diagnosis.
-  - Add small prompt guidance if the agent skips the expected tools for common demo prompts.
-  - Keep tool choice agentic, but make the desired demo behavior reliable enough for stakeholder walkthroughs.
-  - Add representative checks for search, diagnosis, profile read, preference write, recommendation, and trace capture.
-  - Record known prompts that still return prose-only answers.
+  - Complete: Review the demo-mode prompt hints for search and diagnosis.
+  - Complete: Add small prompt guidance if the agent skips the expected tools for common demo prompts.
+  - Complete: Keep tool choice agentic, but make the desired demo behavior reliable enough for stakeholder walkthroughs.
+  - Complete: Add representative checks for search, diagnosis, profile read, preference write, recommendation, and trace capture.
+  - Complete: Record known prompts that still return prose-only answers.
 - Validation:
-  - The primary search prompt calls product or recommendation tools.
-  - The primary support prompt calls GraphRAG or diagnosis tools.
-  - A returning-user recommendation prompt reads preferences or reports that no user profile exists.
+  - Complete: The primary search prompt now asks for waterproof trail running shoes under $150, matching the live outdoor and fitness catalog.
+  - Complete: The primary support prompt now asks about running shoes that feel flat after 300 miles, matching the live GraphRAG support corpus.
+  - Complete: Live search called `get_user_profile`, `search_products`, and `track_preference`, returned 14 product cards, and produced trace source `live`.
+  - Complete: Live diagnosis called `knowledge_search`, returned 5 knowledge chunks, 5 cited sources, 8 recommended actions, and produced trace source `live`.
+  - Complete: A returning-user recommendation prompt called `get_user_profile` and `recommend_for_user`.
+  - Complete: Local tests and `apx dev check` pass after the prompt and sample-data changes.
+  - Notes: No revised primary prompt returned prose-only output during validation. The recommendation prompt used the real recommendation tool, but structured recommendation cards still require the endpoint refresh recorded in Phase 6.
+- Review:
+  - The old electronics-oriented demo prompts were removed from the active frontend and backend sample paths.
+  - The sample fallback data now mirrors the live catalog domain so fallback mode does not tell a different product story from live mode.
+  - The prompt hints now include outdoor and fitness examples, which should take effect after the retail agent endpoint is refreshed.
 
 ### Phase 6: Validate Deployed App Permissions
 
-- Status: Pending
+- Status: In progress
 - Outcome: The Databricks App can query the serving endpoint from its deployed runtime.
 - Checklist:
+  - Complete: Refresh the retail agent serving endpoint so the active model version includes the latest trace normalization.
+  - Pending: Re-run the live recommendation prompt and confirm structured recommendation cards are returned from the deployed app path.
   - Confirm the app resource grants query permission to the serving endpoint.
   - Deploy the app with live mode enabled.
   - Submit one search request from the deployed app.
@@ -142,9 +170,12 @@ This document is now the source of truth for the remaining work. The older demo 
   - Check deployed app logs for endpoint name, request id, source type, latency, and fallback behavior.
   - Confirm no Databricks credentials, Neo4j credentials, authorization headers, or raw secrets appear in user-visible responses or logs.
 - Validation:
-  - Deployed search returns a live response or a clearly marked fallback if fallback is intentionally enabled.
-  - Deployed diagnosis returns a live response or a clearly marked fallback if fallback is intentionally enabled.
-  - The app works without relying on a local Databricks CLI profile.
+  - Pending: Deployed search returns a live response or a clearly marked fallback if fallback is intentionally enabled.
+  - Pending: Deployed diagnosis returns a live response or a clearly marked fallback if fallback is intentionally enabled.
+  - Pending: The app works without relying on a local Databricks CLI profile.
+  - Complete: The serving endpoint is READY with no pending config and routes 100% traffic to `retail_assistant-retail-retail_graph_concierge_1`.
+  - Complete: `retail-graph-concierge-demo` and `retail-graph-concierge-check-knowledge` passed against the refreshed endpoint.
+  - Notes: Databricks App deployment and app-runtime permission validation remain pending.
 
 ### Phase 7: Final Demo Readiness
 

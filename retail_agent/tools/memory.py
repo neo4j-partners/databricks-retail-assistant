@@ -1,7 +1,7 @@
 """Short-term memory tools using neo4j-agent-memory.
 
 Session-scoped conversation store/recall and semantic search:
-- remember_message: store a message in short-term memory (with entity extraction)
+- remember_message: store a message in short-term memory with embeddings
 - recall_memory: retrieve full conversation history
 - search_memory: semantic similarity search via short_term.search_messages
 """
@@ -40,7 +40,7 @@ async def remember_message(
         session_id,
         role,
         content,
-        extract_entities=True,
+        extract_entities=False,
         generate_embedding=True,
         user_identifier=user_identifier,
     )

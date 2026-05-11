@@ -31,4 +31,8 @@ class RetailContext:
     @property
     def memory_user_identifier(self) -> str | None:
         """Identifier used for neo4j-agent-memory multi-tenant scoping."""
-        return self.user_id or self.session_id
+        if self.user_id:
+            return self.user_id
+        if self.session_id:
+            return f"session:{self.session_id}"
+        return None

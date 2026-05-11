@@ -831,17 +831,17 @@ function DemoClient() {
         ? searchSamples.map((sample) => ({
             id: sample.id,
             label:
-              sample.id === "mouse_macbook"
-                ? "wireless mouse for MacBook coding"
-                : "headphones for a frequent traveler",
+              sample.id === "trail_running_shoes"
+                ? "waterproof trail shoes under $150"
+                : "packable rain shell for day hikes",
             prompt: sample.query,
           }))
         : supportSamples.map((sample) => ({
             id: sample.id,
             label:
-              sample.id === "bt_disconnect"
-                ? "headphones disconnect during calls"
-                : "printer keeps showing offline",
+              sample.id === "shoes_flat"
+                ? "running shoes feel flat"
+                : "outsole peeling after 3 months",
             prompt: sample.query,
           })),
     [mode],
@@ -934,8 +934,8 @@ function DemoClient() {
             label={mode === "search" ? "Ask anything about our catalog" : "Describe the problem"}
             placeholder={
               mode === "search"
-                ? "e.g. wireless mouse for long coding sessions on a MacBook"
-                : "e.g. my wireless headphones keep disconnecting from my laptop"
+                ? "e.g. waterproof trail running shoes under $150"
+                : "e.g. my running shoes feel flat after 300 miles"
             }
             submitLabel={mode === "search" ? "Ask agent" : "Diagnose"}
             icon={mode === "search" ? <Send className="size-4" /> : <Sparkles className="size-4" />}

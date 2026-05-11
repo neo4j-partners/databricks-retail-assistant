@@ -56,6 +56,7 @@ def agentic_search(
 ) -> AgenticSearchOut:
     request_id = str(uuid4())
     session_id = request.session_id or str(uuid4())
+    user_id = _effective_user_id(request.user_id, session_id)
     demo_mode = "agentic_search"
 
     if _use_sample(config.demo_data_mode):
@@ -73,7 +74,7 @@ def agentic_search(
             config=config,
             prompt=request.prompt,
             session_id=session_id,
-            user_id=request.user_id,
+            user_id=user_id,
             demo_mode=demo_mode,
         )
         adapted = adapt_search_trace(result.payload)
@@ -125,6 +126,7 @@ def issue_diagnosis(
 ) -> IssueDiagnosisOut:
     request_id = str(uuid4())
     session_id = request.session_id or str(uuid4())
+    user_id = _effective_user_id(request.user_id, session_id)
     demo_mode = "issue_diagnosis"
 
     if _use_sample(config.demo_data_mode):
@@ -142,7 +144,7 @@ def issue_diagnosis(
             config=config,
             prompt=request.prompt,
             session_id=session_id,
-            user_id=request.user_id,
+            user_id=user_id,
             demo_mode=demo_mode,
         )
         adapted = adapt_diagnosis_trace(result.payload)
@@ -185,6 +187,11 @@ def _use_sample(data_mode: str) -> bool:
     return data_mode.strip().lower() in {"sample", "samples", "mock"}
 
 
+def _effective_user_id(user_id: str | None, session_id: str) -> str:
+    value = user_id.strip() if user_id else ""
+    return value or f"session:{session_id}"
+
+
 def _handle_search_failure(
     *,
     exc: ServingInvocationError,
@@ -215,7 +222,10 @@ def _handle_search_failure(
             fallback_reason=_fallback_reason(exc),
         )
         return response
-    _raise_demo_error(exc, fallback_available=True)
+    _raise_demo_error(
+        exc,
+        fallback_available=config.demo_allow_sample_fallback,
+    )
 
 
 def _handle_diagnosis_failure(
@@ -248,7 +258,10 @@ def _handle_diagnosis_failure(
             fallback_reason=_fallback_reason(exc),
         )
         return response
-    _raise_demo_error(exc, fallback_available=True)
+    _raise_demo_error(
+        exc,
+        fallback_available=config.demo_allow_sample_fallback,
+    )
 
 
 def _raise_demo_error(

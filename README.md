@@ -68,7 +68,7 @@ The assistant uses Neo4j as the operational graph for product relationships, Gra
 | Product graph | `Product`, `Category`, `Brand`, `Attribute`; `IN_CATEGORY`, `MADE_BY`, `HAS_ATTRIBUTE`, `SIMILAR_TO`, `BOUGHT_TOGETHER` | `retail-graph-concierge-load-products` |
 | Knowledge source graph | `KnowledgeArticle`, `SupportTicket`, `Review`; source document relationships to products | `retail-graph-concierge-load-products` |
 | GraphRAG layer | `Document`, `Chunk`, `Feature`, `Symptom`, `Solution`; `HAS_CHUNK`, `FROM_DOCUMENT`, `MENTIONS_FEATURE`, `REPORTS_SYMPTOM`, `PROVIDES_SOLUTION`, product shortcuts | `retail-graph-concierge-load-graphrag` |
-| Agent memory | `Message`, `Entity`, `Preference`, `Fact`, `Task` and memory vector indexes | `neo4j-agent-memory` at serving time |
+| Agent memory | `Message`, `Preference`, `Fact`, `Task` and memory vector indexes | `neo4j-agent-memory` at serving time |
 
 Databricks provides the job execution environment, MLflow model registry, Model Serving endpoint, LLM endpoint, embedding endpoint, Unity Catalog volume for wheels, and optional Delta Lake tables for analytics/Genie demos.
 
@@ -177,7 +177,7 @@ This reads `KnowledgeArticle`, `SupportTicket`, and `Review` nodes from Neo4j, r
 uv run python -m cli submit retail-graph-concierge-deploy
 ```
 
-This logs the agent to MLflow, registers the model in Unity Catalog as `retail_assistant.retail.retail_graph_concierge`, deploys it with `databricks-agents`, and waits until the new model version is the active traffic target.
+This logs the agent to MLflow, registers the model in Unity Catalog as `retail_assistant.retail.retail_agent_v3`, deploys it with `databricks-agents`, and waits until the new model version is the active traffic target.
 
 ### 5. Verify Endpoint, Products, And Memory
 
@@ -243,9 +243,10 @@ uv run python -m cli logs <run-id>
 
 ## Local Validation
 
-There are currently no pytest tests in this repository, so `uv run pytest` exits with code 5 after collecting 0 tests. Use these checks instead:
+Run the local checks before submitting Databricks jobs:
 
 ```bash
+uv run python -m pytest
 uv run python -m compileall -q retail_agent demo-client/src
 uv run python -m cli validate
 ```

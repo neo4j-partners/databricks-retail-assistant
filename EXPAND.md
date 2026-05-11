@@ -61,13 +61,13 @@ Three new tools added under `retail_agent/tools/`, registered in `graph.py` alon
 
 ### What Changes
 
-The agent gains long-term memory (user preferences and entity extraction), reasoning traces, and commerce-oriented tools that use accumulated knowledge to personalize interactions.
+The agent gains long-term memory for user preferences, reasoning traces, and commerce-oriented tools that use accumulated knowledge to personalize interactions. Conversation entity extraction is intentionally disabled in the Databricks serving path until an extraction model is configured for that environment.
 
 ### Requirements
 
 1. **Long-term memory activation** — The `MemoryClient` already exposes `client.long_term`, but no tools use it. Add a `track_preference` tool that stores user preferences (preferred brands, categories, size, price sensitivity) as entities in long-term memory with POLE+O classification. Add a `get_user_profile` tool that retrieves accumulated preferences for the current user by querying long-term memory.
 
-2. **Entity extraction on conversation messages** — Change `remember_message` to set `extract_entities=True` instead of `False`. This activates the neo4j-agent-memory extraction pipeline, which pulls Person, Organization, Location, and Object entities from conversation text and stores them in the knowledge graph. Extracted entities link back to the originating message via EXTRACTED_FROM relationships.
+2. **Conversation message storage** — Keep `remember_message` on `extract_entities=False` in Databricks serving unless an extraction model is explicitly configured. Store embeddings for semantic recall, and rely on the dedicated preference tools for durable user profile facts.
 
 3. **Reasoning traces** — Add a `record_reasoning_trace` tool that opens a ReasoningTrace when the agent begins a multi-step task (product comparison, troubleshooting workflow, purchase recommendation) and records each step with its tool call, result, duration, and success/failure. Add a `recall_past_reasoning` tool that takes a task description and uses semantic similarity to find past reasoning traces for comparable tasks, returning the successful approaches.
 
@@ -81,7 +81,7 @@ The agent gains long-term memory (user preferences and entity extraction), reaso
 
 - `retail_agent/agent/context.py` — Add `user_id: str | None = None` field.
 - `retail_agent/agent/serving.py` — Extract `user_id` from `custom_inputs`, pass to `RetailContext`.
-- `retail_agent/tools/memory.py` — Change `extract_entities` to `True` in `remember_message`. Add `track_preference`, `get_user_profile` tools.
+- `retail_agent/tools/memory.py` — Store embedded short-term messages. Add `track_preference`, `get_user_profile` tools.
 - `retail_agent/tools/reasoning.py` — New file. `record_reasoning_trace`, `recall_past_reasoning` tools + `REASONING_TOOLS` list.
 - `retail_agent/tools/commerce.py` — New file. `recommend_for_user` tool + `COMMERCE_TOOLS` list.
 - `retail_agent/agent/graph.py` — Import new tool lists, add to `ALL_TOOLS`, update `SYSTEM_PROMPT`.

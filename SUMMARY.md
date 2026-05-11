@@ -42,7 +42,7 @@ The retail agent is a conversational shopping assistant deployed as a single Dat
 - **Neo4j** — stores the product knowledge graph (products, categories, brands, attributes, and their relationships) and the agent memory graph (conversation history, user preferences, reasoning traces). Three Neo4j libraries divide the work:
   - **neo4j Python driver** — async and sync drivers for direct Cypher execution, used for graph queries in the deployed agent and DDL operations during data loading
   - **neo4j-graphrag-python** — handles knowledge graph construction (chunking, embedding, entity extraction) and provides the retriever patterns (VectorCypher, HybridCypher, Text2Cypher) demonstrated in the retriever demo scripts
-  - **neo4j-agent-memory** — gives the agent persistent short-term, long-term, and reasoning memory backed by Neo4j, with built-in entity extraction and semantic search over past interactions
+  - **neo4j-agent-memory** — gives the agent persistent short-term, long-term, and reasoning memory backed by Neo4j, with semantic search over past interactions. The Databricks serving configuration disables conversation entity extraction so it does not need an additional extraction model at runtime.
   - **Neo4j Spark Connector** — two-way bridge between Databricks and Neo4j, used for bulk-loading product nodes and relationships from Spark DataFrames
 - **Databricks Delta Lake** — stores transactional and analytical data (1M+ transactions, customers, reviews, inventory). Planned Genie integration will query these tables via natural language to SQL.
 - **Databricks BGE Embeddings** — a 1024-dimension embedding model used for vector similarity search across both product descriptions and knowledge articles
@@ -57,8 +57,8 @@ The retail agent is a conversational shopping assistant deployed as a single Dat
   - Source documents are split into chunks, embedded with Databricks BGE, and stored as Chunk nodes with vector and fulltext indexes
   - An LLM extracts Feature, Symptom, and Solution entities from each chunk and links them back into the graph
   - Three retrieval modes: vector search with entity traversal, hybrid (fulltext + vector) with traversal, and product-scoped symptom/solution lookup
-- **Three-layer memory** — short-term memory (scoped to a session) stores the current conversation and extracted entities. Long-term memory (scoped to a user) stores preferences like favorite brands and budget ranges. Reasoning memory records past multi-step problem-solving approaches so the agent can reuse successful strategies.
-  - Short-term: stores messages with automatic entity extraction (people, organizations, locations, objects) scoped to a session ID
+- **Three-layer memory** — short-term memory (scoped to a session) stores the current conversation and embeddings. Long-term memory (scoped to a user) stores preferences like favorite brands and budget ranges. Reasoning memory records past multi-step problem-solving approaches so the agent can reuse successful strategies.
+  - Short-term: stores embedded messages scoped to a session ID
   - Long-term: tracks brand, category, budget, activity, and material preferences scoped to a user ID and persisted across sessions
   - Reasoning: records multi-step problem-solving traces with per-step thoughts, tool calls, and outcomes so the agent can recall successful approaches for similar future tasks
 - **Neo4j Agent Memory library on Databricks** — shows how to integrate the neo4j-agent-memory Python library into a Databricks Model Serving environment, from initialization through to per-request usage across all three memory layers.

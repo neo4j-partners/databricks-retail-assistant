@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -68,6 +69,9 @@ def invoke_retail_agent(
         }
     ).encode("utf-8")
 
+    # WorkspaceClient.serving_endpoints.query does not expose ChatAgent
+    # custom_inputs, so this path posts the Databricks invocation shape
+    # directly while still using WorkspaceClient for host and auth.
     try:
         auth_headers = ws.config.authenticate()
     except Exception as exc:
@@ -101,10 +105,11 @@ def invoke_retail_agent(
                 databricks_request_id=_request_id(dict(response.headers)),
                 latency_ms=latency_ms,
             )
-    except TimeoutError as exc:
+    except (TimeoutError, socket.timeout) as exc:
         latency_ms = int((time.perf_counter() - started) * 1000)
         raise ServingInvocationError(
             "Retail agent invocation timed out.",
+            status_code=504,
             retryable=True,
             detail=f"Timed out after {latency_ms} ms.",
         ) from exc
@@ -117,8 +122,15 @@ def invoke_retail_agent(
             detail=body_text[:1000],
         ) from exc
     except urllib.error.URLError as exc:
+        timeout = isinstance(exc.reason, (TimeoutError, socket.timeout))
+        message = (
+            "Retail agent invocation timed out."
+            if timeout
+            else "Could not reach the retail agent endpoint."
+        )
         raise ServingInvocationError(
-            "Could not reach the retail agent endpoint.",
+            message,
+            status_code=504 if timeout else None,
             retryable=True,
             detail=str(exc.reason),
         ) from exc

@@ -7,15 +7,15 @@ from databricks_job_runner import Runner
 from databricks_job_runner.errors import RunnerError
 
 
-ENTRY_POINTS = frozenset({
-    "retail-graph-concierge-deploy",
-    "retail-graph-concierge-load-products",
-    "retail-graph-concierge-load-graphrag",
-    "retail-graph-concierge-demo",
-    "retail-graph-concierge-demo-retrievers",
-    "retail-graph-concierge-check-knowledge",
-    "retail-graph-concierge-deploy-supervisor",
-})
+ENTRY_POINTS = {
+    "retail-graph-concierge-deploy": "retail_graph_concierge_deploy",
+    "retail-graph-concierge-load-products": "retail_graph_concierge_load_products",
+    "retail-graph-concierge-load-graphrag": "retail_graph_concierge_load_graphrag",
+    "retail-graph-concierge-demo": "retail_graph_concierge_demo",
+    "retail-graph-concierge-demo-retrievers": "retail_graph_concierge_demo_retrievers",
+    "retail-graph-concierge-check-knowledge": "retail_graph_concierge_check_knowledge",
+    "retail-graph-concierge-deploy-supervisor": "retail_graph_concierge_deploy_supervisor",
+}
 
 
 class RetailAgentRunner(Runner):
@@ -72,11 +72,12 @@ class RetailAgentRunner(Runner):
         print(f"  Run name: {run_name}")
         print("---")
 
+        entry_point = ENTRY_POINTS[script]
         task = SubmitTask(
             task_key="run_entry_point",
             python_wheel_task=PythonWheelTask(
                 package_name=self.wheel_package or "retail_agent",
-                entry_point=script,
+                entry_point=entry_point,
                 parameters=params if params else None,
             ),
         )

@@ -197,7 +197,7 @@ class RetailAgent(ChatAgent):
             user_id = custom_inputs.get("user_id")
             demo_mode_hint = get_demo_mode_hint(custom_inputs.get("demo_mode"))
         if not session_id:
-            session_id = "serving-default"
+            session_id = f"serving-{uuid4()}"
 
         # Build context for this request
         from retail_agent.agent.context import RetailContext

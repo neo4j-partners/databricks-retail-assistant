@@ -19,67 +19,67 @@ from .models import (
 
 
 SEARCH_PRESETS = {
-    "macbook-coding-mouse": {
+    "trail-running-shoes": {
         "answer": (
-            "The best match is the Logitech MX Master 3S for Mac. It fits a "
-            "MacBook coding workflow with quiet clicks, high-resolution "
-            "scrolling, USB-C charging, and strong app-specific shortcuts."
+            "For waterproof trail running under $150, start with the Brooks "
+            "Cascadia 17 GTX. It balances wet-weather protection, trail grip, "
+            "and enough cushioning for rocky weekend runs."
         ),
-        "summary": "Ranked mouse recommendations for MacBook coding work.",
+        "summary": "Ranked waterproof trail running shoes under $150.",
         "products": [
             ProductCard(
-                id="sample-mx-master-3s-mac",
-                name="Logitech MX Master 3S for Mac",
-                brand="Logitech",
-                category="Mouse",
-                price=99.99,
+                id="sample-brooks-cascadia-17-gtx",
+                name="Cascadia 17 GTX",
+                brand="Brooks",
+                category="Trail running shoes",
+                price=149.0,
                 in_stock=True,
                 score=0.94,
-                rationale="Best ergonomic fit for long coding sessions on macOS.",
-                signals=["macOS gestures", "quiet clicks", "USB-C", "ergonomic"],
+                rationale="Best balance of waterproofing, grip, and under-$150 pricing.",
+                signals=["waterproof", "trail grip", "under $150", "stable"],
             ),
             ProductCard(
-                id="sample-magic-mouse",
-                name="Apple Magic Mouse",
-                brand="Apple",
-                category="Mouse",
-                price=79.0,
+                id="sample-pegasus-trail-4",
+                name="Pegasus Trail 4 GTX",
+                brand="Nike",
+                category="Trail running shoes",
+                price=140.0,
                 in_stock=True,
-                score=0.81,
-                rationale="Native Apple gesture support with a compact profile.",
-                signals=["native macOS", "multi-touch", "portable"],
+                score=0.88,
+                rationale="Lighter road-to-trail option with weather protection.",
+                signals=["waterproof", "road-to-trail", "lightweight"],
             ),
         ],
     },
-    "frequent-traveler-headphones": {
+    "rain-hiking-jacket": {
         "answer": (
-            "For frequent travel, pick the Bose QuietComfort Ultra Headphones. "
-            "They prioritize noise cancellation, comfort, and simple multipoint "
-            "Bluetooth behavior for airport and hotel workflows."
+            "For a light hiking shell that can handle rain, pick the Stormline "
+            "Stretch Rain Shell. It packs small, breathes well, and keeps a "
+            "clean feature set for day hikes."
         ),
-        "summary": "Ranked headphones for frequent travelers.",
+        "summary": "Ranked lightweight rain shells for day hikes.",
         "products": [
             ProductCard(
-                id="sample-bose-qc-ultra",
-                name="Bose QuietComfort Ultra Headphones",
-                brand="Bose",
-                category="Headphones",
-                price=429.0,
+                id="sample-stormline-shell",
+                name="Stormline Stretch Rain Shell",
+                brand="Black Diamond",
+                category="Rain jacket",
+                price=169.0,
                 in_stock=True,
-                score=0.93,
-                rationale="Strong travel comfort and top-tier noise cancellation.",
-                signals=["ANC", "multipoint", "folding case", "long-haul comfort"],
+                score=0.91,
+                rationale="Strong packability and stretch without overbuilding.",
+                signals=["waterproof", "packable", "stretch", "day hike"],
             ),
             ProductCard(
-                id="sample-sony-xm5",
-                name="Sony WH-1000XM5",
-                brand="Sony",
-                category="Headphones",
-                price=399.99,
+                id="sample-patagonia-torrentshell",
+                name="Torrentshell 3L",
+                brand="Patagonia",
+                category="Rain jacket",
+                price=179.0,
                 in_stock=True,
-                score=0.89,
-                rationale="Excellent battery life and adaptive noise control.",
-                signals=["ANC", "30-hour battery", "lightweight"],
+                score=0.87,
+                rationale="More durable three-layer shell for wetter hikes.",
+                signals=["waterproof", "durable", "3-layer"],
             ),
         ],
     },
@@ -87,25 +87,25 @@ SEARCH_PRESETS = {
 
 
 DIAGNOSIS_PRESETS = {
-    "headphones-disconnect-calls": {
+    "running-shoes-feel-flat": {
         "answer": (
-            "The disconnects are most likely caused by multipoint Bluetooth "
-            "handoff during call start. Disable multipoint temporarily, forget "
-            "and re-pair the headset, then update firmware before the next call."
+            "Running shoes that feel flat after about 300 miles usually have "
+            "compressed midsole foam. Rotate in a fresh pair, check outsole "
+            "wear, and reserve the old pair for short easy runs if traction is safe."
         ),
-        "summary": "Bluetooth call disconnects point to multipoint handoff.",
-        "symptom": "Headphones disconnect when calls begin.",
-        "solution": "Reset Bluetooth pairing, disable multipoint, and update firmware.",
+        "summary": "Flat ride points to midsole compression after high mileage.",
+        "symptom": "Running shoes feel flat and unresponsive after 300 miles.",
+        "solution": "Replace or rotate the shoes and inspect outsole traction.",
     },
-    "printer-offline": {
+    "outsole-peeling": {
         "answer": (
-            "The printer is likely marked offline because the network address "
-            "changed or the print queue cached a stale connection. Rejoin Wi-Fi, "
-            "restart the spooler, and re-add the printer if it still shows offline."
+            "Outsole peeling after a few months is usually an adhesion or flex "
+            "stress issue. Clean and dry the shoe, stop using heat to dry it, "
+            "and contact support if the separation is wider than a few millimeters."
         ),
-        "summary": "Offline printer state likely comes from stale network routing.",
-        "symptom": "Printer appears offline even while powered on.",
-        "solution": "Reconnect Wi-Fi, restart the print queue, and re-add the device.",
+        "summary": "Peeling outsole suggests adhesion failure or high-flex wear.",
+        "symptom": "Continental outsole is peeling after three months.",
+        "solution": "Avoid heat drying, inspect separation, and start a warranty claim if needed.",
     },
 }
 
