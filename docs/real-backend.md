@@ -219,6 +219,8 @@ This document is now the source of truth for the remaining work. The older demo 
   - Complete: `retail_agent-0.1.24` was uploaded, `retail-agent-deploy` registered UC model version 16, and the serving endpoint now routes 100% traffic to `retail_assistant-retail-retail_agent_v3_16`.
   - Complete: Direct endpoint smoke testing returned live assistant messages, product results, memory writes, and structured demo trace output from version 16.
   - Complete: `retail-agent-demo` run `714990109566429` passed 9 of 9 deployed-agent checks covering product search, product lookup, graph traversal, short-term memory, long-term preferences, profile retrieval, and preference-based recommendation.
+  - Complete: `retail-agent-check-knowledge` run `30013564659849` passed 4 of 4 deployed GraphRAG checks covering knowledge search, hybrid knowledge search, product diagnosis, and cross-product knowledge comparison.
+  - Complete: Deployed app smoke search after the version 16 endpoint promotion returned `source_type=live`, `trace_source=live`, 6 product cards, no warnings, and request id `74240380-1fec-42af-9dad-d79c03c4677c`.
   - Pending: Browser desktop and mobile visual verification is still needed before marking this phase complete.
 - Review:
   - The quality gate now checks the actual demo contract rather than only answer text. It fails if live mode silently falls back to sample/static data or if obvious credential markers appear in returned output.

@@ -131,6 +131,31 @@ uv run python -m cli pipeline --verify --compute serverless
 
 Use `uv run python -m cli logs <run-id>` after a submitted step to inspect Databricks task output.
 
+## Focused Testing
+
+Test only the deployed agent endpoint on Databricks:
+
+```bash
+uv run python -m cli submit retail-agent-demo
+uv run python -m cli submit retail-agent-check-knowledge
+uv run python -m cli logs <run-id>
+```
+
+`retail-agent-demo` verifies endpoint readiness, diagnostics, product search,
+product lookup, graph traversal, short-term memory, long-term preferences,
+profile retrieval, and preference-based recommendations.
+
+`retail-agent-check-knowledge` verifies the GraphRAG path with knowledge search,
+hybrid search, product diagnosis, and cross-product knowledge comparison.
+
+Test only the local `retail_agent` package before submitting Databricks jobs:
+
+```bash
+uv run python -m pytest tests
+uv run python -m compileall retail_agent
+uv run python -m cli validate retail-agent-demo
+```
+
 ## Individual Commands
 
 The single pipeline command is the normal path. Use these commands for debugging or rerunning one step.
