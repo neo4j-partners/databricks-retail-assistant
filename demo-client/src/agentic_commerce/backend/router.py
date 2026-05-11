@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Any, NoReturn
 from uuid import uuid4
@@ -222,6 +223,17 @@ def _handle_search_failure(
             fallback_reason=_fallback_reason(exc),
         )
         return response
+    _log_demo_failure(
+        mode="agentic_search",
+        config=config,
+        request_id=request_id,
+        session_id=session_id,
+        status_code=_safe_error_status(exc),
+        latency_ms=latency_ms,
+        retryable=exc.retryable,
+        fallback_available=config.demo_allow_sample_fallback,
+        technical_detail=_technical_detail(exc),
+    )
     _raise_demo_error(
         exc,
         fallback_available=config.demo_allow_sample_fallback,
@@ -258,6 +270,17 @@ def _handle_diagnosis_failure(
             fallback_reason=_fallback_reason(exc),
         )
         return response
+    _log_demo_failure(
+        mode="issue_diagnosis",
+        config=config,
+        request_id=request_id,
+        session_id=session_id,
+        status_code=_safe_error_status(exc),
+        latency_ms=latency_ms,
+        retryable=exc.retryable,
+        fallback_available=config.demo_allow_sample_fallback,
+        technical_detail=_technical_detail(exc),
+    )
     _raise_demo_error(
         exc,
         fallback_available=config.demo_allow_sample_fallback,
@@ -290,7 +313,26 @@ def _safe_error_status(exc: ServingInvocationError) -> int:
 
 def _technical_detail(exc: ServingInvocationError) -> str:
     detail = exc.detail or str(exc)
-    return detail.replace("\n", " ")[:1000]
+    return _redact_sensitive_text(detail).replace("\n", " ")[:1000]
+
+
+def _redact_sensitive_text(value: str) -> str:
+    redacted = re.sub(
+        r"(?i)(authorization\s*[:=]\s*bearer\s+)[^\s\"']+",
+        r"\1[REDACTED]",
+        value,
+    )
+    redacted = re.sub(
+        r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]+",
+        r"\1[REDACTED]",
+        redacted,
+    )
+    redacted = re.sub(
+        r"(?i)(neo4j[_-]?password\s*[:=]\s*)[^\s,;]+",
+        r"\1[REDACTED]",
+        redacted,
+    )
+    return redacted
 
 
 def _fallback_reason(exc: ServingInvocationError) -> str:
@@ -321,4 +363,32 @@ def _log_demo_result(
         latency_ms,
         databricks_request_id,
         fallback_reason,
+    )
+
+
+def _log_demo_failure(
+    *,
+    mode: str,
+    config: AppConfig,
+    request_id: str,
+    session_id: str,
+    status_code: int,
+    latency_ms: int,
+    retryable: bool,
+    fallback_available: bool,
+    technical_detail: str,
+) -> None:
+    logger.warning(
+        "demo_request_failed mode=%s request_id=%s session_id=%s endpoint=%s "
+        "status_code=%s latency_ms=%s retryable=%s fallback_available=%s "
+        "technical_detail=%s",
+        mode,
+        request_id,
+        session_id,
+        config.retail_agent_endpoint_name,
+        status_code,
+        latency_ms,
+        retryable,
+        fallback_available,
+        technical_detail,
     )

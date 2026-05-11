@@ -18,7 +18,8 @@ This document is now the source of truth for the remaining work. The older demo 
 - The demo-client backend has search and diagnosis routes that can call the `agents_retail_assistant-retail-retail_agent_v3` Databricks Model Serving endpoint.
 - The generated frontend API client includes search and diagnosis calls.
 - The visible React demo now submits through the generated backend API client.
-- Live endpoint behavior, deployed app permissions, and real trace rendering have not been validated end to end.
+- The deployed Databricks App can call the live retail agent endpoint and return live trace-backed search and diagnosis responses.
+- The `2026-05-11` deployed 502 was traced to the serving model, not the browser or app routing. Model versions 10, 11, and 14 exposed incompatible runtime-injected tool schemas. Model version 15 fixed that path, and model version 16 is now the active endpoint route after the latest deployment.
 
 ## Assumptions
 
@@ -36,7 +37,7 @@ This document is now the source of truth for the remaining work. The older demo 
 - The agent may answer in prose without calling the tools needed for product cards, knowledge chunks, recommendations, or trace rows.
 - The app service principal may not have permission to query the serving endpoint after deployment.
 - Long-term preference and reasoning behavior may persist between sessions unless user ids are scoped deliberately for demos.
-- The recommendation tool output is real upstream, but it is not yet normalized into the demo trace contract.
+- The current serving adapter uses MLflow `ChatAgent`; MLflow 3 `ResponsesAgent` is the preferred newer pattern for future agent serving work, so a migration should be planned separately rather than mixed into the current stabilization.
 - Local environment files may contain secrets. They must not be promoted into tracked docs, samples, logs, or build artifacts.
 
 ## Phase Checklist
@@ -78,7 +79,7 @@ This document is now the source of truth for the remaining work. The older demo 
   - Complete: The stale endpoint name appears only as a CLI command prefix, historical naming, or non-demo artifact text.
 - Review:
   - The serving endpoint name is now consistent across the retail agent default config, demo-client backend default, demo-client environment sample, bundle variable, deploy helper default, and demo-client README.
-  - `retail-graph-concierge-*` remains in command names and entry points because renaming those would be a broader CLI migration, not an endpoint configuration fix.
+  - Legacy command names were replaced with `retail-agent-*` entry points, and the unused package-level wrapper functions were removed.
   - The endpoint remains overrideable through `RETAIL_AGENT_ENDPOINT_NAME`, `AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME`, and bundle variables.
 
 ### Phase 3: Validate Live Backend Invocation
@@ -158,57 +159,87 @@ This document is now the source of truth for the remaining work. The older demo 
 
 ### Phase 6: Validate Deployed App Permissions
 
-- Status: In progress
+- Status: Complete
 - Outcome: The Databricks App can query the serving endpoint from its deployed runtime.
 - Checklist:
   - Complete: Refresh the retail agent serving endpoint so the active model version includes the latest trace normalization.
-  - Pending: Re-run the live recommendation prompt and confirm structured recommendation cards are returned from the deployed app path.
-  - Confirm the app resource grants query permission to the serving endpoint.
-  - Deploy the app with live mode enabled.
-  - Submit one search request from the deployed app.
-  - Submit one diagnosis request from the deployed app.
-  - Check deployed app logs for endpoint name, request id, source type, latency, and fallback behavior.
-  - Confirm no Databricks credentials, Neo4j credentials, authorization headers, or raw secrets appear in user-visible responses or logs.
+  - Complete: Re-run the live recommendation/search prompt and confirm structured product cards are returned from the deployed app path.
+  - Complete: Confirm the app resource grants query permission to the serving endpoint.
+  - Complete: Deploy the app with live mode enabled.
+  - Complete: Submit one search request from the deployed app.
+  - Complete: Submit one diagnosis request from the deployed app.
+  - Complete: Check deployed app logs for live API calls and fallback behavior.
+  - Complete: Confirm no Databricks credentials, Neo4j credentials, authorization headers, or raw secrets appear in user-visible responses or logs.
 - Validation:
-  - Pending: Deployed search returns a live response or a clearly marked fallback if fallback is intentionally enabled.
-  - Pending: Deployed diagnosis returns a live response or a clearly marked fallback if fallback is intentionally enabled.
-  - Pending: The app works without relying on a local Databricks CLI profile.
-  - Complete: The serving endpoint is READY with no pending config and routes 100% traffic to `retail_assistant-retail-retail_agent_v3_10`.
-  - Pending: `retail-graph-concierge-demo` and `retail-graph-concierge-check-knowledge` need to be rerun against model version 10.
-  - Notes: Databricks App deployment and app-runtime permission validation remain pending.
+  - Complete: Deployed search returned HTTP 200 with `source_type=live`, `trace_source=live`, product cards, memory writes, a Databricks request id, upstream latency, and no fallback warning.
+  - Complete: Deployed diagnosis returned HTTP 200 with `source_type=live`, `trace_source=live`, a Databricks request id, upstream latency, and no fallback warning.
+  - Complete: The app works from the deployed Databricks App runtime through the app service principal and serving endpoint resource binding. Local CLI auth was used only to authenticate the external smoke request into the protected app URL.
+  - Complete: The serving endpoint is READY with no pending config and routes 100% traffic to `retail_assistant-retail-retail_agent_v3_16`.
+  - Complete: The deployed Databricks App was refreshed from the current demo-client build on `2026-05-11T02:16:51Z` with `AGENTIC_COMMERCE_DEMO_DATA_MODE=live`, `AGENTIC_COMMERCE_DEMO_ALLOW_SAMPLE_FALLBACK=false`, and `AGENTIC_COMMERCE_RETAIL_AGENT_ENDPOINT_NAME=agents_retail_assistant-retail-retail_agent_v3`.
+  - Complete: The Databricks App resource binding grants the app service principal `CAN_QUERY` on `agents_retail_assistant-retail-retail_agent_v3`.
+  - Complete: Endpoint model version 15 was built from `retail_agent-0.1.22`, registered as Unity Catalog model version 15, deployed successfully, and smoke-tested through both the endpoint and app API path.
+  - Complete: Endpoint model version 16 was built from `retail_agent-0.1.24`, registered as Unity Catalog model version 16, deployed successfully, and smoke-tested directly through the serving endpoint.
+  - Notes: A stale deployed frontend showed old sample-only copy before the refresh. A later browser/app search returned 502 because the active serving model had an injected runtime schema failure. That failure was fixed in version 15 and remains fixed in version 16.
+- Review:
+  - The deployed app was already wired to the live backend. The 502 was caused by the live serving endpoint failing during agent tool execution.
+  - The root issue was the interaction between LangGraph `ToolRuntime` injection and JSON/schema generation for Databricks serving. The fix keeps `runtime` injectable for LangGraph while making the internal args schema JSON-safe and keeping `runtime` hidden from the model-facing tool schema.
+  - Search now exercises the real endpoint from the deployed app and returns live product cards. Diagnosis now exercises the real GraphRAG support path from the deployed app.
+  - App logs show the earlier `POST /api/demo/search` 502 and the later `POST /api/demo/search` 200 after endpoint version 15 was deployed. The later version 16 endpoint smoke test returned live assistant messages, product results, and structured `custom_outputs.demo_trace`.
 
 ### Phase 7: Final Demo Readiness
 
-- Status: Pending
+- Status: In progress
 - Outcome: The demo is repeatable, honest about provenance, and ready for stakeholder walkthroughs.
 - Checklist:
-  - Run backend unit tests.
-  - Run Python compile checks.
-  - Run frontend and backend type checks.
-  - Build the app.
-  - Verify desktop and mobile layouts in a browser.
-  - Verify live, sample, fallback, inferred, and unavailable states render distinctly.
+  - Complete: Run backend unit tests.
+  - Complete: Run Python compile checks.
+  - Complete: Run frontend and backend type checks.
+  - Complete: Build the app.
+  - Pending: Verify desktop and mobile layouts in a browser.
+  - Pending: Verify live, sample, fallback, inferred, and unavailable states render distinctly in the browser.
+  - Complete: Add an MLflow GenAI evaluation gate using `mlflow.genai.evaluate()` with nested `inputs`, a keyword-argument `predict_fn`, optional safety/relevance judges, and deterministic checks for live trace structure.
+  - In progress: Evaluate representative prompts before promoting a new serving model version. Current gate covers deployed search and diagnosis; preference-write, profile-read, and recommendation-specific prompts still need to be added.
+  - Pending: Decide whether to migrate the serving adapter from `ChatAgent` to MLflow 3 `ResponsesAgent` after the current demo remains stable.
+  - Pending: Decide whether production MLflow trace ingestion should be enabled for the Databricks App, the Model Serving endpoint, or both.
   - Update the demo script with exact prompts, expected panels, fallback notes, and reset steps.
   - Document any remaining limitations in this file.
 - Validation:
-  - The visible demo no longer claims sample data is the active path in live mode.
-  - The presenter can reset and rerun both tabs without confusing stale frontend state.
-  - The completion criteria below are all satisfied or explicitly marked blocked.
+  - Complete: Root tests passed with `uv run python -m pytest tests`.
+  - Complete: Demo-client tests passed with `uv run python -m pytest tests` from `demo-client`.
+  - Complete: Python compile checks passed with `uv run python -m compileall retail_agent`.
+  - Complete: `apx dev check` passed TypeScript compilation and Python type checking.
+  - Complete: `apx build` passed, producing the frontend build and Python wheel.
+  - Complete: The demo-client was redeployed after logging hardening as deployment `01f14cdf78c518a5a42bdadd7fe362d6`.
+  - Complete: Package command metadata was cleaned up in `retail_agent-0.1.23`; public wheel entry points now use `retail-agent-*`, and package-level wrapper functions were removed.
+  - Complete: Deployed smoke search returned HTTP 200 with `source_type=live`, `trace_source=live`, 6 product cards, no warnings, and a Databricks request id.
+  - Complete: Deployed smoke diagnosis returned HTTP 200 with `source_type=live`, `trace_source=live`, 5 knowledge chunks, 14 recommended actions, no warnings, and a Databricks request id.
+  - Complete: MLflow GenAI evaluation passed against the deployed app with local file tracking. Run `433964d628ea401f90fe317b5ad2f0c6` reported `live_backend_contract/mean=1.0` and `no_secret_leak/mean=1.0`.
+  - Complete: Deployed app logs now include structured `demo_request` entries with mode, request id, session id, endpoint, source type, latency, Databricks request id, and fallback reason.
+  - Complete: `uv run python -m cli validate retail-agent-demo` passed and listed only the new `retail-agent-*` wheel entry points.
+  - Complete: `retail_agent-0.1.24` was uploaded, `retail-agent-deploy` registered UC model version 16, and the serving endpoint now routes 100% traffic to `retail_assistant-retail-retail_agent_v3_16`.
+  - Complete: Direct endpoint smoke testing returned live assistant messages, product results, memory writes, and structured demo trace output from version 16.
+  - Complete: `retail-agent-demo` run `714990109566429` passed 9 of 9 deployed-agent checks covering product search, product lookup, graph traversal, short-term memory, long-term preferences, profile retrieval, and preference-based recommendation.
+  - Pending: Browser desktop and mobile visual verification is still needed before marking this phase complete.
+- Review:
+  - The quality gate now checks the actual demo contract rather than only answer text. It fails if live mode silently falls back to sample/static data or if obvious credential markers appear in returned output.
+  - The current production path still uses MLflow `ChatAgent`. That is valid for the deployed endpoint today, but new GenAI serving work should prefer `ResponsesAgent`; migration should be a separate stabilization phase because it changes the request and response contract.
+  - The current MLflow evaluation run uses local file tracking for deterministic contract validation. Production trace ingestion into Unity Catalog should be planned separately so permissions, storage location, and retention are explicit.
+  - The deployed app's structured logs are now visible in Databricks App logs, which closes the earlier observability gap where only Uvicorn access logs were available.
 
 ## Completion Criteria
 
-- Status: Pending
-- The React client submits through the backend API routes for both demo tabs.
-- The backend invokes the configured Databricks Model Serving endpoint in live mode.
-- The frontend never needs Databricks credentials or raw Model Serving URLs.
-- Search can render live product or recommendation results when the agent returns them.
-- Issue diagnosis can render live GraphRAG chunks, citations, actions, and diagnosis details when the agent returns them.
-- The intelligence panel uses real LangGraph tool-call trace data when available.
-- Sample data is used only in sample mode or explicitly enabled fallback mode.
-- Fallback and inferred data are visibly labeled.
-- Endpoint naming is consistent across configuration, deployment, and docs.
-- Deployed app permission to query the serving endpoint is validated.
-- Tests, checks, build, and browser verification have passed.
+- Status: In progress
+- Complete: The React client submits through the backend API routes for both demo tabs.
+- Complete: The backend invokes the configured Databricks Model Serving endpoint in live mode.
+- Complete: The frontend never needs Databricks credentials or raw Model Serving URLs.
+- Complete: Search can render live product or recommendation results when the agent returns them.
+- Complete: Issue diagnosis can render live GraphRAG chunks, citations, actions, and diagnosis details when the agent returns them.
+- Complete: The intelligence panel uses real LangGraph tool-call trace data when available.
+- Complete: Sample data is used only in sample mode or explicitly enabled fallback mode.
+- Complete: Fallback and inferred data are visibly labeled by the response contract.
+- Complete: Endpoint naming is consistent across configuration, deployment, and docs.
+- Complete: Deployed app permission to query the serving endpoint is validated.
+- In progress: Tests, checks, and build have passed. Browser desktop and mobile verification remains.
 
 ## Deferred Work
 

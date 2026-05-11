@@ -14,7 +14,7 @@ def main() -> int:
     inject_env_params()
 
     print("=" * 72)
-    print("STUB: retail-graph-concierge-deploy-supervisor is a placeholder.")
+    print("STUB: retail-agent-deploy-supervisor is a placeholder.")
     print("The multi-agent supervisor + Genie wiring is not yet implemented.")
     print("See retail_agent.agent.supervisor for the skeleton and TODOs.")
     print("=" * 72)

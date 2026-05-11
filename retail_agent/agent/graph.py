@@ -9,7 +9,12 @@ The agent uses create_react_agent with context_schema=RetailContext so
 that ToolRuntime[RetailContext] parameters are injected automatically.
 """
 
+from typing import Annotated, Any
+
 from langchain_core.tools import tool
+from langgraph.prebuilt.tool_node import InjectedToolArg
+from pydantic import ConfigDict, Field, create_model
+from pydantic_core import PydanticUndefined
 
 from retail_agent.agent.config import CONFIG
 from retail_agent.agent.context import RetailContext
@@ -91,6 +96,43 @@ ALL_TOOLS = (
     + COMMERCE_TOOLS
     + DIAGNOSTICS_TOOLS
 )
+
+
+def _use_runtime_safe_args_schemas() -> None:
+    """Keep runtime injectable without exposing complex objects to JSON schema."""
+    for retail_tool in ALL_TOOLS:
+        schema = retail_tool.get_input_schema()
+        if "runtime" not in schema.model_fields:
+            continue
+
+        fields: dict[str, tuple[Any, Any]] = {}
+        for name, field_info in schema.model_fields.items():
+            annotation = field_info.annotation
+            if name == "runtime":
+                annotation = Annotated[Any, InjectedToolArg]
+
+            if field_info.default_factory is not None:
+                default = Field(
+                    default_factory=field_info.default_factory,
+                    description=field_info.description,
+                )
+            elif field_info.default is PydanticUndefined:
+                default = Field(..., description=field_info.description)
+            else:
+                default = Field(
+                    default=field_info.default,
+                    description=field_info.description,
+                )
+            fields[name] = (annotation, default)
+
+        retail_tool.args_schema = create_model(
+            f"{retail_tool.name}_Args",
+            __config__=ConfigDict(arbitrary_types_allowed=True),
+            **fields,
+        )
+
+
+_use_runtime_safe_args_schemas()
 
 
 def create_agent(llm=None):

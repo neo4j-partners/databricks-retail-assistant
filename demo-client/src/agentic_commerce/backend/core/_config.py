@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from importlib import resources
 from pathlib import Path
 from typing import ClassVar
@@ -47,3 +48,9 @@ class AppConfig(BaseSettings):
 # --- Logger ---
 
 logger = logging.getLogger(app_name)
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
+    logger.addHandler(handler)
+logger.propagate = False

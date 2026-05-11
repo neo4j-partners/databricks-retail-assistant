@@ -377,7 +377,7 @@ Deployment follows a four-step pipeline in [`retail_agent/deployment/deploy_agen
 
 1. **Log model to MLflow.** The [`serving.py`](https://github.com/neo4j-partners/databricks-retail-assistant/blob/main/retail_agent/agent/serving.py) file is the entry point. MLflow's Models from Code approach packages it along with all imported modules (agent, tools, embedder, config) and the `neo4j-agent-memory` wheel as code artifacts.
 
-2. **Register to Unity Catalog.** The logged model gets registered as a versioned model at `retail_assistant.retail.retail_graph_concierge`.
+2. **Register to Unity Catalog.** The logged model gets registered as a versioned model at `retail_assistant.retail.retail_agent_v3`.
 
 3. **Deploy with `agents.deploy()`.** Neo4j credentials are injected as secret-backed environment variables. The endpoint supports scale-to-zero by default.
 
@@ -395,11 +395,11 @@ All configuration lives in [`agent/config.py`](https://github.com/neo4j-partners
 |---|---|---|
 | `catalog` | `retail_assistant` | Unity Catalog catalog name |
 | `schema` | `retail` | Unity Catalog schema name |
-| `model_name` | `retail_graph_concierge` | Model name in Unity Catalog |
+| `model_name` | `retail_agent_v3` | Model name in Unity Catalog |
 | `llm_endpoint` | `databricks-claude-sonnet-4-6` | Databricks-hosted LLM for the agent |
 | `embedding_model` | `databricks-bge-large-en` | Foundation Model API embedding endpoint |
 | `embedding_dimensions` | `1024` | Must match vector index dimensions |
 | `scale_to_zero` | `true` | Enable scale-to-zero on serving endpoint |
 | `max_wait_seconds` | `600` | Timeout for endpoint readiness check |
 
-The full Unity Catalog model name resolves to `retail_assistant.retail.retail_graph_concierge` by default. The active validated serving endpoint is `agents_retail_assistant-retail-retail_agent_v3`.
+The full Unity Catalog model name resolves to `retail_assistant.retail.retail_agent_v3` by default. The active validated serving endpoint is `agents_retail_assistant-retail-retail_agent_v3`.

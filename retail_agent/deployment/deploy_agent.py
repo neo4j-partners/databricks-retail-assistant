@@ -1,4 +1,4 @@
-"""Deploy Retail Graph Concierge to Databricks using agents.deploy().
+"""Deploy Retail Agent to Databricks using agents.deploy().
 
 Ported from aircraft_analyst/src/graph_agent/deploy.py. Four-step
 pipeline: log model -> register to UC -> deploy -> wait for ready.
@@ -473,7 +473,7 @@ def run_deploy(config: DeployConfig) -> int:
         print(f"Query endpoint: {deployment.query_endpoint}")
         print()
         print("To test:")
-        print("  Submit retail-graph-concierge-demo to verify the endpoint.")
+        print("  Submit retail-agent-demo to verify the endpoint.")
         print()
         return 0
 

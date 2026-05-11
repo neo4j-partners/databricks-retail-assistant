@@ -1,6 +1,8 @@
 """Retail assistant CLI wired to databricks-job-runner."""
 
+import argparse
 from pathlib import Path
+import sys
 
 from databricks.sdk.service.jobs import PythonWheelTask, RunResultState, SubmitTask
 from databricks_job_runner import Runner
@@ -8,13 +10,30 @@ from databricks_job_runner.errors import RunnerError
 
 
 ENTRY_POINTS = {
-    "retail-graph-concierge-deploy": "retail_graph_concierge_deploy",
-    "retail-graph-concierge-load-products": "retail_graph_concierge_load_products",
-    "retail-graph-concierge-load-graphrag": "retail_graph_concierge_load_graphrag",
-    "retail-graph-concierge-demo": "retail_graph_concierge_demo",
-    "retail-graph-concierge-demo-retrievers": "retail_graph_concierge_demo_retrievers",
-    "retail-graph-concierge-check-knowledge": "retail_graph_concierge_check_knowledge",
-    "retail-graph-concierge-deploy-supervisor": "retail_graph_concierge_deploy_supervisor",
+    "retail-agent-deploy": "retail-agent-deploy",
+    "retail-agent-load-products": "retail-agent-load-products",
+    "retail-agent-load-graphrag": "retail-agent-load-graphrag",
+    "retail-agent-demo": "retail-agent-demo",
+    "retail-agent-demo-retrievers": "retail-agent-demo-retrievers",
+    "retail-agent-check-knowledge": "retail-agent-check-knowledge",
+    "retail-agent-deploy-supervisor": "retail-agent-deploy-supervisor",
+}
+
+PIPELINE_STEPS = (
+    ("upload", None),
+    ("load-products", "retail-agent-load-products"),
+    ("load-graphrag", "retail-agent-load-graphrag"),
+    ("deploy", "retail-agent-deploy"),
+    ("demo", "retail-agent-demo"),
+    ("demo-retrievers", "retail-agent-demo-retrievers"),
+    ("check-knowledge", "retail-agent-check-knowledge"),
+)
+
+PIPELINE_MODES = {
+    "all": tuple(step for step, _ in PIPELINE_STEPS),
+    "data": ("upload", "load-products", "load-graphrag"),
+    "deploy": ("upload", "deploy"),
+    "verify": ("demo", "demo-retrievers", "check-knowledge"),
 }
 
 
@@ -35,6 +54,143 @@ class RetailAgentRunner(Runner):
             if param.partition("=")[0] not in self._LOCAL_ONLY_ENV_KEYS
         ]
 
+    def main(self, argv: list[str] | None = None) -> None:
+        """Dispatch project-specific commands before the shared runner CLI."""
+        args = list(sys.argv[1:] if argv is None else argv)
+        if not args or args[0] in {"-h", "--help"}:
+            self._print_project_help()
+            return
+        if args[0] == "pipeline":
+            try:
+                self.pipeline(args[1:])
+            except RunnerError as exc:
+                print(f"Error: {exc}", file=sys.stderr)
+                sys.exit(1)
+            return
+        super().main(args)
+
+    def _print_project_help(self) -> None:
+        print(f"Databricks job runner ({self.run_name_prefix})")
+        print()
+        print("Common commands:")
+        print("  pipeline      Run the Retail Agent deployment pipeline")
+        print("  upload        Upload scripts/wheels to Databricks")
+        print("  submit        Submit a wheel entry point as a Databricks job")
+        print("  validate      Validate compute and available wheel entry points")
+        print("  logs          Print stdout/stderr from a submitted run")
+        print("  download      Download or list files from a UC Volume")
+        print()
+        print("Examples:")
+        print(f"  {self.cli_command} pipeline --all")
+        print(f"  {self.cli_command} pipeline --data")
+        print(f"  {self.cli_command} submit retail-agent-demo")
+        print()
+        print("Use '<command> --help' for command-specific options.")
+
+    def pipeline(self, argv: list[str] | None = None) -> None:
+        """Run a named sequence of wheel upload and Databricks job steps."""
+        parser = argparse.ArgumentParser(
+            prog=f"{self.cli_command} pipeline",
+            description="Run the Retail Agent Databricks pipeline.",
+        )
+        modes = parser.add_mutually_exclusive_group()
+        modes.add_argument(
+            "--all",
+            dest="mode",
+            action="store_const",
+            const="all",
+            help="Upload, load data, deploy, and run all verification jobs.",
+        )
+        modes.add_argument(
+            "--data",
+            dest="mode",
+            action="store_const",
+            const="data",
+            help="Upload the wheel, load products, and build GraphRAG.",
+        )
+        modes.add_argument(
+            "--deploy",
+            dest="mode",
+            action="store_const",
+            const="deploy",
+            help="Upload the wheel and deploy the agent endpoint.",
+        )
+        modes.add_argument(
+            "--verify",
+            dest="mode",
+            action="store_const",
+            const="verify",
+            help="Run endpoint, retriever, and knowledge verification jobs.",
+        )
+        parser.add_argument(
+            "--compute",
+            choices=["cluster", "serverless"],
+            default=None,
+            help="Override compute mode for submitted jobs.",
+        )
+        parser.add_argument(
+            "--skip-upload",
+            action="store_true",
+            help="Skip the upload step when the selected pipeline includes it.",
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Print the commands that would run without contacting Databricks.",
+        )
+
+        args = parser.parse_args(argv)
+        mode = args.mode or "all"
+        steps = list(PIPELINE_MODES[mode])
+        if args.skip_upload:
+            steps = [step for step in steps if step != "upload"]
+
+        print(f"Retail Agent pipeline: {mode}")
+        print("---")
+        for index, step in enumerate(steps, start=1):
+            print(f"{index}. {self._pipeline_command(step, args.compute)}")
+        print()
+
+        for index, step in enumerate(steps, start=1):
+            print("=" * 60)
+            print(f"Pipeline step {index}/{len(steps)}: {step}")
+            print("=" * 60)
+            if args.dry_run:
+                continue
+            self._run_pipeline_step(step, compute_mode=args.compute)
+            print()
+
+        if args.dry_run:
+            print("Dry run complete.")
+        else:
+            print("Pipeline complete.")
+
+    def _pipeline_command(self, step: str, compute_mode: str | None) -> str:
+        if step == "upload":
+            return f"{self.cli_command} upload --wheel"
+        entry_point = self._pipeline_entry_point(step)
+        command = f"{self.cli_command} submit {entry_point}"
+        if compute_mode:
+            command = f"{command} --compute {compute_mode}"
+        return command
+
+    def _pipeline_entry_point(self, step: str) -> str:
+        for step_name, entry_point in PIPELINE_STEPS:
+            if step_name == step and entry_point:
+                return entry_point
+        raise RunnerError(f"Unknown pipeline step: {step}")
+
+    def _run_pipeline_step(
+        self,
+        step: str,
+        *,
+        compute_mode: str | None = None,
+    ) -> None:
+        if step == "upload":
+            self.upload_wheel()
+            return
+        self.submit(self._pipeline_entry_point(step), compute_mode=compute_mode)
+
     def submit(
         self,
         script: str,
@@ -45,7 +201,7 @@ class RetailAgentRunner(Runner):
         if script not in ENTRY_POINTS:
             available = "\n  ".join(sorted(ENTRY_POINTS))
             raise RunnerError(
-                f"Unknown Retail Graph Concierge entry point: {script}\n"
+                f"Unknown Retail Agent entry point: {script}\n"
                 f"Available entry points:\n  {available}"
             )
 
@@ -120,7 +276,7 @@ class RetailAgentRunner(Runner):
     def upload_all(self) -> None:
         """No-op because jobs run Python wheel entry points directly."""
         print("No job scripts to upload.")
-        print("Retail Graph Concierge jobs run from the uploaded wheel entry points.")
+        print("Retail Agent jobs run from the uploaded wheel entry points.")
         print("Run: uv run python -m cli upload --wheel")
 
     def validate(self, file: str | None = None) -> None:
@@ -129,7 +285,7 @@ class RetailAgentRunner(Runner):
         if file and file not in ENTRY_POINTS:
             available = "\n  ".join(sorted(ENTRY_POINTS))
             raise RunnerError(
-                f"Unknown Retail Graph Concierge entry point: {file}\n"
+                f"Unknown Retail Agent entry point: {file}\n"
                 f"Available entry points:\n  {available}"
             )
         print()

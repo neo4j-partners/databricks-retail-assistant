@@ -116,6 +116,7 @@ async def search_products(
 @tool
 async def get_product_details(
     product_id: str,
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Get full details for a specific product by ID. Use this when the customer wants to know more about a particular product."""

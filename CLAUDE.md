@@ -45,14 +45,14 @@ This package is designed to run on Databricks Model Serving. Implementation code
 - **No `test_` prefixed files** — Databricks auto-discovers and runs them as pytest. Use names like `check_endpoint.py` instead. See `RETAIL_BEST_PRACTICES.md`.
 - **Package imports** — Runtime modules use package-qualified imports under `retail_agent.*`; MLflow packages the `retail_agent` package via `code_paths`.
 - **Async bridging** — Uses a persistent background event loop, never `asyncio.run()`. See `RETAIL_BEST_PRACTICES.md`.
-- **Deploy**: Submit `retail-graph-concierge-deploy` with the CLI
-- **Check**: Submit `retail-graph-concierge-demo` with the CLI
+- **Deploy**: Submit `retail-agent-deploy` with the CLI
+- **Check**: Submit `retail-agent-demo` with the CLI
 
 ## Running Scripts
 
 Wheel entry points run on Databricks via `uv run python -m cli submit <entry-point>`:
 
-- `retail-graph-concierge-check-knowledge` — Exercise GraphRAG knowledge tools
+- `retail-agent-check-knowledge` — Exercise GraphRAG knowledge tools
 
 Local data pipeline scripts (run with `uv run`):
 

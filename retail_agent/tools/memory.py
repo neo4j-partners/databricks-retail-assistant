@@ -60,6 +60,7 @@ async def remember_message(
 
 @tool
 async def recall_memory(
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Retrieve the conversation history from short-term memory.
@@ -85,6 +86,7 @@ async def recall_memory(
 @tool
 async def search_memory(
     query: str,
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Search memory for relevant past conversations and facts using semantic similarity.

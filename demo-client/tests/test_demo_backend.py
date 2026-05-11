@@ -187,20 +187,32 @@ class ErrorMappingTests(unittest.TestCase):
     def test_disabled_fallback_error_reports_unavailable(self) -> None:
         config = AppConfig(demo_allow_sample_fallback=False)
         request = AgenticSearchIn(prompt="trail shoes", session_id="session-1")
-        error = ServingInvocationError("offline", status_code=503, retryable=True)
+        error = ServingInvocationError(
+            "offline",
+            status_code=503,
+            retryable=True,
+            detail="Authorization: Bearer secret-token NEO4J_PASSWORD=secret-value",
+        )
 
-        with self.assertRaises(DemoRouteError) as raised:
-            _handle_search_failure(
-                exc=error,
-                request=request,
-                config=config,
-                request_id="request-1",
-                session_id="session-1",
-                started=0.0,
-            )
+        with self.assertLogs("agentic-commerce", level="WARNING") as captured:
+            with self.assertRaises(DemoRouteError) as raised:
+                _handle_search_failure(
+                    exc=error,
+                    request=request,
+                    config=config,
+                    request_id="request-1",
+                    session_id="session-1",
+                    started=0.0,
+                )
 
         self.assertFalse(raised.exception.error.fallback_available)
         self.assertEqual(raised.exception.status_code, 503)
+        self.assertIn("demo_request_failed mode=agentic_search", captured.output[0])
+        self.assertIn("status_code=503", captured.output[0])
+        self.assertNotIn("secret-token", captured.output[0])
+        self.assertNotIn("secret-value", captured.output[0])
+        self.assertNotIn("secret-token", raised.exception.error.technical_detail or "")
+        self.assertNotIn("secret-value", raised.exception.error.technical_detail or "")
 
 
 class ServingClientTests(unittest.TestCase):

@@ -69,6 +69,7 @@ async def track_preference(
 
 @tool
 async def get_user_profile(
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Retrieve the current user's stored preferences from long-term memory.

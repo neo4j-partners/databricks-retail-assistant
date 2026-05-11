@@ -11,17 +11,15 @@ Databricks App demo client for the retail agent. The app is built with
 Current state:
 
 - The two-tab frontend demo is implemented.
-- The UI currently uses local sample demo data because the frontend submit
-  helper is still sample-wired.
 - Backend demo routes are implemented:
   - `POST /api/demo/search`
   - `POST /api/demo/diagnose`
 - Backend live Model Serving invocation and `custom_outputs.demo_trace`
   response adaptation are implemented.
-- Frontend-to-backend API wiring is the remaining client gap.
+- The visible UI submits through the generated backend API client.
 - The target retail agent serving endpoint is
   `agents_retail_assistant-retail-retail_agent_v3`.
-- The live retail agent endpoint is validated on model version 9 with
+- The live retail agent endpoint is validated on model version 15 with
   `custom_outputs.demo_trace`.
 
 ## Local Run And Test
@@ -312,7 +310,7 @@ Expected serving endpoint state:
 - `state.ready` is `READY`.
 - `state.config_update` is `NOT_UPDATING`.
 - Active traffic is routed to the latest validated model version.
-- The current validated upstream model version is `9`.
+- The current validated upstream model version is `15`.
 
 Validate live trace output through the backend routes after deployment:
 
@@ -364,7 +362,7 @@ Remote validation checklist:
   is configured and permissions are correct.
 - Backend diagnosis route returns a live response with cited sources or
   knowledge chunks when live mode is configured and permissions are correct.
-- The UI still runs on sample demo data until frontend API wiring is connected.
+- The UI submits through the backend API routes in live mode.
 
 Troubleshooting:
 
@@ -374,5 +372,5 @@ Troubleshooting:
   endpoint permissions, and backend configuration.
 - If backend routes return sample data, check
   `AGENTIC_COMMERCE_DEMO_DATA_MODE` and fallback settings.
-- If the UI only shows sample data, that is expected while the frontend submit
-  helper remains sample-wired or when sample mode is configured.
+- If the UI only shows sample data, check whether sample mode is configured or
+  explicit fallback mode was enabled.

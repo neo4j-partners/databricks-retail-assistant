@@ -12,6 +12,7 @@ from retail_agent.agent.context import RetailContext
 
 @tool
 def agent_diagnostics(
+    *,
     runtime: ToolRuntime[RetailContext],
 ) -> str:
     """Return diagnostic information about the agent environment.

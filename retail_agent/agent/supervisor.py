@@ -2,7 +2,7 @@
 
 STATUS
     Skeleton only. Not deployed. The
-    retail-graph-concierge-deploy-supervisor entry point prints a STUB message
+    retail-agent-deploy-supervisor entry point prints a STUB message
     and exits without calling agents.deploy().
 
 DESIGN
@@ -15,7 +15,7 @@ DESIGN
 
     The supervisor itself is logged to MLflow as a ChatAgent and deployed to
     a separate Model Serving endpoint, in addition to the existing KG agent
-    endpoint deployed by retail-graph-concierge-deploy.
+    endpoint deployed by retail-agent-deploy.
 
 TODO TO MAKE THIS REAL
     1. Provision a Genie space over retail_assistant.retail.{transactions,

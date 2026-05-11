@@ -9,10 +9,7 @@ invokes the agent — locally or via the Databricks serving adapter.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from neo4j_agent_memory import MemoryClient
+from typing import Any
 
 
 @dataclass
@@ -23,7 +20,7 @@ class RetailContext:
     Constructed by the Databricks Model Serving adapter.
     """
 
-    client: MemoryClient
+    client: Any
     embedder: Any | None = None
     session_id: str | None = None
     user_id: str | None = None

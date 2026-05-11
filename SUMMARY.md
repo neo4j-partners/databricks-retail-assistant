@@ -30,7 +30,7 @@ The retail agent is a conversational shopping assistant deployed as a single Dat
 - The `retail_agent` package is bundled alongside it via MLflow `code_paths` so the endpoint has the agent, tools, and integrations at runtime
 - Neo4j credentials are injected as Databricks secrets at deploy time and read from environment variables when the endpoint starts
 - The endpoint initializes lazily on the first real request after serving-time secrets are available
-- The active validated demo endpoint is `agents_retail_assistant-retail-retail_agent_v3`, with model version 9 receiving traffic
+- The active validated demo endpoint is `agents_retail_assistant-retail-retail_agent_v3`, with model version 15 receiving traffic
 - Scale-to-zero is requested by deployment configuration, but the active served endpoint versions currently report `scale_to_zero_enabled: false`
 
 ## Key Technologies

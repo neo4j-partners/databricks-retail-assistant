@@ -1,6 +1,6 @@
 """Build GraphRAG layer using neo4j-graphrag SimpleKGPipeline.
 
-Run after `retail-graph-concierge-load-products`. Reads KnowledgeArticle,
+Run after `retail-agent-load-products`. Reads KnowledgeArticle,
 SupportTicket, and Review nodes from Neo4j, chunks and embeds them, extracts
 Feature/Symptom/Solution entities, then links the new retrieval graph back to
 Product nodes.
@@ -292,7 +292,7 @@ async def load_graphrag() -> int:
         documents = _fetch_documents(driver)
         print(f"  Total documents: {len(documents)}")
         if not documents:
-            print("\n  No documents found. Has retail-graph-concierge-load-products been run?")
+            print("\n  No documents found. Has retail-agent-load-products been run?")
             return 1
 
         print("\nInitializing Databricks model adapters...")

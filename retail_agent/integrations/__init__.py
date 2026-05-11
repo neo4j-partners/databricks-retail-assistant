@@ -1,2 +1,1 @@
-"""External service integrations for Retail Graph Concierge."""
-
+"""External service integrations for Retail Agent."""

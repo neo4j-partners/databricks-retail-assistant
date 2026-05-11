@@ -1,4 +1,4 @@
-"""Deployment configuration for Retail Graph Concierge.
+"""Deployment configuration for Retail Agent.
 
 Usage:
     from retail_agent.agent.config import CONFIG, AGENT_NAME, RunMode

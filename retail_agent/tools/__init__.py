@@ -1,2 +1,1 @@
-"""Tool modules used by Retail Graph Concierge."""
-
+"""Tool modules used by Retail Agent."""

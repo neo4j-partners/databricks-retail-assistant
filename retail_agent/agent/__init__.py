@@ -1,2 +1,1 @@
-"""Core Retail Graph Concierge agent package."""
-
+"""Core Retail Agent package."""
