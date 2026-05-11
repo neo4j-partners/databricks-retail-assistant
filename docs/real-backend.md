@@ -131,7 +131,7 @@ This document is now the source of truth for the remaining work. The older demo 
   - Product search, GraphRAG, diagnosis, memory write, profile read, and recommendation tool calls are real, not mocked.
   - The demo trace is real LangGraph tool-call metadata from `custom_outputs.demo_trace`.
   - The local source now normalizes recommendation tool output into the same product-card path as catalog search.
-  - The deployed serving endpoint now routes traffic to the refreshed `retail_graph_concierge` model.
+  - The deployed serving endpoint now routes traffic to the refreshed canonical `retail_agent_v3` model.
 
 ### Phase 5: Improve Tool Selection For Demo Prompts
 
@@ -173,8 +173,8 @@ This document is now the source of truth for the remaining work. The older demo 
   - Pending: Deployed search returns a live response or a clearly marked fallback if fallback is intentionally enabled.
   - Pending: Deployed diagnosis returns a live response or a clearly marked fallback if fallback is intentionally enabled.
   - Pending: The app works without relying on a local Databricks CLI profile.
-  - Complete: The serving endpoint is READY with no pending config and routes 100% traffic to `retail_assistant-retail-retail_graph_concierge_1`.
-  - Complete: `retail-graph-concierge-demo` and `retail-graph-concierge-check-knowledge` passed against the refreshed endpoint.
+  - Complete: The serving endpoint is READY with no pending config and routes 100% traffic to `retail_assistant-retail-retail_agent_v3_10`.
+  - Pending: `retail-graph-concierge-demo` and `retail-graph-concierge-check-knowledge` need to be rerun against model version 10.
   - Notes: Databricks App deployment and app-runtime permission validation remain pending.
 
 ### Phase 7: Final Demo Readiness
