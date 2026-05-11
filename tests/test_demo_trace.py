@@ -94,6 +94,35 @@ class DemoTraceTests(unittest.TestCase):
         self.assertEqual(trace["tool_timeline"][1]["content_type"], "text")
         self.assertIn("knowledge_search returned non-JSON output.", trace["warnings"])
 
+    def test_tool_result_includes_timing_by_tool_call_id(self) -> None:
+        trace = extract_demo_trace(
+            [
+                _AIMessage(
+                    tool_calls=[
+                        {
+                            "name": "search_products",
+                            "id": "call-1",
+                            "args": {"query": "trail shoes"},
+                        }
+                    ]
+                ),
+                _ToolMessage(
+                    name="search_products",
+                    tool_call_id="call-1",
+                    content=json.dumps({"products": [], "count": 0}),
+                ),
+            ],
+            tool_timings=[
+                {
+                    "tool_name": "search_products",
+                    "tool_call_id": "call-1",
+                    "duration_ms": 237,
+                }
+            ],
+        )
+
+        self.assertEqual(trace["tool_timeline"][1]["duration_ms"], 237)
+
     def test_no_tool_events_adds_unavailable_warning(self) -> None:
         trace = extract_demo_trace([])
 

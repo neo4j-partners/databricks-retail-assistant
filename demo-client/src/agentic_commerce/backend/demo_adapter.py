@@ -63,13 +63,16 @@ def adapt_search_trace(
         }
 
     warnings.extend(_warnings(trace.get("warnings")))
-    product_results = _products(trace.get("product_results"))
-    related_products = _products(trace.get("related_products"))
+    product_results = _dedupe_products(_products(trace.get("product_results")))
+    related_products = _dedupe_products(
+        _products(trace.get("related_products")),
+        exclude={_product_identity(product) for product in product_results},
+    )
     knowledge_chunks = _knowledge_chunks(trace.get("knowledge_chunks"))
     return {
         "answer": answer,
         "trace_source": _trace_source(trace, product_results or knowledge_chunks),
-        "summary": _string_or_none(trace.get("summary")) or answer,
+        "summary": _search_summary(trace, answer, product_results, knowledge_chunks),
         "product_picks": product_results,
         "related_products": related_products,
         "profile_chips": _profile_chips(trace.get("profile")),
@@ -119,9 +122,13 @@ def adapt_diagnosis_trace(
     return {
         "answer": answer,
         "trace_source": _trace_source(trace, knowledge_chunks or path),
-        "summary": _string_or_none(diagnosis_data.get("summary"))
-        or _string_or_none(trace.get("summary"))
-        or answer,
+        "summary": _diagnosis_summary(
+            diagnosis_data,
+            trace,
+            answer,
+            actions,
+            knowledge_chunks,
+        ),
         "confidence": _float_or_none(diagnosis_data.get("confidence")),
         "path": path,
         "recommended_actions": actions,
@@ -177,6 +184,96 @@ def _products(value: Any) -> list[ProductCard]:
             )
         )
     return products
+
+
+def _dedupe_products(
+    products: list[ProductCard],
+    *,
+    exclude: set[str] | None = None,
+) -> list[ProductCard]:
+    seen = set(exclude or set())
+    deduped: list[ProductCard] = []
+    for product in products:
+        key = _product_identity(product)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(product)
+    return deduped
+
+
+def _product_identity(product: ProductCard) -> str:
+    return (
+        product.id
+        or f"{product.brand or ''}:{product.name}:{product.category or ''}"
+    ).strip().lower()
+
+
+def _search_summary(
+    trace: dict[str, Any],
+    answer: str,
+    product_results: list[ProductCard],
+    knowledge_chunks: list[KnowledgeChunk],
+) -> str:
+    explicit = _string_or_none(trace.get("summary"))
+    if explicit:
+        return explicit
+
+    if product_results:
+        names = [product.name for product in product_results[:3]]
+        name_list = _human_list(names)
+        suffix = (
+            f" I also found {len(knowledge_chunks)} relevant knowledge source"
+            f"{'' if len(knowledge_chunks) == 1 else 's'}."
+            if knowledge_chunks
+            else ""
+        )
+        return (
+            f"Found {len(product_results)} live product pick"
+            f"{'' if len(product_results) == 1 else 's'}"
+            f"{f': {name_list}' if name_list else ''}.{suffix}"
+        )
+
+    return answer
+
+
+def _diagnosis_summary(
+    diagnosis_data: dict[str, Any],
+    trace: dict[str, Any],
+    answer: str,
+    actions: list[RecommendedAction],
+    knowledge_chunks: list[KnowledgeChunk],
+) -> str:
+    explicit = (
+        _string_or_none(diagnosis_data.get("summary"))
+        or _string_or_none(trace.get("summary"))
+    )
+    if explicit:
+        return explicit
+
+    if actions or knowledge_chunks:
+        parts: list[str] = []
+        if knowledge_chunks:
+            parts.append(
+                f"Found {len(knowledge_chunks)} relevant diagnosis source"
+                f"{'' if len(knowledge_chunks) == 1 else 's'}"
+            )
+        if actions:
+            action_labels = [action.label for action in actions[:3]]
+            parts.append(f"recommended actions: {_human_list(action_labels)}")
+        return f"{'; '.join(parts)}."
+
+    return answer
+
+
+def _human_list(values: list[str]) -> str:
+    if not values:
+        return ""
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return f"{', '.join(values[:-1])}, and {values[-1]}"
 
 
 def _knowledge_chunks(value: Any) -> list[KnowledgeChunk]:

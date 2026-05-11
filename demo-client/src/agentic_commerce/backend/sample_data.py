@@ -83,6 +83,124 @@ SEARCH_PRESETS = {
             ),
         ],
     },
+    "cold-weather-layers": {
+        "answer": (
+            "For cold-weather running, start with the Under Armour ColdGear "
+            "Base Layer, add a Nike Dri-FIT shirt when you need another "
+            "moisture-moving layer, and use Dri-FIT socks to keep the system "
+            "consistent."
+        ),
+        "summary": "Built a cold-weather running kit around moisture-wicking layers.",
+        "products": [
+            ProductCard(
+                id="ua-coldgear",
+                name="Under Armour ColdGear Base Layer",
+                brand="Under Armour",
+                category="Apparel",
+                price=55.0,
+                in_stock=True,
+                score=0.92,
+                rationale="Warm compression base layer for cold-weather running.",
+                signals=["ColdGear", "compression", "winter running"],
+            ),
+            ProductCard(
+                id="nike-drifit-tee",
+                name="Nike Dri-FIT Running Shirt",
+                brand="Nike",
+                category="Apparel",
+                price=35.0,
+                in_stock=True,
+                score=0.86,
+                rationale="Light moisture-wicking layer that pairs well with the base layer.",
+                signals=["Dri-FIT", "moisture wicking", "polyester"],
+            ),
+            ProductCard(
+                id="nike-running-socks",
+                name="Nike Multiplier Running Socks (2-Pack)",
+                brand="Nike",
+                category="Accessories",
+                price=18.0,
+                in_stock=True,
+                score=0.8,
+                rationale="Cushioned Dri-FIT socks complete the cold-weather running setup.",
+                signals=["Dri-FIT", "arch support", "cushioned"],
+            ),
+        ],
+    },
+    "backpacking-tent-comparison": {
+        "answer": (
+            "The REI Half Dome SL 2+ is the value and livability pick, while "
+            "the MSR Hubba Hubba NX 2 is the lighter premium backpacking tent."
+        ),
+        "summary": "Compared two 2-person backpacking tents on price, weight, and field notes.",
+        "products": [
+            ProductCard(
+                id="rei-half-dome-tent",
+                name="REI Co-op Half Dome SL 2+ Tent",
+                brand="REI Co-op",
+                category="Outdoor Equipment",
+                price=279.0,
+                in_stock=True,
+                score=0.9,
+                rationale="Better value for a roomy two-person backpacking shelter.",
+                signals=["$279", "roomy", "3-season"],
+            ),
+            ProductCard(
+                id="msr-hubba-hubba-tent",
+                name="MSR Hubba Hubba NX 2 Tent",
+                brand="MSR",
+                category="Outdoor Equipment",
+                price=450.0,
+                in_stock=True,
+                score=0.86,
+                rationale="Better for weight-conscious backpackers who want a premium tent.",
+                signals=["1.54kg", "two vestibules", "premium"],
+            ),
+        ],
+    },
+    "two-person-backpacking-setup": {
+        "answer": (
+            "A balanced 2-person setup under $750 is the REI Half Dome SL 2+ "
+            "Tent, Kelty Cosmic 20 Down Sleeping Bag, and Therm-a-Rest NeoAir "
+            "XTherm Sleeping Pad. The sample total is $638.90."
+        ),
+        "summary": "Built a tent, sleeping bag, and pad bundle under $750.",
+        "products": [
+            ProductCard(
+                id="rei-half-dome-tent",
+                name="REI Co-op Half Dome SL 2+ Tent",
+                brand="REI Co-op",
+                category="Outdoor Equipment",
+                price=279.0,
+                in_stock=True,
+                score=0.91,
+                rationale="Controls shelter cost while keeping a roomy two-person tent.",
+                signals=["2-person", "$279", "3-season"],
+            ),
+            ProductCard(
+                id="kelty-cosmic-sleeping-bag",
+                name="Kelty Cosmic 20 Down Sleeping Bag",
+                brand="Kelty",
+                category="Outdoor Equipment",
+                price=129.95,
+                in_stock=True,
+                score=0.87,
+                rationale="Budget 20F down bag that keeps the bundle below the cap.",
+                signals=["20F", "$129.95", "550-fill down"],
+            ),
+            ProductCard(
+                id="therm-a-rest-sleeping-pad",
+                name="Therm-a-Rest NeoAir XTherm Sleeping Pad",
+                brand="Therm-a-Rest",
+                category="Outdoor Equipment",
+                price=229.95,
+                in_stock=True,
+                score=0.84,
+                rationale="High R-value pad for warmth without breaking the bundle budget.",
+                signals=["R-value 6.9", "$229.95", "4-season"],
+            ),
+        ],
+    },
 }
 
 
@@ -100,12 +218,44 @@ DIAGNOSIS_PRESETS = {
     "outsole-peeling": {
         "answer": (
             "Outsole peeling after a few months is usually an adhesion or flex "
-            "stress issue. Clean and dry the shoe, stop using heat to dry it, "
-            "and contact support if the separation is wider than a few millimeters."
+            "stress issue. Stop running in the shoe if the tread is lifting, "
+            "keep it away from heat, and contact support for a warranty review. "
+            "For a small separation, a shoe-specific adhesive can work as a "
+            "temporary repair."
         ),
         "summary": "Peeling outsole suggests adhesion failure or high-flex wear.",
         "symptom": "Continental outsole is peeling after three months.",
-        "solution": "Avoid heat drying, inspect separation, and start a warranty claim if needed.",
+        "solution": "Stop running in it if the tread is lifting, avoid heat exposure, and start a warranty claim; use shoe adhesive only as a temporary fix for minor separation.",
+    },
+    "tent-condensation": {
+        "answer": (
+            "Morning condensation in the REI Half Dome points to ventilation "
+            "and moisture management. Open vents when conditions allow, keep "
+            "the bag off the tent walls, and store the sleeping bag in a dry bag."
+        ),
+        "summary": "Condensation can dampen sleeping bags even when the rainfly blocks rain.",
+        "symptom": "REI Half Dome tent has condensation every morning and the sleeping bag gets damp.",
+        "solution": "Improve ventilation, avoid wall contact, and protect the sleeping bag in a waterproof dry bag.",
+    },
+    "sleeping-pad-deflated": {
+        "answer": (
+            "A Therm-a-Rest pad that deflates overnight usually has a pinhole "
+            "leak or valve debris. Inflate it, check the valve, find bubbles "
+            "with water or soapy water, then patch the marked leak."
+        ),
+        "summary": "Overnight deflation points to a pinhole leak or valve contamination.",
+        "symptom": "Therm-a-Rest sleeping pad deflated overnight.",
+        "solution": "Submerge or soap-test the inflated pad, mark the leak, patch it, and rinse debris from the valve.",
+    },
+    "gel-nimbus-lump": {
+        "answer": (
+            "A hard lump under the Gel-Nimbus 26 heel can be debris under the "
+            "insole, but if the midsole or PureGEL insert itself feels deformed, "
+            "treat it as a manufacturing defect and contact ASICS."
+        ),
+        "summary": "A hard heel lump from day one can indicate a deformed PureGEL insert.",
+        "symptom": "ASICS Gel-Nimbus 26 has a hard lump under the heel.",
+        "solution": "Remove and reseat the insole; if the midsole remains uneven, stop running in it and request replacement.",
     },
 }
 

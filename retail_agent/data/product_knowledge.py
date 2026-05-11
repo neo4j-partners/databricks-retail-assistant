@@ -1353,7 +1353,7 @@ REVIEWS: list[Review] = [
     # ── adidas-ultraboost-24 ──────────────────────────────────────────────
     Review(review_id="R-005", product_id="adidas-ultraboost-24", rating=5, date="2024-03-22", raw_text="The Boost midsole is unreal. Like running on clouds with energy return. Worth every penny of the $190 price tag."),
     Review(review_id="R-006", product_id="adidas-ultraboost-24", rating=3, date="2024-05-05", raw_text="Great cushion but the Boost foam yellowed within two months. Same yellowing issue I had with my Air Max 90 midsole. The baking soda and hydrogen peroxide paste fix works on both but I should not have to clean premium shoes constantly."),
-    Review(review_id="R-007", product_id="adidas-ultraboost-24", rating=1, date="2024-06-18", raw_text="The Continental rubber outsole started peeling from the Boost midsole after just 3 months. Outsole separation is a deal breaker. My friend had the same delamination issue on his Nike Pegasus. For $190 I expected better adhesive quality."),
+    Review(review_id="R-007", product_id="adidas-ultraboost-24", rating=1, date="2024-06-18", raw_text="The Continental rubber outsole started peeling from the Boost midsole after just 3 months. Outsole separation is a deal breaker. My friend had the same delamination issue on his Nike Pegasus. I stopped running in them and contacted support for a warranty review."),
     Review(review_id="R-008", product_id="adidas-ultraboost-24", rating=4, date="2024-07-10", raw_text="Heavy for a running shoe at 310g but the comfort makes up for it. I use these for easy recovery runs."),
 
     # ── nb-990v6 ──────────────────────────────────────────────────────────

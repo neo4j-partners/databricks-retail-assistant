@@ -83,6 +83,75 @@ class DemoAdapterTests(unittest.TestCase):
         self.assertEqual(adapted["product_picks"][0].name, "Logitech MX Master 3S")
         self.assertEqual(adapted["tool_timeline"][0].tool_name, "search_products")
 
+    def test_search_trace_preserves_tool_duration(self) -> None:
+        adapted = adapt_search_trace(
+            {
+                "messages": [{"role": "assistant", "content": "Done."}],
+                "custom_outputs": {
+                    "demo_trace": {
+                        "trace_source": "live",
+                        "tool_timeline": [
+                            {
+                                "tool_name": "search_products",
+                                "duration_ms": 237,
+                            }
+                        ],
+                    }
+                },
+            }
+        )
+
+        self.assertEqual(adapted["tool_timeline"][0].duration_ms, 237)
+
+    def test_search_trace_dedupes_products_and_uses_structured_summary(self) -> None:
+        duplicate_id = "4:1cdf1524-084c-403c-b536-d2b8a273eec6:1899"
+        adapted = adapt_search_trace(
+            {
+                "messages": [
+                    {
+                        "role": "assistant",
+                        "content": (
+                            "Here's what I found.\n\n"
+                            "---\n\n"
+                            "## Best picks\n\n"
+                            "1. **Brooks Ghost 16** -- $140"
+                        ),
+                    }
+                ],
+                "custom_outputs": {
+                    "demo_trace": {
+                        "trace_source": "live",
+                        "product_results": [
+                            {
+                                "product_id": duplicate_id,
+                                "name": "Brooks Ghost 16",
+                                "brand": "Brooks",
+                                "price": 140,
+                            },
+                            {
+                                "product_id": duplicate_id,
+                                "name": "Brooks Ghost 16",
+                                "brand": "Brooks",
+                                "price": 140,
+                            },
+                            {
+                                "product_id": "shoe-2",
+                                "name": "Nike Pegasus 40",
+                                "brand": "Nike",
+                                "price": 130,
+                            },
+                        ],
+                    }
+                },
+            }
+        )
+
+        self.assertEqual(len(adapted["product_picks"]), 2)
+        self.assertEqual(
+            adapted["summary"],
+            "Found 2 live product picks: Brooks Ghost 16 and Nike Pegasus 40.",
+        )
+
     def test_missing_demo_trace_degrades_to_prose(self) -> None:
         adapted = adapt_search_trace(
             {"messages": [{"role": "assistant", "content": "Plain answer."}]}
@@ -117,6 +186,46 @@ class DemoAdapterTests(unittest.TestCase):
         self.assertEqual(adapted["trace_source"], "live")
         self.assertEqual(adapted["recommended_actions"][0].label, "disable multipoint")
         self.assertEqual(adapted["cited_sources"][0].id, "c1")
+
+    def test_diagnosis_trace_uses_structured_summary(self) -> None:
+        adapted = adapt_diagnosis_trace(
+            {
+                "messages": [
+                    {
+                        "role": "assistant",
+                        "content": (
+                            "Great news -- this is documented.\n\n"
+                            "---\n\n"
+                            "### Recommended Solutions\n\n"
+                            "1. **Warranty Replacement**\n"
+                            "2. **Shoe Goo Adhesive**"
+                        ),
+                    }
+                ],
+                "custom_outputs": {
+                    "demo_trace": {
+                        "knowledge_chunks": [
+                            {
+                                "chunk_id": "outsole-1",
+                                "text": "Outsole delamination is commonly warranty-covered.",
+                                "source_type": "KnowledgeArticle",
+                                "solutions": [
+                                    "Warranty replacement",
+                                    "Apply Shoe Goo",
+                                    "Avoid heat exposure",
+                                ],
+                            }
+                        ],
+                    }
+                },
+            }
+        )
+
+        self.assertEqual(
+            adapted["summary"],
+            "Found 1 relevant diagnosis source; recommended actions: "
+            "Warranty replacement, Apply Shoe Goo, and Avoid heat exposure.",
+        )
 
 
 class SampleDataTests(unittest.TestCase):

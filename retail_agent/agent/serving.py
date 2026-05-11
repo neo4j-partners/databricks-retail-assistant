@@ -14,10 +14,13 @@ References:
 import asyncio
 import os
 import threading
+import time
 import traceback
+from collections.abc import Mapping
 from uuid import uuid4
 
 import mlflow
+from langchain_core.callbacks import BaseCallbackHandler
 from mlflow.pyfunc import ChatAgent
 from mlflow.types.agent import ChatAgentMessage, ChatAgentResponse
 
@@ -50,6 +53,78 @@ def _create_background_loop() -> asyncio.AbstractEventLoop:
     thread = threading.Thread(target=_run, args=(loop,), daemon=True)
     thread.start()
     return loop
+
+
+class ToolTimingCallback(BaseCallbackHandler):
+    """Collect per-tool latency for the demo metadata contract."""
+
+    def __init__(self) -> None:
+        self._starts: dict[str, float] = {}
+        self._tool_names: dict[str, str] = {}
+        self._completed: list[dict[str, object]] = []
+
+    @property
+    def completed(self) -> list[dict[str, object]]:
+        return list(self._completed)
+
+    def on_tool_start(
+        self,
+        serialized: dict[str, object],
+        input_str: str,
+        *,
+        run_id,
+        **kwargs,
+    ) -> None:
+        run_key = str(run_id)
+        self._starts[run_key] = time.perf_counter()
+        tool_name = _tool_name_from_serialized(serialized)
+        if tool_name:
+            self._tool_names[run_key] = tool_name
+
+    def on_tool_end(self, output: object, *, run_id, **kwargs) -> None:
+        self._record_completion(run_id, output=output, status="success")
+
+    def on_tool_error(self, error: BaseException, *, run_id, **kwargs) -> None:
+        self._record_completion(run_id, output=None, status="error")
+
+    def _record_completion(
+        self,
+        run_id,
+        *,
+        output: object,
+        status: str,
+    ) -> None:
+        run_key = str(run_id)
+        started = self._starts.pop(run_key, None)
+        if started is None:
+            return
+
+        item: dict[str, object] = {
+            "duration_ms": max(1, int((time.perf_counter() - started) * 1000)),
+            "status": status,
+        }
+        tool_name = self._tool_names.pop(run_key, None)
+        if tool_name:
+            item["tool_name"] = tool_name
+
+        tool_call_id = getattr(output, "tool_call_id", None)
+        if isinstance(tool_call_id, str) and tool_call_id:
+            item["tool_call_id"] = tool_call_id
+        self._completed.append(item)
+
+
+def _tool_name_from_serialized(serialized: Mapping[str, object]) -> str | None:
+    name = serialized.get("name")
+    if isinstance(name, str) and name:
+        return name
+
+    kwargs = serialized.get("kwargs")
+    if isinstance(kwargs, Mapping):
+        kwargs_name = kwargs.get("name")
+        if isinstance(kwargs_name, str) and kwargs_name:
+            return kwargs_name
+
+    return None
 
 
 class RetailAgent(ChatAgent):
@@ -214,8 +289,25 @@ class RetailAgent(ChatAgent):
         if demo_mode_hint:
             request_messages.insert(0, {"role": "system", "content": demo_mode_hint})
         request = {"messages": request_messages}
-        result = await self._agent.ainvoke(request, context=retail_context)
-        demo_trace = extract_demo_trace(result.get("messages", []))
+        _update_current_trace(
+            session_id=session_id,
+            user_id=user_id,
+            demo_mode=custom_inputs.get("demo_mode") if custom_inputs else None,
+        )
+
+        timing_callback = ToolTimingCallback()
+        result = await self._agent.ainvoke(
+            request,
+            config={"callbacks": [timing_callback]},
+            context=retail_context,
+        )
+        demo_trace = extract_demo_trace(
+            result.get("messages", []),
+            tool_timings=timing_callback.completed,
+        )
+        trace_id = _current_or_last_trace_id()
+        if trace_id:
+            demo_trace["mlflow_trace_id"] = trace_id
 
         # Extract the final AI message from LangGraph output
         ai_messages = [
@@ -235,3 +327,30 @@ class RetailAgent(ChatAgent):
 
 AGENT = RetailAgent()
 mlflow.models.set_model(AGENT)
+
+
+def _update_current_trace(
+    *,
+    session_id: str,
+    user_id: str | None,
+    demo_mode: object,
+) -> None:
+    try:
+        tags = {"retail_agent.session_id": session_id}
+        if isinstance(demo_mode, str) and demo_mode:
+            tags["retail_agent.demo_mode"] = demo_mode
+        mlflow.update_current_trace(
+            session_id=session_id,
+            user=user_id,
+            tags=tags,
+        )
+    except Exception:
+        return
+
+
+def _current_or_last_trace_id() -> str | None:
+    try:
+        trace_id = mlflow.get_active_trace_id() or mlflow.get_last_active_trace_id()
+    except Exception:
+        return None
+    return trace_id if isinstance(trace_id, str) and trace_id else None

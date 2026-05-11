@@ -46,7 +46,10 @@ def get_demo_mode_hint(demo_mode: Any) -> str | None:
     return DEMO_MODE_HINTS.get(demo_mode)
 
 
-def extract_demo_trace(messages: Sequence[Any]) -> dict[str, Any]:
+def extract_demo_trace(
+    messages: Sequence[Any],
+    tool_timings: Sequence[Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Extract structured demo trace data from LangGraph messages.
 
     The extractor only uses real AI tool calls and ToolMessage outputs from the
@@ -55,6 +58,7 @@ def extract_demo_trace(messages: Sequence[Any]) -> dict[str, Any]:
     """
     trace = _empty_trace()
     tool_names_by_id: dict[str, str] = {}
+    timings_by_id, timings_by_name = _index_tool_timings(tool_timings)
     saw_tool_event = False
 
     for message in messages:
@@ -77,7 +81,15 @@ def extract_demo_trace(messages: Sequence[Any]) -> dict[str, Any]:
             if not tool_name and tool_call_id:
                 tool_name = tool_names_by_id.get(tool_call_id)
             content = getattr(message, "content", "")
-            _capture_tool_result(trace, tool_name, tool_call_id, content, message)
+            _capture_tool_result(
+                trace,
+                tool_name,
+                tool_call_id,
+                content,
+                message,
+                timings_by_id,
+                timings_by_name,
+            )
 
     if saw_tool_event:
         trace["trace_source"] = "live"
@@ -127,6 +139,8 @@ def _capture_tool_result(
     tool_call_id: str | None,
     content: Any,
     message: Any,
+    timings_by_id: dict[str, dict[str, Any]],
+    timings_by_name: dict[str, list[dict[str, Any]]],
 ) -> None:
     content_text = _content_to_text(content)
     entry = {
@@ -136,6 +150,7 @@ def _capture_tool_result(
         "status": _string_value(getattr(message, "status", None)),
         "content_type": "json",
     }
+    _apply_tool_timing(entry, tool_name, tool_call_id, timings_by_id, timings_by_name)
 
     payload = _parse_json(content_text)
     if payload is None:
@@ -151,6 +166,46 @@ def _capture_tool_result(
     entry["summary"] = _json_summary(payload)
     trace["tool_timeline"].append(entry)
     _normalize_tool_payload(trace, tool_name, payload)
+
+
+def _index_tool_timings(
+    tool_timings: Sequence[Mapping[str, Any]] | None,
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
+    timings_by_id: dict[str, dict[str, Any]] = {}
+    timings_by_name: dict[str, list[dict[str, Any]]] = {}
+    if not tool_timings:
+        return timings_by_id, timings_by_name
+
+    for raw_timing in tool_timings:
+        timing = dict(raw_timing)
+        tool_call_id = _string_value(timing.get("tool_call_id"))
+        tool_name = _string_value(timing.get("tool_name"))
+        if tool_call_id:
+            timings_by_id[tool_call_id] = timing
+        if tool_name:
+            timings_by_name.setdefault(tool_name, []).append(timing)
+    return timings_by_id, timings_by_name
+
+
+def _apply_tool_timing(
+    entry: dict[str, Any],
+    tool_name: str | None,
+    tool_call_id: str | None,
+    timings_by_id: dict[str, dict[str, Any]],
+    timings_by_name: dict[str, list[dict[str, Any]]],
+) -> None:
+    timing = timings_by_id.get(tool_call_id or "")
+    if timing is None and tool_name:
+        candidates = timings_by_name.get(tool_name)
+        if candidates:
+            timing = candidates.pop(0)
+
+    if timing is None:
+        return
+
+    duration_ms = _int_value(timing.get("duration_ms"))
+    if duration_ms is not None:
+        entry["duration_ms"] = duration_ms
 
 
 def _normalize_tool_payload(
@@ -336,6 +391,16 @@ def _is_safe_key(key: str) -> bool:
 
 def _string_value(value: Any) -> str | None:
     return value if isinstance(value, str) and value else None
+
+
+def _int_value(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    return None
 
 
 def _string_list(value: Any) -> list[str]:
