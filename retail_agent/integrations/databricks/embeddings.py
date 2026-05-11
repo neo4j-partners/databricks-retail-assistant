@@ -3,9 +3,8 @@
 Implements the Embedder protocol (dimensions, embed, embed_batch) by calling
 a Databricks built-in embedding model via mlflow.deployments.predict().
 
-Follows the validation and error handling patterns from the Databricks
-embedding test project at /Users/ryanknight/projects/databricks/dbx-embedding-tests.
-See DBX_EMBEDDING.md in that project for model benchmarks.
+Follows the validation and error handling patterns used by the Databricks
+Foundation Model API embedding examples.
 """
 
 import asyncio
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 class DatabricksEmbedder:
     """Embedder using Databricks Foundation Model API via mlflow.deployments.
 
-    Uses the same pattern as dbx-embedding-tests:
+    Uses the standard Databricks deployment client pattern:
         client = mlflow.deployments.get_deploy_client("databricks")
         response = client.predict(endpoint=model, inputs={"input": [text]})
     """

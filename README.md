@@ -2,7 +2,7 @@
 
 Retail Agent is a Databricks-hosted retail assistant backed by Neo4j. It can search products, diagnose product issues, answer GraphRAG-backed support questions, remember user preferences, and use those preferences for personalized recommendations.
 
-The deployment path builds a local `retail_agent` wheel, uploads it to a Unity Catalog volume, and submits Databricks Python wheel entry points with [`databricks-job-runner`](../databricks-job-runner). For design background, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). For lower-level GraphRAG notes, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
+The deployment path builds a local `retail_agent` wheel, uploads it to a Unity Catalog volume, and submits Databricks Python wheel entry points with `databricks-job-runner`. For design background, see [Agentic Commerce: GraphRAG Meets Agent Memory on Neo4j](docs/agentic-commerce.md). For lower-level GraphRAG notes, see [Developer's Guide: GraphRAG on Databricks](docs/DevelopersGuideGraphRAG-Databricks.md).
 
 ## What This Repo Contains
 
@@ -18,14 +18,13 @@ The deployment path builds a local `retail_agent` wheel, uploads it to a Unity C
 1. Python 3.12 or newer.
 2. `uv` installed locally.
 3. Databricks CLI configured with a profile that can access the target workspace.
-4. A sibling checkout of `../databricks-job-runner`.
-5. A running Databricks cluster for job steps.
-6. Unity Catalog catalog, schema, and volume:
+4. A running Databricks cluster for job steps.
+5. Unity Catalog catalog, schema, and volume:
    - `retail_assistant`
    - `retail`
    - `retail_volume`
-7. A Neo4j database reachable from Databricks.
-8. Databricks model serving access to:
+6. A Neo4j database reachable from Databricks.
+7. Databricks model serving access to:
    - `databricks-claude-sonnet-4-6`
    - `databricks-bge-large-en`
 

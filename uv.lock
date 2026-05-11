@@ -575,16 +575,14 @@ wheels = [
 [[package]]
 name = "databricks-job-runner"
 version = "0.4.8"
-source = { editable = "../databricks-job-runner" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "databricks-sdk" },
     { name = "pydantic" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "databricks-sdk" },
-    { name = "pydantic", specifier = ">=2" },
+sdist = { url = "https://files.pythonhosted.org/packages/b8/a4/2eca16546967e0dd1a12d2b5ac04b49318b56ae4c7fb7c5fe6279e885790/databricks_job_runner-0.4.8.tar.gz", hash = "sha256:9daf3a66c48a42aaf89c79d08eefd7efe63d2cfae45a47ce32661bdd88a8ed1f", size = 27802, upload-time = "2026-04-25T01:39:41.905Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5e/8d/a81fb93bbbfa589eb869be0b04dfbcb57d09feb6707de010d9974908c293/databricks_job_runner-0.4.8-py3-none-any.whl", hash = "sha256:0a1681039afe38e7a3a7c565fc827ce6ecbefb74819272f55d7a6162dafa0536", size = 34538, upload-time = "2026-04-25T01:39:40.623Z" },
 ]
 
 [[package]]
@@ -3034,7 +3032,7 @@ wheels = [
 
 [[package]]
 name = "retail-agent"
-version = "0.1.25"
+version = "0.1.26"
 source = { editable = "." }
 dependencies = [
     { name = "databricks-agents" },
@@ -3066,7 +3064,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "databricks-agents", specifier = ">=0.15.0" },
-    { name = "databricks-job-runner", editable = "../databricks-job-runner" },
+    { name = "databricks-job-runner", specifier = ">=0.4.3" },
     { name = "databricks-langchain", specifier = ">=0.15.0" },
     { name = "databricks-sdk", specifier = ">=0.40.0" },
     { name = "langchain-core", specifier = ">=0.3.0" },

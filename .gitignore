@@ -15,8 +15,8 @@ pip-delete-this-directory.txt
 .Python
 develop-eggs/
 eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -34,6 +34,10 @@ ENV/
 
 # IDEs - IntelliJ / PyCharm
 .idea/
+
+# Local assistant/tooling state
+/.claude/
+/.codex/
 
 # IDEs - VSCode
 .vscode/
@@ -73,6 +77,13 @@ htmlcov/
 
 # uv
 .python-version
+
+# App/build tooling
+.apx/
+.build/
+.databricks/
+node_modules/
+*.tsbuildinfo
 
 # Generated lakehouse data
 data/lakehouse/
